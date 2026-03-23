@@ -1,0 +1,22 @@
+{
+    "context": {
+        "description": "GearCrester is a modular World of Warcraft addon for Midnight that analyzes equipped gear, crest currencies, and upgrade tracks to recommend optimal crest spending. It does NOT simulate performance or stat weights.",
+        "architecture": "The addon is structured into Core, Modules, and UI folders. Each module has a single responsibility. No business logic is allowed in UI files. Upgrade logic lives in Modules/UpgradeAdvisor.",
+        "rules": [
+            "Use 4-space indentation.",
+            "Do not create global variables except GC and SavedVariables.",
+            "Do not mix UI logic with data logic.",
+            "All new modules must be placed in the appropriate folder.",
+            "Use descriptive, consistent function names.",
+            "Never compute stat weights or performance simulation."
+        ]
+    },
+    "style": {
+        "naming": {
+            "modules": "PascalCase",
+            "functions": "camelCase",
+            "tables": "PascalCase"
+        },
+        "comments": "Use concise, meaningful comments above functions."
+    }
+}

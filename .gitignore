@@ -1,0 +1,15 @@
+# VS Code
+.vscode/
+.history/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# WoW build artifacts
+*.bak
+*.orig
+*.toc.bak
+
+# Packager output
+/release/
