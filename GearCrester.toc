@@ -29,9 +29,9 @@ Modules\CrestTracker\CrestData.lua
 Modules\CrestTracker\CrestCaps.lua
 Modules\CrestTracker\ResetTimer.lua
 
-Modules\UpgradeAdvisor\AdvisorCore.lua
-Modules\UpgradeAdvisor\AdvisorLogic.lua
 Modules\UpgradeAdvisor\AdvisorData.lua
+Modules\UpgradeAdvisor\AdvisorLogic.lua
+Modules\UpgradeAdvisor\AdvisorCore.lua
 Modules\UpgradeAdvisor\AdvisorUI.lua
 
 Modules\UI\MainFrame.lua
