@@ -124,6 +124,93 @@ Logic.GetItemUpgradeInfo = GetItemUpgradeInfo
 Logic.GetItemIlvl = GetItemIlvl
 Logic.ParseBonusIDs = ParseBonusIDs
 
+function Logic:GetItemDiagnostics(itemLink)
+    local result = {
+        itemLink = itemLink,
+        bonusIDs = {},
+        trackName = nil,
+        currentRank = nil,
+        reason = nil,
+    }
+
+    if not itemLink then
+        result.reason = "No item link provided"
+        return result
+    end
+
+    result.bonusIDs = ParseBonusIDs(itemLink)
+
+    if #result.bonusIDs == 0 then
+        result.reason = "No bonus IDs found on this item"
+        return result
+    end
+
+    result.trackName, result.currentRank = GetItemUpgradeInfo(itemLink)
+
+    if not result.trackName then
+        result.reason = "Track not detected - bonus IDs do not match any known upgrade track"
+        return result
+    end
+
+    if not result.currentRank then
+        result.reason = "Rank not detected - bonus IDs do not match any known rank for " .. result.trackName
+        return result
+    end
+
+    if result.currentRank >= Data.MAX_RANK then
+        result.reason = "Already at max rank (" .. result.currentRank .. "/" .. Data.MAX_RANK .. ")"
+        return result
+    end
+
+    result.reason = "Item is upgradeable"
+    return result
+end
+
+function Logic:DumpAllItems()
+    print("|cff00ff98GearCrester Bonus ID Dump:|r")
+
+    GC.modules.InventoryScanner.ScannerEquipped:Scan()
+
+    for slotID, itemData in pairs(GC.DataModel.equipped) do
+        local itemLink = itemData.itemLink
+        local slotName = itemData.slotName
+
+        if itemLink then
+            local bonusIDs = ParseBonusIDs(itemLink)
+            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+            local ilvl = GetItemIlvl(itemLink)
+
+            print(string.format("%s: ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+                slotName or "Unknown",
+                ilvl,
+                trackName or "nil",
+                currentRank or "nil",
+                table.concat(bonusIDs, ", ") or "none"))
+        end
+    end
+end
+
+function Logic:PrintWhyDiagnostics()
+    print("|cff00ff98GearCrester Upgrade Diagnostics:|r")
+
+    GC.modules.InventoryScanner.ScannerEquipped:Scan()
+
+    for slotID, itemData in pairs(GC.DataModel.equipped) do
+        local itemLink = itemData.itemLink
+        local slotName = itemData.slotName
+
+        if itemLink then
+            local diagnostics = self:GetItemDiagnostics(itemLink)
+            print(string.format("%s: %s", slotName or "Unknown", diagnostics.reason))
+            if #diagnostics.bonusIDs > 0 then
+                print(string.format("  Bonus IDs: %s", table.concat(diagnostics.bonusIDs, ", ")))
+            end
+        else
+            print(string.format("%s: No item equipped", slotName or "Unknown"))
+        end
+    end
+end
+
 function Logic:Evaluate(equipped, simulatedCrests)
     local results = {}
 

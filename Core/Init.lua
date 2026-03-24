@@ -12,13 +12,32 @@ function GC:OnLoad()
         local args = msg:trim()
 
         if args and #args > 0 then
-            if args:lower() == "debug=on" then
-                GC.db.debug = true
-                GC:Print("Debug mode enabled.")
+            local cmd, param = args:match("^(%w+)%s*(.*)$")
+            cmd = cmd and cmd:lower()
+
+            if cmd == "debug" then
+                if param and param:lower() == "on" then
+                    GC.db.debug = true
+                    GC:Print("Debug mode enabled.")
+                elseif param and param:lower() == "off" then
+                    GC.db.debug = false
+                    GC:Print("Debug mode disabled.")
+                else
+                    GC:Print("Usage: /gc debug on|off")
+                end
                 return
-            elseif args:lower() == "debug=off" then
-                GC.db.debug = false
-                GC:Print("Debug mode disabled.")
+            elseif cmd == "dump" then
+                GC.modules.UpgradeAdvisor.Logic:DumpAllItems()
+                return
+            elseif cmd == "why" then
+                GC.modules.UpgradeAdvisor.Logic:PrintWhyDiagnostics()
+                return
+            elseif cmd == "ui" then
+                if GC.modules.UI and GC.modules.UI.MainFrame then
+                    GC.modules.UI.MainFrame:Toggle()
+                else
+                    GC:Print("UI not implemented yet.")
+                end
                 return
             end
 
@@ -39,7 +58,7 @@ function GC:OnLoad()
                 if validTypes[crestTypeUpper] then
                     local AdvisorCore = GC.modules.UpgradeAdvisor.Core
                     local simulatedCrests = GC.modules.CrestTracker.CrestData:SimulateCrests(crestTypeUpper, count)
-                    local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests)
+                    local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests, true, true)
                     AdvisorCore:PrintResults(results, string.format("|cff00ff98GearCrester Upgrade Recommendations (Simulated: %d %s):|r", count, crestTypeUpper))
                 else
                     GC:Print("Invalid crest type. Valid types: ADVENTURER, VETERAN, CHAMPION, HERO, MYTH")
@@ -47,11 +66,11 @@ function GC:OnLoad()
             else
                 GC:Print("Usage: /gc <count> <crestType>")
                 GC:Print("Example: /gc 40 champion")
-                GC:Print("Use /gc debug=on to enable debug output")
+                GC:Print("Use /gc debug on to enable debug output")
             end
         else
             local AdvisorCore = GC.modules.UpgradeAdvisor.Core
-            local results = AdvisorCore:GetRecommendedUpgrades()
+            local results = AdvisorCore:GetRecommendedUpgrades(nil, true, true)
             AdvisorCore:PrintResults(results)
         end
     end
