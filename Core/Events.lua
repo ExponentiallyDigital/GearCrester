@@ -14,9 +14,22 @@ frame:SetScript("OnEvent", function(_, event, arg1)
             return
         end
 
-        -- Initialize SavedVariables ONLY after ADDON_LOADED for this addon
-        GearCresterDB = GearCresterDB or {}
-        GearCresterExportDB = GearCresterExportDB or {}
+        -- Validate and sanitize SavedVariables before use
+        -- This prevents errors from corrupted or malformed saved data
+        if type(GearCresterDB) ~= "table" then
+            GearCresterDB = {}
+            print("|cff00ff98GearCrester:|r SavedVariables corrupted - resetting to defaults")
+        end
+        if type(GearCresterDB.slotWeights) ~= "table" then
+            GearCresterDB.slotWeights = {}
+        end
+
+        if type(GearCresterExportDB) ~= "table" then
+            GearCresterExportDB = {}
+        end
+        if type(GearCresterExportDB.exportItems) ~= "table" then
+            GearCresterExportDB.exportItems = {}
+        end
 
         GC:OnLoad()
     elseif event == "PLAYER_LOGIN" then

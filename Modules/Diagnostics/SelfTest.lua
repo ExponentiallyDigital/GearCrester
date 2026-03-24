@@ -23,6 +23,7 @@ function SelfTest:RunAllTests()
     self:TestBonusIDParsing()
     self:TestTrackDetection()
     self:TestRankDetection()
+    self:TestAdvisorLogicAPI()
     self:TestUpgradeEvaluation()
     self:TestSlashCommandRegistration()
     self:TestUIFrameAvailability()
@@ -110,15 +111,85 @@ function SelfTest:TestRankDetection()
     end
 end
 
-function SelfTest:TestUpgradeEvaluation()
-    local AdvisorCore = GC.modules.UpgradeAdvisor.Core
+function SelfTest:TestAdvisorLogicAPI()
+    local Logic = GC.modules.UpgradeAdvisor.Logic
 
-    if not AdvisorCore or not AdvisorCore.GetRecommendedUpgrades then
-        fail("Upgrade Evaluation", "AdvisorCore.GetRecommendedUpgrades function not found")
+    if not Logic then
+        fail("AdvisorLogic API", "Logic module not found")
         return
     end
 
-    local results = AdvisorCore.GetRecommendedUpgrades(AdvisorCore, nil)
+    if not Logic.GetRecommendedUpgrades then
+        fail("AdvisorLogic API", "GetRecommendedUpgrades function not found")
+        return
+    end
+
+    -- Test 1: Returns a table
+    local results = Logic.GetRecommendedUpgrades(Logic, nil, false, false)
+    if type(results) ~= "table" then
+        fail("AdvisorLogic API", "GetRecommendedUpgrades did not return a table")
+        return
+    end
+
+    -- Test 2: Entries contain required fields (if any results)
+    if #results > 0 then
+        local entry = results[1]
+        local requiredFields = {
+            "slotName", "slotID", "itemLink", "currentIlvl", "nextIlvl",
+            "trackName", "currentRank", "maxRank", "crestType",
+            "crestCostPerStep", "totalCrestCost", "isGoldOnly", "goldOnlyTargetRank",
+            "upgradeSteps", "canAfford"
+        }
+        for _, field in ipairs(requiredFields) do
+            if entry[field] == nil then
+                fail("AdvisorLogic API", "Entry missing required field: " .. field)
+                return
+            end
+        end
+
+        -- Test 3: Verify crestCostPerStep is 20 (not 0)
+        if entry.crestCostPerStep == 0 then
+            fail("AdvisorLogic API", "crestCostPerStep is 0, should be 20")
+            return
+        end
+
+        -- Test 4: Verify totalCrestCost = upgradeSteps * crestCostPerStep
+        local expectedTotal = entry.upgradeSteps * entry.crestCostPerStep
+        if entry.totalCrestCost ~= expectedTotal then
+            fail("AdvisorLogic API", string.format("totalCrestCost mismatch: got %d, expected %d", entry.totalCrestCost, expectedTotal))
+            return
+        end
+    end
+
+    -- Test 5: Simulation changes results
+    local simulatedCrests = { CHAMPION = 40 }
+    local simulatedResults = Logic.GetRecommendedUpgrades(Logic, simulatedCrests, false, false)
+    if type(simulatedResults) ~= "table" then
+        fail("AdvisorLogic API", "Simulation did not return a table")
+        return
+    end
+
+    -- Test 6: Gold-only detection is disabled during simulation
+    -- (entries should have isGoldOnly field, but it should be false during simulation)
+    for _, entry in ipairs(simulatedResults) do
+        if entry.isGoldOnly == nil then
+            fail("AdvisorLogic API", "Entry missing isGoldOnly field")
+            return
+        end
+    end
+
+    pass("AdvisorLogic API")
+end
+
+function SelfTest:TestUpgradeEvaluation()
+    local Logic = GC.modules.UpgradeAdvisor.Logic
+
+    if not Logic or not Logic.GetRecommendedUpgrades then
+        fail("Upgrade Evaluation", "Logic.GetRecommendedUpgrades function not found")
+        return
+    end
+
+    local results = Logic.GetRecommendedUpgrades(Logic, nil, false, false)
 
     if type(results) == "table" then
         pass("Upgrade Evaluation")

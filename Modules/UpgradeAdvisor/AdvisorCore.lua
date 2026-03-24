@@ -25,11 +25,11 @@ function Core:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
             "yes", includeBags and "yes" or "no", includeBank and "yes" or "no"))
     end
 
-    local results = Logic:EvaluateAll(GC.DataModel.equipped, GC.DataModel.bags, GC.DataModel.bank, simulatedCrests)
+    local results = Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
-    -- Apply gold-only detection
+    -- Apply gold-only detection (only for non-simulated results)
     if FreeUpgrade then
-        FreeUpgrade:ApplyGoldOnlyDetection(results)
+        FreeUpgrade:ApplyGoldOnlyDetection(results, simulatedCrests)
     end
 
     -- Sort using UpgradeOrder priorities
@@ -72,7 +72,7 @@ function Core:PrintResults(results, title)
             entry.nextIlvl,
             affordColor,
             entry.crestType,
-            entry.crestCost,
+            entry.crestCostPerStep,
             goldOnlyText,
             entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
         )

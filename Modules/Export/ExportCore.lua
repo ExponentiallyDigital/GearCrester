@@ -38,7 +38,7 @@ function Export:GenerateExportString(exportItems)
 
     local lines = {}
     table.insert(lines, "-- GearCrester Export")
-    table.insert(lines, "-- Generated: " .. date("%Y-%m-%d %H:%M:%S"))
+    table.insert(lines, "-- Generated: " .. (os.date and os.date("%Y-%m-%d %H:%M:%S") or "Unknown"))
     table.insert(lines, "-- Upgradeable Items")
     table.insert(lines, "")
 
@@ -62,14 +62,14 @@ function Export:GenerateExportString(exportItems)
 end
 
 function Export:RunExport(simulatedCrests)
-    local AdvisorCore = GC.modules.UpgradeAdvisor.Core
+    local Logic = GC.modules.UpgradeAdvisor.Logic
 
-    if not AdvisorCore then
-        print("|cffff0000GearCrester|r Export failed: AdvisorCore module not available")
+    if not Logic then
+        print("|cffff0000GearCrester|r Export failed: UpgradeAdvisor.Logic module not available")
         return
     end
 
-    local results = AdvisorCore.GetRecommendedUpgrades(AdvisorCore, simulatedCrests, true, true)
+    local results = Logic.GetRecommendedUpgrades(Logic, simulatedCrests, true, true)
 
     if not results or #results == 0 then
         print("|cffff0000GearCrester|r No upgradeable items found to export.")
@@ -84,7 +84,7 @@ function Export:RunExport(simulatedCrests)
     end
 
     GearCresterExportDB.lastExport = exportString
-    GearCresterExportDB.lastExportTime = date("%Y-%m-%d %H:%M:%S")
+    GearCresterExportDB.lastExportTime = os.date and os.date("%Y-%m-%d %H:%M:%S") or "Unknown"
     GearCresterExportDB.exportItems = exportItems
 
     print("|cff00ff98GearCrester:|r Export complete. File will be written on logout.")
@@ -92,14 +92,14 @@ function Export:RunExport(simulatedCrests)
 end
 
 function Export:PrintExport()
-    local AdvisorCore = GC.modules.UpgradeAdvisor.Core
+    local Logic = GC.modules.UpgradeAdvisor.Logic
 
-    if not AdvisorCore then
-        print("|cffff0000GearCrester|r Export failed: AdvisorCore module not available")
+    if not Logic then
+        print("|cffff0000GearCrester|r Export failed: UpgradeAdvisor.Logic module not available")
         return
     end
 
-    local results = AdvisorCore.GetRecommendedUpgrades(AdvisorCore, nil, true, true)
+    local results = Logic.GetRecommendedUpgrades(Logic, nil, true, true)
 
     if not results or #results == 0 then
         print("|cffff0000GearCrester|r No upgradeable items found to export.")

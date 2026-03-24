@@ -28,7 +28,7 @@ Data.TRACKS = {
     "VETERAN",
     "CHAMPION",
     "HERO",
-    "MYTHIC",
+    "MYTH",
 }
 
 Data.TRACK_ILVLS = {
@@ -64,7 +64,7 @@ Data.TRACK_ILVLS = {
         [5] = 272,
         [6] = 276,
     },
-    MYTHIC = {
+    MYTH = {
         [1] = 272,
         [2] = 272,
         [3] = 279,
@@ -79,7 +79,7 @@ Data.CREST_TYPE = {
     VETERAN = "VETERAN",
     CHAMPION = "CHAMPION",
     HERO = "HERO",
-    MYTHIC = "MYTHIC",
+    MYTH = "MYTH",
 }
 
 Data.CREST_COST = 20
@@ -92,7 +92,7 @@ Data.TRACK_BONUS_IDS = {
     VETERAN = { 12698 },
     CHAMPION = { 6652, 13577, 12699, 13439, 12787 },
     HERO = { 12700 },
-    MYTHIC = { 12701 },
+    MYTH = { 12701 },
 }
 
 -- Bonus IDs that identify rank within each track
@@ -129,7 +129,7 @@ Data.RANK_BONUS_IDS = {
         [5] = { 12795 },
         [6] = { 12796 },
     },
-    MYTHIC = {
+    MYTH = {
         [1] = { 12797 },
         [2] = { 12798 },
         [3] = { 12799 },

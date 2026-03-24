@@ -124,6 +124,149 @@ Logic.GetItemUpgradeInfo = GetItemUpgradeInfo
 Logic.GetItemIlvl = GetItemIlvl
 Logic.ParseBonusIDs = ParseBonusIDs
 
+function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
+    local results = {}
+
+    if GC.db and GC.db.debug then
+        print("|cff00ff98[DEBUG] Starting upgrade evaluation...|r")
+    end
+
+    -- Helper function to evaluate items from a source
+    local function EvaluateItems(items, sourceName)
+        if not items then
+            return
+        end
+
+        for slotID, itemData in pairs(items) do
+            local itemLink = itemData.itemLink
+            local slotName = itemData.slotName or itemData.location
+
+            if not itemLink then
+                if GC.db and GC.db.debug then
+                    print(string.format("|cffff0000[DEBUG] %s: No item link, skipping|r", slotName or "Unknown"))
+                end
+            else
+                local currentIlvl = GetItemIlvl(itemLink)
+                local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+
+                if GC.db and GC.db.debug then
+                    print(string.format("|cff00ff98[DEBUG] %s=%s ilvl=%d track=%s rank=%d|r",
+                        sourceName, slotName or "Unknown", currentIlvl, trackName or "nil", currentRank or 0))
+                end
+
+                if not trackName then
+                    if GC.db and GC.db.debug then
+                        print(string.format("|cffff0000[DEBUG]   Skipped: Could not determine track from bonus IDs|r"))
+                    end
+                elseif not currentRank then
+                    if GC.db and GC.db.debug then
+                        print(string.format("|cffff0000[DEBUG]   Skipped: Could not determine rank from bonus IDs|r"))
+                    end
+                elseif currentRank >= Data.MAX_RANK then
+                    if GC.db and GC.db.debug then
+                        print(string.format("|cffff0000[DEBUG]   Skipped: Already at max rank (%d/%d)|r", currentRank, Data.MAX_RANK))
+                    end
+                else
+                    local crestType = Data:GetCrestType(trackName)
+                    local crestCostPerStep = Data:GetCrestCost()
+
+                    local crestCount
+                    if simulatedCrests then
+                        crestCount = simulatedCrests[crestType] or 0
+                    else
+                        crestCount = GC.modules.CrestTracker.CrestData:GetCrestCount(crestType)
+                    end
+
+                    -- Calculate max affordable rank with proper remaining crests tracking
+                    local maxRank = currentRank
+                    local remaining = crestCount
+                    local upgradeSteps = 0
+
+                    for r = currentRank, Data.MAX_RANK - 1 do
+                        if remaining >= crestCostPerStep then
+                            remaining = remaining - crestCostPerStep
+                            upgradeSteps = upgradeSteps + 1
+                            maxRank = r + 1
+                        else
+                            break
+                        end
+                    end
+
+                    if upgradeSteps > 0 then
+                        -- Get FINAL ilvl at maxRank
+                        local finalIlvl = Data.TRACK_ILVLS[trackName][maxRank]
+                        local totalCrestCost = upgradeSteps * crestCostPerStep
+
+                        -- Check if we can afford the FULL upgrade path
+                        local canAfford = crestCount >= totalCrestCost
+
+                        table.insert(results, {
+                            slotName = slotName,
+                            slotID = slotID,
+                            itemLink = itemLink,
+                            currentIlvl = currentIlvl,
+                            nextIlvl = finalIlvl,
+                            trackName = trackName,
+                            currentRank = currentRank,
+                            maxRank = maxRank,
+                            crestType = crestType,
+                            crestCostPerStep = crestCostPerStep,
+                            totalCrestCost = totalCrestCost,
+                            upgradeSteps = upgradeSteps,
+                            isGoldOnly = false,
+                            goldOnlyTargetRank = nil,
+                            canAfford = canAfford,
+                            priority = Data:GetSlotPriority(slotID) or 99,
+                            location = itemData.location,
+                        })
+                    end
+                end
+            end
+        end
+    end
+
+    -- Evaluate all sources
+    EvaluateItems(GC.DataModel.equipped, "Equipped")
+
+    if includeBags then
+        EvaluateItems(GC.DataModel.bags, "Bag")
+    end
+
+    if includeBank then
+        EvaluateItems(GC.DataModel.bank, "Bank")
+    end
+
+    if GC.db and GC.db.debug then
+        print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))
+    end
+
+    return results
+end
+
+function Logic:DumpAllItems()
+    print("|cff00ff98GearCrester Bonus ID Dump:|r")
+
+    GC.modules.InventoryScanner.ScannerEquipped:Scan()
+
+    for slotID, itemData in pairs(GC.DataModel.equipped) do
+        local itemLink = itemData.itemLink
+        local slotName = itemData.slotName
+
+        if itemLink then
+            local bonusIDs = ParseBonusIDs(itemLink)
+            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+            local ilvl = GetItemIlvl(itemLink)
+
+            print(string.format("%s: ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+                slotName or "Unknown",
+                ilvl,
+                trackName or "nil",
+                currentRank or "nil",
+                table.concat(bonusIDs, ", ") or "none"))
+        end
+    end
+end
+
 function Logic:GetItemDiagnostics(itemLink)
     local result = {
         itemLink = itemLink,
@@ -166,30 +309,6 @@ function Logic:GetItemDiagnostics(itemLink)
     return result
 end
 
-function Logic:DumpAllItems()
-    print("|cff00ff98GearCrester Bonus ID Dump:|r")
-
-    GC.modules.InventoryScanner.ScannerEquipped:Scan()
-
-    for slotID, itemData in pairs(GC.DataModel.equipped) do
-        local itemLink = itemData.itemLink
-        local slotName = itemData.slotName
-
-        if itemLink then
-            local bonusIDs = ParseBonusIDs(itemLink)
-            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-            local ilvl = GetItemIlvl(itemLink)
-
-            print(string.format("%s: ilvl=%d track=%s rank=%s bonusIDs=[%s]",
-                slotName or "Unknown",
-                ilvl,
-                trackName or "nil",
-                currentRank or "nil",
-                table.concat(bonusIDs, ", ") or "none"))
-        end
-    end
-end
-
 function Logic:PrintWhyDiagnostics()
     print("|cff00ff98GearCrester Upgrade Diagnostics:|r")
 
@@ -209,123 +328,6 @@ function Logic:PrintWhyDiagnostics()
             print(string.format("%s: No item equipped", slotName or "Unknown"))
         end
     end
-end
-
-function Logic:Evaluate(equipped, simulatedCrests)
-    local results = {}
-
-    if GC.db and GC.db.debug then
-        print("|cff00ff98[DEBUG] Starting upgrade evaluation...|r")
-        local equippedCount = 0
-        for _ in pairs(equipped) do
-            equippedCount = equippedCount + 1
-        end
-        print(string.format("|cff00ff98[DEBUG] Equipped items: %d|r", equippedCount))
-        print(string.format("|cff00ff98[DEBUG] Using simulated crests: %s|r", simulatedCrests and "YES" or "NO"))
-
-        if simulatedCrests then
-            for crestType, count in pairs(simulatedCrests) do
-                print(string.format("|cff00ff98[DEBUG]   %s: %d|r", crestType, count))
-            end
-        end
-    end
-
-    for slotID, itemData in pairs(equipped) do
-        local itemLink = itemData.itemLink
-        local slotName = itemData.slotName
-
-        if not itemLink then
-            if GC.db and GC.db.debug then
-                print(string.format("|cffff0000[DEBUG] Slot %s (%d): No item link, skipping|r", slotName or "Unknown", slotID))
-            end
-        else
-            local currentIlvl = GetItemIlvl(itemLink)
-            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-
-            if GC.db and GC.db.debug then
-                print(string.format("|cff00ff98[DEBUG] Slot=%s ilvl=%d track=%s rank=%d|r",
-                    slotName or "Unknown", currentIlvl, trackName or "nil", currentRank or 0))
-            end
-
-            if not trackName then
-                if GC.db and GC.db.debug then
-                    print(string.format("|cffff0000[DEBUG]   Skipped: Could not determine track from bonus IDs|r"))
-                end
-            elseif not currentRank then
-                if GC.db and GC.db.debug then
-                    print(string.format("|cffff0000[DEBUG]   Skipped: Could not determine rank from bonus IDs|r"))
-                end
-            elseif currentRank >= Data.MAX_RANK then
-                if GC.db and GC.db.debug then
-                    print(string.format("|cffff0000[DEBUG]   Skipped: Already at max rank (%d/%d)|r", currentRank, Data.MAX_RANK))
-                end
-            else
-                local crestType = Data:GetCrestType(trackName)
-                local crestCost = Data:GetCrestCost()
-
-                local crestCount
-                if simulatedCrests then
-                    crestCount = simulatedCrests[crestType] or 0
-                else
-                    crestCount = GC.modules.CrestTracker.CrestData:GetCrestCount(crestType)
-                end
-
-                local remainingCrests = crestCount
-
-                for rank = currentRank, Data.MAX_RANK - 1 do
-                    local nextRank = rank + 1
-                    local nextIlvl = Data:GetNextIlvl(trackName, rank)
-
-                    if not nextIlvl then
-                        break
-                    end
-
-                    local canAfford = remainingCrests >= crestCost
-
-                    if GC.db and GC.db.debug then
-                        print(string.format("|cff00ff98[DEBUG]   Step %d->%d: %d->%d cost=%d canAfford=%s|r",
-                            rank, nextRank, Data.TRACK_ILVLS[trackName][rank], nextIlvl, crestCost, canAfford and "true" or "false"))
-                    end
-
-                    if canAfford then
-                        table.insert(results, {
-                            slotName = slotName,
-                            slotID = slotID,
-                            itemLink = itemLink,
-                            currentIlvl = Data.TRACK_ILVLS[trackName][rank],
-                            nextIlvl = nextIlvl,
-                            trackName = trackName,
-                            currentRank = rank,
-                            nextRank = nextRank,
-                            crestType = crestType,
-                            crestCost = crestCost,
-                            canAfford = canAfford,
-                            priority = Data:GetSlotPriority(slotID),
-                        })
-                        remainingCrests = remainingCrests - crestCost
-                    else
-                        if GC.db and GC.db.debug then
-                            print(string.format("|cffff0000[DEBUG]   Cannot afford step %d->%d (need %d, have %d remaining)|r",
-                                rank, nextRank, crestCost, remainingCrests))
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    table.sort(results, function(a, b)
-        if a.priority ~= b.priority then
-            return a.priority < b.priority
-        end
-        return a.nextIlvl > b.nextIlvl
-    end)
-
-    if GC.db and GC.db.debug then
-        print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))
-    end
-
-    return results
 end
 
 return Logic
