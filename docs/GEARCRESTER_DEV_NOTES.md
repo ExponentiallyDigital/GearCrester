@@ -7,8 +7,12 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 ## Current Status
 
 **Version:** 0.0.1
-**State:** MVP Complete - Equipped + Bags + Bank scanning functional
+**State:** MVP Complete + Upgrade Order + Gold-Only Detection
 **Last Tested:** Equipped gear scanning, bonus ID parsing, track/rank detection working correctly for CHAMPION track
+
+### Known Issues
+
+- First-login SavedVariables error may occur if WTF file doesn't exist (working on fix)
 
 ## Completed Features
 
@@ -19,6 +23,9 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] Rank detection (1-6 per track)
 - [x] Multi-step upgrade path display
 - [x] Flat 20-crest cost per upgrade
+- [x] Upgrade order system with user-defined weights (1-20)
+- [x] Gold-only upgrade detection (same track, higher rank = free)
+- [x] InventoryOverview data layer for future UI
 
 ### Scanning
 
@@ -40,6 +47,9 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] `/gc ui` - Toggle UI frame
 - [x] `/gc ui <count> <crestType>` - Show simulation in UI
 - [x] `/gc help` - Show all commands
+- [x] `/gc weight <slot> <value>` - Set slot priority weight
+- [x] `/gc weight reset` - Reset all slot weights
+- [x] `/gc weight list` - Show all slot weights
 
 ### UI
 
@@ -47,6 +57,7 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] Close button
 - [x] Display upgrade recommendations
 - [x] Display simulation results
+- [x] InventoryOverview data layer (no UI yet)
 
 ### Developer Tools
 
@@ -55,6 +66,7 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] Debug mode (`/gc debug on|off`)
 - [x] Bonus ID dump (`/gc dump`)
 - [x] Upgrade diagnostics (`/gc why`)
+- [x] Slot weight management (`/gc weight`)
 
 ### Data Tables
 
@@ -63,6 +75,12 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] TRACK_ILVLS (220-289 ilvl range)
 - [x] CREST_COST (flat 20)
 - [x] SLOT_PRIORITY (all 16 slots)
+
+### Modules
+
+- [x] UpgradeOrder - Configurable slot priority system
+- [x] FreeUpgrade - Gold-only upgrade detection
+- [x] InventoryOverview - UI data-layer foundation
 
 ## Backlog
 
@@ -111,11 +129,12 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ## Next Steps
 
-1. Test all tracks (ADVENTURER, VETERAN, HERO, MYTHIC) with real items
-2. Collect missing bonus IDs for tracks with incomplete data
-3. Implement compare feature from backlog
-4. Add crest cap tracking (v0.3)
-5. Build heatmap UI (v0.4)
+1. Fix first-login SavedVariables initialization error
+2. Test all tracks (ADVENTURER, VETERAN, HERO, MYTHIC) with real items
+3. Collect missing bonus IDs for tracks with incomplete data
+4. Implement compare feature from backlog
+5. Add crest cap tracking (v0.3)
+6. Build heatmap UI (v0.4)
 
 ## Testing Checklist
 
@@ -126,6 +145,18 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [ ] `/gc 80 champion` shows more upgrade steps than 40 crests
 - [ ] `/gc debug on` enables debug output
 - [ ] `/gc debug off` disables debug output
+
+### Upgrade Order
+
+- [ ] `/gc weight MainHand 1` sets MainHand to highest priority
+- [ ] `/gc weight list` shows all slot weights
+- [ ] `/gc weight reset` resets to defaults
+- [ ] Sorting respects custom weights
+
+### Gold-Only Detection
+
+- [ ] Items with same track higher rank show [GOLD-ONLY]
+- [ ] Gold-only upgrades don't consume crests
 
 ### Diagnostics
 
@@ -158,6 +189,7 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - Only CHAMPION track fully tested with real bonus IDs
 - Other tracks may have incomplete bonus ID tables
 - Bag/bank scanning requires C_Container API (Retail/Midnight only)
+- First-login SavedVariables error needs investigation
 
 ## Development Constraints
 

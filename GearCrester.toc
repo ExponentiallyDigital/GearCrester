@@ -1,17 +1,10 @@
 ## Interface: 120001, 120000
-
 ## Title: GearCrester
-
 ## Notes: Upgrade advisor and crest planner for Midnight gear progression
-
 ## Author: ArcNineOhNine
-
-## Version: 0.0.2
-
+## Version: 0.0.3
 ## Category: ArcNineOhNine
-
 ## IconTexture: Interface\AddOns\GearCrester\media\GearCrester-icon
-
 ## SavedVariables: GearCresterDB, GearCresterExportDB
 
 Core\Init.lua
@@ -33,11 +26,14 @@ Modules\UpgradeAdvisor\AdvisorData.lua
 Modules\UpgradeAdvisor\AdvisorLogic.lua
 Modules\UpgradeAdvisor\AdvisorCore.lua
 Modules\UpgradeAdvisor\AdvisorUI.lua
+Modules\UpgradeAdvisor\UpgradeOrder.lua
+Modules\UpgradeAdvisor\FreeUpgrade.lua
 
 Modules\UI\MainFrame.lua
 Modules\UI\Heatmap.lua
 Modules\UI\SlotList.lua
 Modules\UI\TooltipExtensions.lua
+Modules\UI\InventoryOverview.lua
 
 Modules\Profiles\ProfileManager.lua
 Modules\Profiles\DefaultProfiles.lua

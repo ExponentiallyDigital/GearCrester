@@ -1,4 +1,19 @@
-— 2026-03-24 v0.0.2 Add full diagnostics, export system, help overhaul, version banner, and stable SavedVariables init
+— 2026-03-24
+    Update release_history.txt for v0.0.2
+    
+    release_history.txt | 46 insertions, 0 deletions
+
+— 2026-03-24
+    v0.0.2 Add full diagnostics, export system, help overhaul, version banner, and stable SavedVariables init
+    
+    - Added /gc test with ASCII-safe diagnostics
+    - Implemented /gc export and /gc export <crest><track> with clean SavedVariables output
+    - Ensured one exported entry per item, added timestamps and export summary
+    - Fixed SavedVariables initialization and first-run stability
+    - Added version banner using C_AddOns.GetAddOnMetadata
+    - Expanded /gc help with full command list and descriptions
+    - Updated README and GEARCRESTER_DEV_NOTES.md with current status, backlog, and testing checklist
+    
     Core/Events.lua | 33 insertions, 23 deletions
     Core/Init.lua | 123 insertions, 8 deletions
     GearCrester.toc | 47 insertions, 43 deletions
@@ -9,7 +24,9 @@
     README.md | 35 insertions, 9 deletions
     docs/GEARCRESTER_DEV_NOTES.md | 139 insertions, 100 deletions
 
-— 2026-03-24 ADD slash commands for ui, why, dump; initial UI frame; docs updated
+— 2026-03-24
+    ADD slash commands for ui, why, dump; initial UI frame; docs updated
+    
     Core/Init.lua | 86 insertions, 67 deletions
     Modules/UI/MainFrame.lua | 122 insertions, 7 deletions
     Modules/UpgradeAdvisor/AdvisorLogic.lua | 87 insertions, 0 deletions
@@ -17,13 +34,19 @@
     README.md | 76 insertions, 29 deletions
     docs/GEARCRESTER_DEV_NOTES.md | 129 insertions, 117 deletions
 
-— 2026-03-24 Champion track logic for detection and upgrade verified.
+— 2026-03-24
+    Champion track logic for detection and upgrade verified.
+    
     Modules/UpgradeAdvisor/AdvisorData.lua | 183 insertions, 183 deletions
     Modules/UpgradeAdvisor/AdvisorLogic.lua | 244 insertions, 244 deletions
 
-— 2026-03-24 Merge branch 'main' of https://github.com/ExponentiallyDigital/GearCrester
+— 2026-03-24
+    Merge branch 'main' of https://github.com/ExponentiallyDigital/GearCrester
+    
 
-— 2026-03-24 basic listing of gear and potential upgrades working; debug flag whos lookups
+— 2026-03-24
+    basic listing of gear and potential upgrades working; debug flag whos lookups
+    
     Core/Init.lua | 54 insertions, 1 deletion
     GearCrester.toc | 2 insertions, 2 deletions
     Modules/CrestTracker/CrestData.lua | 51 insertions, 1 deletion
@@ -41,14 +64,20 @@
     QWEN.md | 3 insertions, 0 deletions
     docs/GEARCRESTER_DEV_NOTES.md | 116 insertions, 6 deletions
 
-— 2026-03-23 Update release_history.txt for v0.0.1
+— 2026-03-23
+    Update release_history.txt for v0.0.1
+    
     release_history.txt | 43 insertions, 0 deletions
 
-— 2026-03-23 v0.0.1 project scaffolding set up
+— 2026-03-23
+    v0.0.1 project scaffolding set up
+    
     .github/workflows/release.yml | 121 insertions, 120 deletions
     LICENSE | 674 insertions, 0 deletions
 
-— 2026-03-23 Initial commit: templated dev env and arch
+— 2026-03-23
+    Initial commit: templated dev env and arch
+    
     .copilot.json | 22 insertions, 0 deletions
     .editorconfig | 13 insertions, 0 deletions
     .github/ISSUE_TEMPLATE/bug_report.md | 32 insertions, 0 deletions

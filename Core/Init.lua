@@ -8,6 +8,9 @@ function GC:OnLoad()
     -- SavedVariables already initialized in Events.lua ADDON_LOADED handler
     GC.db = GearCresterDB
 
+    -- Initialize slot weights if not present
+    GearCresterDB.slotWeights = GearCresterDB.slotWeights or {}
+
     -- Get version from TOC using C_AddOns API
     local version = "0.0.1"
     if C_AddOns and C_AddOns.GetAddOnMetadata then
@@ -37,8 +40,65 @@ function GC:OnLoad()
                 print("/gc export <count> <crestType> - Export with crest simulation")
                 print("/gc ui - Toggle UI frame")
                 print("/gc ui <count> <crestType> - Show simulation in UI frame")
+                print("/gc weight <slot> <value> - Set slot priority weight (1-20)")
+                print("/gc weight reset - Reset all slot weights to default")
+                print("/gc weight list - Show all slot weights")
                 print("/gc help - Show this help")
                 return
+            elseif cmd == "weight" then
+                if not param or #param == 0 then
+                    GC:Print("Usage: /gc weight <slotName> <value> | reset | list")
+                    return
+                end
+
+                local subCmd, subParam = param:match("^(%w+)%s*(.*)$")
+                subCmd = subCmd and subCmd:lower()
+
+                if subCmd == "reset" then
+                    GC.modules.UpgradeAdvisor.UpgradeOrder:ResetSlotWeights()
+                    GC:Print("All slot weights reset to default.")
+                    return
+                elseif subCmd == "list" then
+                    print("|cff00ff98GearCrester Slot Weights|r")
+                    print("--------------------------------")
+                    local weights = GC.modules.UpgradeAdvisor.UpgradeOrder:GetAllWeights()
+                    local slotNames = GC.SLOTS
+                    for slotID, weightData in pairs(weights) do
+                        local slotName = slotNames[slotID] or "Unknown"
+                        local status = weightData.isCustom and "|cffff0000(custom)|r" or "|cff00ff00(default)|r"
+                        print(string.format("%s: %d %s", slotName, weightData.effective, status))
+                    end
+                    return
+                else
+                    local slotName, valueStr = param:match("^(%w+)%s+(%d+)$")
+                    if slotName and valueStr then
+                        local value = tonumber(valueStr)
+                        if value < 1 or value > 20 then
+                            GC:Print("Weight must be between 1 and 20.")
+                            return
+                        end
+
+                        -- Find slotID by name
+                        local slotID = nil
+                        for id, name in pairs(GC.SLOTS) do
+                            if name:lower() == slotName:lower() then
+                                slotID = id
+                                break
+                            end
+                        end
+
+                        if slotID then
+                            GC.modules.UpgradeAdvisor.UpgradeOrder:SetSlotWeight(slotID, value)
+                            GC:Print(string.format("Set %s weight to %d.", slotName, value))
+                        else
+                            GC:Print("Unknown slot name. Valid slots: Head, Neck, Shoulder, Chest, Waist, Legs, Feet, Wrist, Hands, Finger1, Finger2, Trinket1, Trinket2, Back, MainHand, OffHand")
+                        end
+                    else
+                        GC:Print("Usage: /gc weight <slotName> <value>")
+                        GC:Print("Example: /gc weight MainHand 1")
+                    end
+                    return
+                end
             elseif cmd == "debug" then
                 if param and param:lower() == "on" then
                     GC.db.debug = true
