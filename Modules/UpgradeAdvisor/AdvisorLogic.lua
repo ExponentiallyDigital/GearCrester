@@ -45,6 +45,7 @@ local function DetermineTrack(bonusIDs)
         return nil
     end
 
+    -- Step 1: Check canonical TRACK_BONUS_IDS (unchanged)
     for _, trackName in ipairs(Data.TRACKS) do
         local trackBonusIDs = Data.TRACK_BONUS_IDS[trackName]
         if trackBonusIDs and #trackBonusIDs > 0 then
@@ -59,6 +60,46 @@ local function DetermineTrack(bonusIDs)
                 end
             end
         end
+    end
+
+    -- Step 2: Fallback - count rank-bonus matches across all tracks
+    -- This handles items that have rank bonus IDs but omit canonical track markers
+    local trackMatchCounts = {}
+    for _, trackName in ipairs(Data.TRACKS) do
+        local rankBonusIDs = Data.RANK_BONUS_IDS[trackName]
+        if rankBonusIDs then
+            local matchCount = 0
+            for rank = 1, Data.MAX_RANK do
+                local rankIDs = rankBonusIDs[rank]
+                if rankIDs then
+                    for _, bonusID in ipairs(bonusIDs) do
+                        for _, rankBonusID in ipairs(rankIDs) do
+                            if bonusID == rankBonusID then
+                                matchCount = matchCount + 1
+                            end
+                        end
+                    end
+                end
+            end
+            trackMatchCounts[trackName] = matchCount
+        end
+    end
+
+    -- Find track with highest match count
+    local bestTrack = nil
+    local bestCount = 0
+    for trackName, count in pairs(trackMatchCounts) do
+        if count > bestCount then
+            bestCount = count
+            bestTrack = trackName
+        end
+    end
+
+    if bestTrack and bestCount > 0 then
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] FALLBACK: Inferred %s track from %d rank bonus ID(s)|r", bestTrack, bestCount))
+        end
+        return bestTrack
     end
 
     return nil
@@ -100,17 +141,81 @@ local function GetItemUpgradeInfo(itemLink)
         return nil, nil
     end
 
+    -- Step 1: Try canonical track detection
     local trackName = DetermineTrack(bonusIDs)
-    if not trackName then
-        return nil, nil
+
+    if trackName then
+        -- Canonical track found, try to get rank
+        local rank = DetermineRank(trackName, bonusIDs)
+
+        if rank then
+            -- Both track and rank found canonically
+            if GC.db and GC.db.debug then
+                print(string.format("|cff00ff00[DEBUG] Canonical: %s track rank %d|r", trackName, rank))
+            end
+            return trackName, rank
+        end
+
+        -- Track found but rank missing - attempt rank-id inference fallback
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] Track=%s found but rank missing - running rank-id fallback|r", trackName))
+        end
+    else
+        -- No canonical track - will attempt full inference below
+        if GC.db and GC.db.debug then
+            print("|cff00ff00[DEBUG] No canonical track - running full inference|r")
+        end
     end
 
-    local rank = DetermineRank(trackName, bonusIDs)
-    if not rank then
-        return nil, nil
+    -- Step 2: Rank-ID inference fallback
+    -- Scan all tracks' RANK_BONUS_IDS to find matching rank bonus IDs
+    local bestTrack = nil
+    local bestRank = 0  -- Initialize to 0 to avoid nil comparison
+    local bestMatchCount = 0
+    local matchedBonusIDs = {}
+
+    for _, candidateTrack in ipairs(Data.TRACKS) do
+        local rankBonusIDs = Data.RANK_BONUS_IDS[candidateTrack]
+        if rankBonusIDs then
+            for rank = 1, Data.MAX_RANK do
+                local rankIDs = rankBonusIDs[rank]
+                if rankIDs and #rankIDs > 0 then
+                    local matchCount = 0
+                    local currentMatches = {}
+                    for _, bonusID in ipairs(bonusIDs) do
+                        for _, rankBonusID in ipairs(rankIDs) do
+                            if bonusID == rankBonusID then
+                                matchCount = matchCount + 1
+                                table.insert(currentMatches, bonusID)
+                            end
+                        end
+                    end
+
+                    -- Prefer higher match count; if tied, prefer higher rank (tie-breaker)
+                    if matchCount > bestMatchCount or (matchCount == bestMatchCount and rank > bestRank) then
+                        bestTrack = candidateTrack
+                        bestRank = rank
+                        bestMatchCount = matchCount
+                        matchedBonusIDs = currentMatches
+                    end
+                end
+            end
+        end
     end
 
-    return trackName, rank
+    if bestTrack and bestRank > 0 and bestMatchCount > 0 then
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] FALLBACK: Inferred %s track rank %d from %d rank bonus ID(s): %s|r",
+                bestTrack, bestRank, bestMatchCount, table.concat(matchedBonusIDs, ", ")))
+        end
+        return bestTrack, bestRank
+    end
+
+    -- No inference possible
+    if GC.db and GC.db.debug then
+        print("|cffff0000[DEBUG] No track/rank could be inferred from bonus IDs|r")
+    end
+    return nil, nil
 end
 
 local function GetItemIlvl(itemLink)

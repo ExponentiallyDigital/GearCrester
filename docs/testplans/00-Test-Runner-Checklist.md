@@ -44,6 +44,18 @@ Use it after any code change, feature addition, or Qwen-generated update.
 
 ---
 
+## 2b. Track Detection Fallback
+
+**Scenario:** HERO item without canonical track bonus ID (e.g., shoulder with bonus IDs 6652, 13577, 12794)
+
+- [ ] `/gc debug on`
+- [ ] `/gc dump` shows `track=HERO` (inferred from rank bonus ID)
+- [ ] Debug output shows "FALLBACK: Inferred HERO track from N rank bonus ID(s)"
+- [ ] `/gc 40 hero` lists the item as upgradeable
+- [ ] Items WITH canonical track IDs still use canonical detection (verify no false fallback)
+
+---
+
 # 3. Gold‑Only Upgrade Detection
 
 ## Setup:
@@ -78,7 +90,18 @@ Use it after any code change, feature addition, or Qwen-generated update.
 - [ ] 5-step upgrades show `(CHAMPION x100)`
 - [ ] Crest cost = `upgradeSteps * 20`
 
-## 4.3 Invalid Crest Type
+## 4.3 HERO Track Simulation
+
+- [ ] `/gc 40 hero`
+- [ ] HERO track items detected (bonus ID 12700)
+- [ ] 2-step upgrades show `(HERO x40)`
+- [ ] ILvl progression follows HERO table (259→263→266→269→272→276)
+
+- [ ] `/gc 60 hero`
+- [ ] 3-step upgrades show `(HERO x60)`
+- [ ] `/gc test` passes HERO Track Simulation test
+
+## 4.4 Invalid Crest Type
 
 - [ ] `/gc 40 banana`
 - [ ] Error message appears

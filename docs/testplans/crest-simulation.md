@@ -37,6 +37,35 @@ Expected:
 
 ---
 
+## 2b. HERO Track Simulation
+
+/gc 40 hero
+
+Expected:
+
+- HERO track items show upgrade paths affordable with 40 crests
+- 2-step upgrades show `(HERO x40)`
+- 1-step upgrades show `(HERO x20)`
+- Crest cost displayed is **total path cost**, not per-step cost
+- Track detection uses bonus ID 12700
+- Rank detection uses bonus IDs 12791-12796
+
+**Example:**
+
+```
+Head: 263 -> 269 (HERO x40)
+Chest: 266 -> 269 (HERO x20)
+```
+
+/gc 60 hero
+
+Expected:
+
+- 3-step upgrades show `(HERO x60)`
+- ILvl progression follows HERO track table (259→263→266→269)
+
+---
+
 ## 3. Invalid Crest Type
 
 /gc 40 murloc

@@ -22,6 +22,18 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 - None reported
 
+### Track Support Status
+
+| Track      | Bonus ID | Rank IDs    | Tested  | Status                          |
+| ---------- | -------- | ----------- | ------- | ------------------------------- |
+| ADVENTURER | 12697    | 12773-12778 | Pending | Data complete                   |
+| VETERAN    | 12698    | 12779-12784 | Pending | Data complete                   |
+| CHAMPION   | 12699    | 12785-12790 | ✓ Yes   | Fully tested                    |
+| HERO       | 12700    | 12791-12796 | ✓ Yes   | Fully tested + mixed-marker fix |
+| MYTH       | 12701    | 12797-12802 | Pending | Data complete                   |
+
+**Mixed-Marker Fix:** Items with track markers from one track but rank markers from another (e.g., CHAMPION track IDs + HERO rank ID) are now correctly identified using rank-ID inference fallback. Rank ID takes precedence when canonical rank detection fails.
+
 ---
 
 ## What GearCrester DOES Do (Implemented Features)

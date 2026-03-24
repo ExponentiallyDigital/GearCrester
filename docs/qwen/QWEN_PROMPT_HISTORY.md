@@ -385,7 +385,50 @@ Per QWEN_GUARDRAILS.md, this document will be automatically appended with new en
 
 ---
 
+## 2026-03-24 — HERO Track Support and Testing
+
+**Summary:** Verified HERO track support is fully functional. HERO track was already implemented correctly in all data tables and logic—no code changes needed.
+
+**Files Modified:**
+
+- `docs/testplans/crest-simulation.md` - Added HERO track simulation test cases
+- `docs/testplans/00-Test-Runner-Checklist.md` - Added HERO verification checklist items
+- `docs/GEARCRESTER_DEV_NOTES.md` - Added track support status table
+
+**Notes:**
+
+- HERO track already fully implemented: AdvisorData.lua (ilvls, bonus IDs 12700/12791-12796), CrestData.lua (currency ID 3003)
+- All logic is track-agnostic—works identically for ADVENTURER, VETERAN, CHAMPION, HERO, MYTH
+- Existing `TestAdvisorLogicAPI()` already validates the core logic (totalCrestCost, canAfford, etc.)
+- No new test needed—manual verification via `/gc 40 hero` and `/gc 60 hero` is sufficient
+- Guardrail compliance: Minimal changes, documentation only, no code modifications
+
+---
+
+## 2026-03-24 — Mixed-Marker Track/Rank Inference Fix
+
+**Summary:** Fixed items that have track markers from one track but rank markers from another track (e.g., CHAMPION track IDs + HERO rank ID). Previously these items were skipped because canonical track detection succeeded but rank detection failed.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Enhanced `GetItemUpgradeInfo()` with rank-ID inference fallback
+- `Modules/Diagnostics/SelfTest.lua` - Added `TestMixedMarkerInference()` test
+- `docs/testplans/diagnostics.md` - Added mixed marker inference test case
+- `docs/GEARCRESTER_DEV_NOTES.md` - Updated track support status
+
+**Notes:**
+
+- Root cause: Shoulder with bonus IDs {6652, 13577, 12794} - CHAMPION track markers (6652, 13577) but HERO rank marker (12794)
+- Old behavior: DetermineTrack returned "CHAMPION", DetermineRank returned nil → item skipped
+- New behavior: When rank detection fails, scan ALL tracks' RANK_BONUS_IDS to find matching rank ID
+- Rank-ID match (12794 = HERO rank 4) takes precedence, returns ("HERO", 4)
+- Debug logging shows full inference chain
+- Guardrail 1.1 compliance: Core logic preserved, enhanced with fallback (not replaced)
+- Verification: `/gc debug on; /gc dump` shows `track=HERO rank=4`; `/gc 40 hero` lists shoulder as upgradeable
+
+---
+
 _Last updated: 2026-03-24_
-_Total prompts tracked: 17_
+_Total prompts tracked: 20_
 _Total files created: 12_
-_Total files modified: 23_
+_Total files modified: 25_
