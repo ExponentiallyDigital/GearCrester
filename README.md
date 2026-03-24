@@ -1,37 +1,90 @@
 # GearCrester
 
-GearCrester is a modular World of Warcraft addon for Midnight that helps players understand and plan their crest-based gear upgrades.
+GearCrester is a modular World of Warcraft addon for Midnight that helps players understand and plan their crest‑based gear upgrades.
+
+## Why use this?
+
+<strong><span style="color:#ba372a">TL;DR</strong></span> <span style="color:#2dc26b">Clear visibility of your gear's crest upgrade options.</span>
 
 ## Core Principles
 
-- No performance simulation (AMR handles that)
+- No performance simulation (AMR/SimC handle that really well!)
 - No stat weighting
-- Pure upgrade visibility and planning
+- Pure crest upgrade visibility and planning
 - Modular architecture
 - Clean UI, minimal cognitive load
 
+## Key Features
+
+- **Upgrade Advisor** – evaluates upgradeability and provides clear recommendations
+- **Crest‑aware planning** – understands track and rank via bonus IDs and crest rules
+- **Gold‑only upgrades** – detects upgrades that cost gold only and marks them as `[GOLD‑ONLY]`
+- **Inventory scanning** – scans equipped gear, bags, and bank
+- **Export system** – writes upgradeable items to SavedVariables for external analysis
+- **Self‑diagnostics** – `/gc test` runs a full subsystem health check
+- **Configurable slot weights** – prioritize slots (1–20, lower = higher priority)
+- **UI frame** – movable, scrollable UI for recommendations and simulations
+
+---
+
+# Installation
+
+1. Move/copy the `GearCrester` folder to your `_retail_/Interface/AddOns/` directory
+2. Restart World of Warcraft or logout and login
+
+On load/login, GearCrester initializes its data model, scanner, advisor, and UI modules.
+
+---
+
+# Configuration
+
+GearCrester works out of the box with default "weights" or priority values for gear slot upgrade sequencing. The order can be modified via `/gc weight <slot <value>` slash commands, see below. Any changes you make to weights are saved, and can be listed or reset via the below commands.
+
 ## Slash Commands
 
-| Command                          | Description                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------------- |
-| `/gc`                            | Show upgrade recommendations for equipped gear, bags, and bank                  |
-| `/gc <count> <crestType>`        | Simulate upgrades with specified crest count (e.g., `/gc 40 champion`)          |
-| `/gc debug on\|off`              | Enable/disable debug output                                                     |
-| `/gc dump`                       | Dump all equipped items with bonus IDs, track, and rank                         |
-| `/gc why`                        | Show diagnostics explaining why items are not upgradeable                       |
-| `/gc ui`                         | Toggle the upgrade advisor UI frame                                             |
-| `/gc ui <count> <crestType>`     | Show simulated upgrade results in UI frame (e.g., `/gc ui 40 champion`)         |
-| `/gc test`                       | Run self-diagnostics and display subsystem status                               |
-| `/gc export`                     | Export all upgradeable items to SavedVariables                                  |
-| `/gc export <count> <crestType>` | Export upgradeable items with crest simulation (e.g., `/gc export 40 champion`) |
-| `/gc weight <slot> <value>`      | Set slot priority weight (1-20, lower = higher priority)                        |
-| `/gc weight reset`               | Reset all slot weights to default                                               |
-| `/gc weight list`                | Show all slot weights                                                           |
-| `/gc help`                       | Show all commands with descriptions                                             |
+| Command                          | Description                                                                             |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| `/gc`                            | Show upgrade recommendations for equipped gear, bags, and bank                          |
+| `/gc <count> <crestType>`        | Simulate upgrades with specified crest count                                            |
+| `/gc debug on\|off`              | Enable/disable debug output                                                             |
+| `/gc dump`                       | Dump all equipped items with bonus IDs, track, and rank                                 |
+| `/gc why`                        | Explain why items are not upgradeable                                                   |
+| `/gc ui`                         | Toggle the UI frame                                                                     |
+| `/gc ui <count> <crestType>`     | Show simulated results in the UI frame                                                  |
+| `/gc test`                       | Run subsystem diagnostics                                                               |
+| `/gc export`                     | Export upgradeable items to SavedVariables                                              |
+| `/gc export <count> <crestType>` | Export upgradeable items with crest simulation                                          |
+| `/gc weight <slot> <value>`      | Set slot priority weight (1–20), lower values = higher priority, see "Slot names" below |
+| `/gc weight reset`               | Reset all slot weights                                                                  |
+| `/gc weight list`                | Show all slot weights                                                                   |
+| `/gc help`                       | Show all commands                                                                       |
 
-### Crest Types
+### Slot names
 
-Valid crest types for simulation:
+This is the default priority sequence from highest to lowest:
+
+```text
+    MainHand
+    OffHand
+    Head
+    Chest
+    Legs
+    Waist
+    Wrist
+    Hands
+    Shoulder
+    Feet
+    Neck
+    Back
+    Finger1
+    Finger2
+    Trinket1
+    Trinket2
+```
+
+## Crest Types
+
+Valid crest types:
 
 - `adventurer`
 - `veteran`
@@ -39,9 +92,9 @@ Valid crest types for simulation:
 - `hero`
 - `myth`
 
-### Examples
+## Examples
 
-```
+```text
 /gc                          -- Show real upgrade recommendations
 /gc 40 champion              -- Simulate with 40 Champion crests
 /gc 80 hero                  -- Simulate with 80 Hero crests
@@ -52,70 +105,103 @@ Valid crest types for simulation:
 /gc ui 40 champion           -- Show simulated results in UI frame
 /gc ui 60 myth               -- Show 60 Myth crest simulation in UI frame
 /gc test                     -- Run self-diagnostics
-/gc export                   -- Export upgradeable items (no simulation)
-/gc export 40 champion       -- Export with 40 Champion crest simulation
-/gc weight MainHand 1        -- Set MainHand to highest priority
+/gc export                   -- Export upgradeable items
+/gc export 40 champion       -- Export with crest simulation
+/gc weight MainHand 1        -- Set "MainHand" to highest priority
+/gc weight Back 20           -- Set "Back" to lowest priority
 /gc weight list              -- Show all slot weights
 /gc weight reset             -- Reset weights to default
-/gc help                     -- Show this help
+/gc help                     -- Show help
 ```
 
-### Export Notes
+---
 
-- Export data is saved to `GearCresterExportDB` SavedVariables
-- File is written on logout: `WTF/Account/<ACCOUNT>/SavedVariables/GearCrester.lua`
+# Export
+
+- The export function is for future intreroperability with other addons/tools for gear selection/upgrade advice
+- Export data is saved to `GearCrester.lua` in the section named `GearCresterExportDB`
+- NB the export file is **only** written on logout to `WTF/Account/<ACCOUNT>/SavedVariables/GearCrester.lua`
 - Export includes only upgradeable items with full details (slot, track, rank, ilvl, crest cost)
+- You can export a simulated number of available crests
 
-### Upgrade Order System
+---
 
-- Default slot priorities are defined in AdvisorData.lua
-- User can override priorities with `/gc weight <slot> <value>` (1-20)
-- Lower numbers = higher priority
-- Custom weights persist across sessions in SavedVariables
+# Gold‑Only Upgrades
 
-### Gold-Only Upgrades
+If you own two items of the **same track** and one has a **higher rank**:
 
-- If you own two items of the SAME TRACK and one has a HIGHER RANK:
-    - Upgrading the lower-rank item up to the higher rank costs ZERO crests
-    - These are marked as `[GOLD-ONLY]` in output
-    - Gold-only upgrades do NOT consume crests
+- Upgrading the lower‑rank item up to the higher rank costs **zero crests**
+- These are marked as `[GOLD‑ONLY]`
+- Gold‑only upgrades do **not** consume crests
 
-## Modules
+---
 
-- **Upgrade Advisor** - Evaluates upgradeability and provides recommendations
-- **UpgradeOrder** - Configurable slot priority system
-- **FreeUpgrade** - Gold-only upgrade detection
-- **Inventory Scanner** - Scans equipped gear, bags, and bank
-- **Crest Tracker** - Tracks crest currency counts
-- **UI Framework** - Provides UI frames and components
-- **InventoryOverview** - UI data-layer foundation
-- **Profiles** - Manages user profiles (stub)
-- **Diagnostics** - Self-test and diagnostic tools
-- **Export** - Export upgradeable items to file
+# Technical Details
 
-## Features
+## Inventory Scanning
 
-- Bonus ID parsing for track and rank detection
-- Multi-step upgrade path display
-- Bag and bank scanning
-- Debug mode for troubleshooting
-- Movable UI frame with scrollable output
-- Self-diagnostic test suite
-- Export functionality for upgradeable items
-- User-defined slot weighting system
-- Gold-only upgrade detection
+- Scans equipped gear, bags, and bank
+- Extracts item IDs, bonus IDs, and metadata
+- Feeds results into the core data model
 
-## Roadmap
+## Upgrade Evaluation
 
-- v0.1: Equipped-only Upgrade Advisor ✓
-- v0.2: Bag scanning ✓
-- v0.3: Crest caps + reset timer
-- v0.4: Heatmap UI
+- Parses bonus IDs to determine track and rank
+- Applies Midnight crest rules to compute:
+    - current rank
+    - maximum rank
+    - crest cost per step
+- Identifies gold‑only upgrades
 
-For development progress, see: [docs/roadmap.md](docs/roadmap.md)
+## UI and Diagnostics
 
-## Development
+- Movable, scrollable UI frame
+- `/gc test` validates scanner, advisor, crest tracker, UI, and export
+- `/gc why` explains non‑upgradeable items
 
-See [docs/GEARCRESTER_DEV_NOTES.md](docs/GEARCRESTER_DEV_NOTES.md) for development notes.
+## Performance
 
-See [QWEN_GUARDRAILS.md](QWEN_GUARDRAILS.md) for development constraints.
+- Modular, lose coupled, data‑driven architecture
+- Scanner and advisor operate on snapshots
+- Export writes once per session
+- Typical RAM use \***\*insert value here\*\***
+
+---
+
+# Roadmap
+
+For development progress and potential future functionality, see [docs/roadmap.md](https://github.com/ExponentiallyDigital/GearCrester/) on the GearCrester GitHub repo.
+
+---
+
+# Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with various gear and crest scenarios, see [docs/testplans](https://github.com/ExponentiallyDigital/GearCrester/) on the GearCrester GitHub repo.
+5. Submit a pull request
+
+Please follow Lua best practices and maintain compatibility with existing functionality.
+
+---
+
+## Bugs and new features
+
+Found a bug or want to submit a feature request? [Open an issue here](https://github.com/ExponentiallyDigital/GearCrester/issues).
+
+---
+
+## Support
+
+This tool is unsupported and may cause objects in mirrors to be closer than they appear etc. Batteries not included.
+
+## License
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+Copyright (C) 2026 ArcNineOhNine
