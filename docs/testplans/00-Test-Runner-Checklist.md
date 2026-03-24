@@ -69,18 +69,25 @@ Use it after any code change, feature addition, or Qwen-generated update.
 - [ ] `/gc 40 champion`
 - [ ] Title shows:
       (Simulated: 40 CHAMPION)
+- [ ] **Crest costs show TOTAL path cost** (2 steps = x40, not x20)
+- [ ] Example: `Legs: 253 -> 263 (CHAMPION x40)`
 
-- [ ] Results reflect simulated crest availability
+## 4.2 High Crest Simulation
 
-## 4.2 Invalid Crest Type
+- [ ] `/gc 100 champion`
+- [ ] 5-step upgrades show `(CHAMPION x100)`
+- [ ] Crest cost = `upgradeSteps * 20`
+
+## 4.3 Invalid Crest Type
 
 - [ ] `/gc 40 banana`
 - [ ] Error message appears
 
-## 4.3 UI Simulation
+## 4.4 UI Simulation
 
 - [ ] `/gc ui 40 champion`
 - [ ] UI frame opens and displays results
+- [ ] UI shows **total crest costs** (not per-step)
 
 ---
 

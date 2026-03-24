@@ -105,6 +105,8 @@ function MainFrame:Update()
     for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local location = entry.location and string.format(" [%s]", entry.location) or ""
+        -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
+        local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
         local line = string.format("%s%s: %d -> %d (%s%s x%d|r)",
             entry.slotName or entry.location,
             location,
@@ -112,7 +114,7 @@ function MainFrame:Update()
             entry.nextIlvl,
             affordColor,
             entry.crestType,
-            entry.crestCost)
+            totalCost)
         table.insert(lines, line)
     end
 

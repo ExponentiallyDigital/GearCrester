@@ -47,9 +47,11 @@ Each item entry must include:
 - Rank
 - CurrentILvl
 - UpgradeSteps
-- CrestCostPerStep
-- TotalCrestCost
+- CrestCostPerStep (cost per individual step, always 20)
+- TotalCrestCost (UPGRADE STEPS \* 20 — this is what should be displayed to users)
 - isGoldOnly (optional)
+
+**Note:** UI display should show `TotalCrestCost`, not `CrestCostPerStep`.
 
 ---
 

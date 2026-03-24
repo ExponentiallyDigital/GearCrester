@@ -64,6 +64,8 @@ function Core:PrintResults(results, title)
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local goldOnlyText = entry.isGoldOnly and " [GOLD-ONLY]" or ""
         local location = entry.location and string.format(" [%s]", entry.location) or ""
+        -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
+        local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
         local line = string.format(
             "%s%s: %d -> %d (%s%s x%d|r)%s%s",
             entry.slotName or entry.location,
@@ -72,7 +74,7 @@ function Core:PrintResults(results, title)
             entry.nextIlvl,
             affordColor,
             entry.crestType,
-            entry.crestCostPerStep,
+            totalCost,
             goldOnlyText,
             entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
         )

@@ -6,13 +6,13 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ## Current Status
 
-**Version:** 0.0.1
+**Version:** 0.0.4
 **State:** MVP Complete + Upgrade Order + Gold-Only Detection
 **Last Tested:** Equipped gear scanning, bonus ID parsing, track/rank detection working correctly for CHAMPION track
 
 ### Known Issues
 
-- First-login SavedVariables error may occur if WTF file doesn't exist (working on fix)
+- none
 
 ## Completed Features
 
@@ -30,9 +30,9 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 ### Scanning
 
 - [x] Equipped gear scanning
-- [x] Bag scanning (C_Container API)
-- [x] Bank scanning (C_Container API)
-- [x] Auto-rescan on equipment/bag/bank changes
+- [ ] Bag scanning (C_Container API)
+- [ ] Bank scanning (C_Container API)
+- [ ] Auto-rescan on equipment/bag/bank changes
 
 ### Slash Commands
 
@@ -84,6 +84,15 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ## Backlog
 
+1. are all names case insensitive eg "hero" is teh same as "Hero" or "mainhand" == "MainHand"?, yes.
+2. add function to work out how many crests are required to upgrade everything to say champion track 6/6
+3. also when doing "/gc 40 champion", work out what the resulting average ilevel will be for all equipped items.
+4. "/gc" only shows what you can spend your existing crests on.
+5. Only works for Champion, not heroic or myth gear.
+6. If say we have 100 crests, the tool does not show which items we should upgrade and which ones will still need to be upgraded
+
+Need a nice visual representation of this graphically.
+
 ### Compare Two Gear Sets (Priority: Medium)
 
 **Description:** Allow users to compare upgrade potential between two gear sets (e.g., current gear vs. bag items).
@@ -129,12 +138,12 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ## Next Steps
 
-1. Fix first-login SavedVariables initialization error
-2. Test all tracks (ADVENTURER, VETERAN, HERO, MYTHIC) with real items
+1. Fix first-login SavedVariables initialization error - done
+2. Test all tracks (ADVENTURER, VETERAN, HERO, MYTHIC) with real items - only working with veteran atm
 3. Collect missing bonus IDs for tracks with incomplete data
 4. Implement compare feature from backlog
-5. Add crest cap tracking (v0.3)
-6. Build heatmap UI (v0.4)
+5. Add crest cap tracking
+6. Build heatmap UI
 
 ## Testing Checklist
 
