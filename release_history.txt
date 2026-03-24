@@ -1,3 +1,51 @@
+— 2026-03-25
+    v0.0.3 untested changes to upgrade advisor, per detailed change log
+    refactor: release yaml for automated release history
+    chore: reorg docs and Qwen .md files
+    docs: added test plans, arch, and dep maps
+    feat: implemented gear weightings
+    feat: implemented "free" upgrades (no crest cost) *untested* as realms are down for maint
+    add: logo and icon files
+    
+    .github/workflows/release.yml | 144 insertions, 128 deletions
+    CHANGELOG.md | 0 insertions, 11 deletions
+    Core/Init.lua | 60 insertions, 0 deletions
+    GearCrester.toc | 4 insertions, 8 deletions
+    Modules/UI/InventoryOverview.lua | 145 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 83 insertions, 50 deletions
+    Modules/UpgradeAdvisor/FreeUpgrade.lua | 60 insertions, 0 deletions
+    Modules/UpgradeAdvisor/UpgradeOrder.lua | 61 insertions, 0 deletions
+    QWEN_GUARDRAILS.md | 0 insertions, 63 deletions
+    README.md | 27 insertions, 8 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 38 insertions, 6 deletions
+    docs/architecture.md | 0 insertions, 42 deletions
+    docs/architecture/GEARCRESTER_ARCHITECTURE.md | 89 insertions, 0 deletions
+    docs/architecture/GEARCRESTER_DEPENDENCY_MAP.md | 87 insertions, 0 deletions
+    docs/architecture/README.md | 89 insertions, 0 deletions
+    QWEN.md => docs/qwen/QWEN.md | 0 insertions, 0 deletions
+    docs/qwen/QWEN_FEATURE_TEMPLATE.md | 99 insertions, 0 deletions
+    docs/qwen/QWEN_GUARDRAILS.md | 272 insertions, 0 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 326 insertions, 0 deletions
+    docs/{ => specs}/mvp-spec.md | 87 insertions, 87 deletions
+    docs/{ => specs}/ui-wireframes.md | 9 insertions, 9 deletions
+    docs/{ => specs}/upgrade-advisor-spec.md | 113 insertions, 113 deletions
+    docs/testplans/00-Test-Runner-Checklist.md | 163 insertions, 0 deletions
+    docs/testplans/README.md | 79 insertions, 0 deletions
+    docs/testplans/crest-simulation.md | 50 insertions, 0 deletions
+    docs/testplans/diagnostics.md | 39 insertions, 0 deletions
+    docs/testplans/export.md | 51 insertions, 0 deletions
+    docs/testplans/free-upgrades.md | 51 insertions, 0 deletions
+    docs/testplans/scanning.md | 72 insertions, 0 deletions
+    docs/testplans/ui-overview.md | 64 insertions, 0 deletions
+    docs/testplans/weightings.md | 224 insertions, 0 deletions
+    image/GearCrester 1024x1024 icon.png | added
+    image/GearCrester 1024x1024.png | added
+    media/GearCrester-icon.blp | added
+    media/GearCrester-icon.png | added
+    media/GearCrester.png | added
+    release_history.txt | 37 insertions, 8 deletions
+    scripts/test_release_history.sh | 58 insertions, 0 deletions
+
 — 2026-03-24
     Update release_history.txt for v0.0.2
     
