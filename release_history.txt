@@ -1,4 +1,57 @@
 — 2026-03-25
+    v0.0.5 FIX hero gear working (tested with trinket and shoulders)
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 55 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 111 insertions, 6 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 12 insertions, 0 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 45 insertions, 2 deletions
+    docs/testplans/00-Test-Runner-Checklist.md | 24 insertions, 1 deletion
+    docs/testplans/crest-simulation.md | 29 insertions, 0 deletions
+    docs/testplans/diagnostics.md | 57 insertions, 1 deletion
+
+— 2026-03-25
+    DOCS: update docs\GEARCRESTER_DEV_NOTES.md
+    
+    docs/GEARCRESTER_DEV_NOTES.md | 217 insertions, 106 deletions
+
+— 2026-03-25
+    v0.0.4 FIX correctly calculates projected crest cost
+    
+    Core/Init.lua | 3 insertions, 1 deletion
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UI/MainFrame.lua | 3 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 3 insertions, 1 deletion
+    docs/GEARCRESTER_DEV_NOTES.md | 18 insertions, 9 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 76 insertions, 11 deletions
+    docs/testplans/00-Test-Runner-Checklist.md | 10 insertions, 3 deletions
+    docs/testplans/crest-simulation.md | 24 insertions, 3 deletions
+    docs/testplans/ui-overview.md | 4 insertions, 2 deletions
+
+— 2026-03-25
+    FIX: lua error at init ref GearCrester.lua not existing on fisrt install.
+    BUG: upgrade adviosr incorrect now that it has "free" upgrade decisioning applied.
+    
+    Core/Events.lua | 16 insertions, 3 deletions
+    Core/Init.lua | 17 insertions, 4 deletions
+    Modules/Diagnostics/SelfTest.lua | 75 insertions, 4 deletions
+    Modules/Export/ExportCore.lua | 10 insertions, 10 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 4 insertions, 4 deletions
+    Modules/UpgradeAdvisor/AdvisorData.lua | 5 insertions, 5 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 143 insertions, 141 deletions
+    Modules/UpgradeAdvisor/FreeUpgrade.lua | 23 insertions, 39 deletions
+
+— 2026-03-25
+    Updated README
+    
+    README.md | 158 insertions, 72 deletions
+
+— 2026-03-24
+    Update release_history.txt for v0.0.3
+    
+    release_history.txt | 48 insertions, 0 deletions
+
+— 2026-03-25
     v0.0.3 untested changes to upgrade advisor, per detailed change log
     refactor: release yaml for automated release history
     chore: reorg docs and Qwen .md files
