@@ -12,15 +12,19 @@ GearCrester is a modular World of Warcraft addon for Midnight that helps players
 
 ## Slash Commands
 
-| Command                   | Description                                                            |
-| ------------------------- | ---------------------------------------------------------------------- |
-| `/gc`                     | Show upgrade recommendations for equipped gear, bags, and bank         |
-| `/gc <count> <crestType>` | Simulate upgrades with specified crest count (e.g., `/gc 40 champion`) |
-| `/gc debug on`            | Enable debug output                                                    |
-| `/gc debug off`           | Disable debug output                                                   |
-| `/gc dump`                | Dump all equipped items with bonus IDs, track, and rank                |
-| `/gc why`                 | Show diagnostics explaining why items are not upgradeable              |
-| `/gc ui`                  | Toggle the upgrade advisor UI frame                                    |
+| Command                          | Description                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| `/gc`                            | Show upgrade recommendations for equipped gear, bags, and bank                  |
+| `/gc <count> <crestType>`        | Simulate upgrades with specified crest count (e.g., `/gc 40 champion`)          |
+| `/gc debug on`                   | Enable debug output                                                             |
+| `/gc debug off`                  | Disable debug output                                                            |
+| `/gc dump`                       | Dump all equipped items with bonus IDs, track, and rank                         |
+| `/gc why`                        | Show diagnostics explaining why items are not upgradeable                       |
+| `/gc ui`                         | Toggle the upgrade advisor UI frame                                             |
+| `/gc ui <count> <crestType>`     | Show simulated upgrade results in UI frame (e.g., `/gc ui 40 champion`)         |
+| `/gc test`                       | Run self-diagnostics and display subsystem status                               |
+| `/gc export`                     | Export all upgradeable items to SavedVariables                                  |
+| `/gc export <count> <crestType>` | Export upgradeable items with crest simulation (e.g., `/gc export 40 champion`) |
 
 ### Crest Types
 
@@ -42,7 +46,25 @@ Valid crest types for simulation:
 /gc dump                     -- Show all items and their bonus IDs
 /gc why                      -- Explain why items can't be upgraded
 /gc ui                       -- Open/close the UI frame
+/gc ui 40 champion           -- Show simulated results in UI frame
+/gc ui 60 myth               -- Show 60 Myth crest simulation in UI frame
+/gc test                     -- Run self-diagnostics
+/gc export                   -- Export upgradeable items (no simulation)
+/gc export 40 champion       -- Export with 40 Champion crest simulation
 ```
+
+### Export Notes
+
+- Export data is saved to `GearCresterExportDB` SavedVariables
+- File is written on logout: `WTF/Account/<ACCOUNT>/SavedVariables/GearCresterExport.lua`
+- Export includes only upgradeable items with full details (slot, track, rank, ilvl, crest cost)
+
+### Developer Tools
+
+| Command      | Description                                                         |
+| ------------ | ------------------------------------------------------------------- |
+| `/gc test`   | Run self-diagnostics (bonus ID parsing, track/rank detection, etc.) |
+| `/gc export` | Export all upgradeable items with full details                      |
 
 ## Modules
 
@@ -51,6 +73,8 @@ Valid crest types for simulation:
 - **Crest Tracker** - Tracks crest currency counts
 - **UI Framework** - Provides UI frames and components
 - **Profiles** - Manages user profiles (stub)
+- **Diagnostics** - Self-test and diagnostic tools
+- **Export** - Export upgradeable items to file
 
 ## Features
 
@@ -59,6 +83,8 @@ Valid crest types for simulation:
 - Bag and bank scanning
 - Debug mode for troubleshooting
 - Movable UI frame with scrollable output
+- Self-diagnostic test suite
+- Export functionality for upgradeable items
 
 ## Roadmap
 

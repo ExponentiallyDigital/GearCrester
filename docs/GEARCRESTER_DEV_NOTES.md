@@ -1,129 +1,168 @@
-# GearCrester Development Context
+# GearCrester Development Notes
 
 ## Project Overview
 
 World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to determine upgrade track and rank, and displays upgrade recommendations with crest cost estimates.
 
-## Current State (as of last session)
+## Current Status
 
-### Working Features
+**Version:** 0.0.1
+**State:** MVP Complete - Equipped + Bags + Bank scanning functional
+**Last Tested:** Equipped gear scanning, bonus ID parsing, track/rank detection working correctly for CHAMPION track
 
-- `/gc` - Shows upgrade recommendations using real crest counts (equipped, bags, bank)
-- `/gc <count> <crestType>` - Simulates upgrade recommendations with specified crest count
-- `/gc debug on` - Enables debug output
-- `/gc debug off` - Disables debug output (default)
-- `/gc dump` - Dumps all equipped items with bonus IDs, track, and rank
-- `/gc why` - Shows diagnostics explaining why items are not upgradeable
-- `/gc ui` - Toggles the upgrade advisor UI frame
+## Completed Features
 
-### Core Logic
+### Core Functionality
 
-1. **Bonus ID Parsing** - Extracts bonus IDs from item links by finding numeric sequence (count 1-20 followed by that many numeric values)
-2. **Track Detection** - Matches bonus ID 12697-12701 plus shared IDs to determine track (ADVENTURER, VETERAN, CHAMPION, HERO, MYTHIC)
-3. **Rank Detection** - Matches bonus ID 12773-12802 to determine rank (1-6)
-4. **Upgrade Path** - Shows ALL affordable upgrade steps per item, not just next rank
+- [x] Bonus ID parsing from item links
+- [x] Track detection (ADVENTURER, VETERAN, CHAMPION, HERO, MYTHIC)
+- [x] Rank detection (1-6 per track)
+- [x] Multi-step upgrade path display
+- [x] Flat 20-crest cost per upgrade
 
-### Midnight Season 1 Data
+### Scanning
 
-**Track Bonus IDs:**
+- [x] Equipped gear scanning
+- [x] Bag scanning (C_Container API)
+- [x] Bank scanning (C_Container API)
+- [x] Auto-rescan on equipment/bag/bank changes
 
-- ADVENTURER: 12697
-- VETERAN: 12698
-- CHAMPION: 6652, 13577, 12699, 13439, 12787
-- HERO: 12700
-- MYTHIC: 12701
+### Slash Commands
 
-**Rank Bonus IDs:** 12773-12802 (6 per track, some items have alternate rank IDs like 13333)
+- [x] `/gc` - Show upgrade recommendations
+- [x] `/gc <count> <crestType>` - Simulate with crest count
+- [x] `/gc debug on|off` - Toggle debug output
+- [x] `/gc dump` - Dump all items with bonus IDs
+- [x] `/gc why` - Show upgrade diagnostics
+- [x] `/gc test` - Run self-diagnostics
+- [x] `/gc export` - Export upgradeable items
+- [x] `/gc export <count> <crestType>` - Export with simulation
+- [x] `/gc ui` - Toggle UI frame
+- [x] `/gc ui <count> <crestType>` - Show simulation in UI
+- [x] `/gc help` - Show all commands
 
-**Upgrade Costs:** Flat 20 crests per upgrade
+### UI
 
-**Track ILVLS:** 220-289 (6 ranks per track)
+- [x] Movable frame with scrollable output
+- [x] Close button
+- [x] Display upgrade recommendations
+- [x] Display simulation results
 
-### File Structure
+### Developer Tools
 
-```
-Core/
-  Init.lua          - Slash command handler, debug toggle
-  Constants.lua     - Slot IDs
-  DataModel.lua     - Shared state tables
-  Events.lua        - Event registration
-  Utils.lua         - Helper functions
+- [x] Self-diagnostic test suite (`/gc test`)
+- [x] Export functionality (`/gc export`)
+- [x] Debug mode (`/gc debug on|off`)
+- [x] Bonus ID dump (`/gc dump`)
+- [x] Upgrade diagnostics (`/gc why`)
 
-Modules/
-  InventoryScanner/
-    ScannerEquipped.lua  - Scans equipped gear
-    ScannerBags.lua      - Scans bags using C_Container API
-    ScannerBank.lua      - Scans bank using C_Container API
-    ScannerCore.lua      - Legacy scanner
+### Data Tables
 
-  CrestTracker/
-    CrestData.lua        - Reads crest currencies, SimulateCrests()
-    CrestCaps.lua        - Stub
-    ResetTimer.lua       - Stub
+- [x] TRACK_BONUS_IDS (all 5 tracks)
+- [x] RANK_BONUS_IDS (all 5 tracks, 6 ranks each)
+- [x] TRACK_ILVLS (220-289 ilvl range)
+- [x] CREST_COST (flat 20)
+- [x] SLOT_PRIORITY (all 16 slots)
 
-  UpgradeAdvisor/
-    AdvisorCore.lua      - GetRecommendedUpgrades(), PrintResults()
-    AdvisorLogic.lua     - ParseBonusIDs(), DetermineTrack(), DetermineRank(), Evaluate(), GetItemDiagnostics(), DumpAllItems(), PrintWhyDiagnostics()
-    AdvisorData.lua      - TRACK_BONUS_IDS, RANK_BONUS_IDS, TRACK_ILVLS, CREST_COST
-    AdvisorUI.lua        - Stub
+## Backlog
 
-  UI/
-    MainFrame.lua   - Movable frame with scrollable output
-    Heatmap.lua     - Stub
-    SlotList.lua    - Stub
-    TooltipExtensions.lua - Stub
+### Compare Two Gear Sets (Priority: Medium)
 
-  Profiles/
-    ProfileManager.lua    - Stub
-    DefaultProfiles.lua   - Stub
-```
+**Description:** Allow users to compare upgrade potential between two gear sets (e.g., current gear vs. bag items).
 
-### Key Functions
+**Expected Behavior:**
 
-- `ParseBonusIDs(itemLink)` - Extracts bonus IDs from item link string
-- `GetItemUpgradeInfo(itemLink)` - Returns trackName, rank
-- `GetDetailedItemLevelInfo(itemLink)` - WoW API for item level
-- `GetItemDiagnostics(itemLink)` - Returns structured explanation of upgradeability
-- `Logic:EvaluateAll(equipped, bags, bank, simulatedCrests)` - Returns all affordable upgrade steps
+- User runs `/gc compare` to compare equipped gear with items in bags/bank
+- Output shows which bag/bank items are upgrades over equipped gear
+- Shows ilvl difference, track difference, and upgrade cost for each slot
 
-### Output Format
+**Example Usage:**
 
 ```
-GearCrester Upgrade Recommendations (Simulated: 40 CHAMPION):
-Legs: 253 -> 256 (CHAMPION x20)
-Waist: 250 -> 253 (CHAMPION x20)
+/gc compare                      -- Compare equipped vs. bags/bank
+/gc compare 40 champion          -- Compare with crest simulation
 ```
 
-### Known Issues / TODO
+**Implementation Notes:**
 
-- Items without track bonus ID (12697-12701 or shared IDs) are skipped
+- Create new module: `Modules/Comparison/ComparisonCore.lua`
+- Need to match items by slot (Head vs. Head, etc.)
+- Compare track first, then rank, then ilvl
+- Show only items that are strict upgrades
+- Consider adding to UI frame with color coding (green = upgrade, red = downgrade)
+
+**Files to Create:**
+
+- `Modules/Comparison/ComparisonCore.lua`
+- `Modules/Comparison/ComparisonUI.lua` (optional)
+
+**Slash Command:**
+
+- `/gc compare [count] [crestType]`
+
+### Future Features (Not Prioritized)
+
+- Weekly/seasonal crest cap tracking
+- Reset timer for weekly caps
+- Heatmap UI for upgrade priorities
+- Profile system for alts
+- Tooltip extensions showing upgrade info
+- Simulation mode integration
+
+## Next Steps
+
+1. Test all tracks (ADVENTURER, VETERAN, HERO, MYTHIC) with real items
+2. Collect missing bonus IDs for tracks with incomplete data
+3. Implement compare feature from backlog
+4. Add crest cap tracking (v0.3)
+5. Build heatmap UI (v0.4)
+
+## Testing Checklist
+
+### Basic Functionality
+
+- [ ] `/gc` displays upgrade recommendations
+- [ ] `/gc 40 champion` shows simulation with 40 crests
+- [ ] `/gc 80 champion` shows more upgrade steps than 40 crests
+- [ ] `/gc debug on` enables debug output
+- [ ] `/gc debug off` disables debug output
+
+### Diagnostics
+
+- [ ] `/gc test` runs and all tests show [OK]
+- [ ] `/gc dump` shows all equipped items with bonus IDs
+- [ ] `/gc why` explains why items are not upgradeable
+
+### Export
+
+- [ ] `/gc export` exports upgradeable items
+- [ ] `/gc export 40 champion` exports with simulation
+- [ ] Export file is written on logout to SavedVariables
+
+### UI
+
+- [ ] `/gc ui` toggles the UI frame
+- [ ] `/gc ui 40 champion` shows simulation in UI
+- [ ] UI frame is movable
+- [ ] UI frame has close button
+
+### Edge Cases
+
+- [ ] No upgradeable items shows appropriate message
+- [ ] Items at max rank are skipped
+- [ ] Items without track bonus IDs are skipped
+- [ ] SavedVariables file loads without errors on fresh install
+
+## Known Issues
+
 - Only CHAMPION track fully tested with real bonus IDs
-- Other tracks have placeholder bonus ID tables
-- Bag/bank scanning uses C_Container API (Retail/Midnight only)
-- No weekly/seasonal cap tracking
-- UI frame is basic text output
+- Other tracks may have incomplete bonus ID tables
+- Bag/bank scanning requires C_Container API (Retail/Midnight only)
 
-### Testing Commands
+## Development Constraints
 
-```
-/gc                    -- Real crest counts
-/gc 40 champion        -- Simulate 40 CHAMPION crests
-/gc 80 champion        -- Simulate 80 CHAMPION crests (shows 4 steps per item)
-/gc debug on           -- Enable verbose debug output
-/gc dump               -- Show all items with bonus IDs
-/gc why                -- Show why items are not upgradeable
-/gc ui                 -- Toggle UI frame
-```
+See `QWEN_GUARDRAILS.md` for strict development rules.
 
-### Last Session Achievements
+## Continue From Here
 
-- Fixed bonus ID parsing (position-based with strsplit)
-- Fixed track detection (unique bonus ID per track plus shared IDs)
-- Added multi-step upgrade display (shows all affordable ranks)
-- Added debug toggle (`/gc debug on|off`)
-- Added bag/bank scanning with C_Container API
-- Added `/gc dump` command for bonus ID inspection
-- Added `/gc why` command for upgrade diagnostics
-- Added `/gc ui` command for UI frame toggle
-- Created QWEN_GUARDRAILS.md for development constraints
-- Updated README.md with all slash commands
+To continue development, say: **"Continue from GEARCRESTER_DEV_NOTES.md"**

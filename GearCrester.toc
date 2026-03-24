@@ -6,13 +6,13 @@
 
 ## Author: ArcNineOhNine
 
-## Version: 0.0.1
+## Version: 0.0.2
 
 ## Category: ArcNineOhNine
 
 ## IconTexture: Interface\AddOns\GearCrester\media\GearCrester-icon
 
-## SavedVariables: GearCresterDB
+## SavedVariables: GearCresterDB, GearCresterExportDB
 
 Core\Init.lua
 Core\Events.lua
@@ -41,3 +41,7 @@ Modules\UI\TooltipExtensions.lua
 
 Modules\Profiles\ProfileManager.lua
 Modules\Profiles\DefaultProfiles.lua
+
+Modules\Diagnostics\SelfTest.lua
+
+Modules\Export\ExportCore.lua

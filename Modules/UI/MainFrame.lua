@@ -119,4 +119,12 @@ function MainFrame:Update()
     self.frame.output:SetText(table.concat(lines, "\n"))
 end
 
+function MainFrame:ShowResults(text)
+    if not self.frame then
+        self:Create()
+    end
+    self.frame.output:SetText(text)
+    self.frame:Show()
+end
+
 return MainFrame
