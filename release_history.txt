@@ -1,3 +1,49 @@
+— 2026-03-24 v0.0.2 Add full diagnostics, export system, help overhaul, version banner, and stable SavedVariables init
+    Core/Events.lua | 33 insertions, 23 deletions
+    Core/Init.lua | 123 insertions, 8 deletions
+    GearCrester.toc | 47 insertions, 43 deletions
+    Modules/Diagnostics/SelfTest.lua | 185 insertions, 0 deletions
+    Modules/Export/ExportCore.lua | 116 insertions, 0 deletions
+    Modules/UI/MainFrame.lua | 8 insertions, 0 deletions
+    QWEN_GUARDRAILS.md | 17 insertions, 2 deletions
+    README.md | 35 insertions, 9 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 139 insertions, 100 deletions
+
+— 2026-03-24 ADD slash commands for ui, why, dump; initial UI frame; docs updated
+    Core/Init.lua | 86 insertions, 67 deletions
+    Modules/UI/MainFrame.lua | 122 insertions, 7 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 87 insertions, 0 deletions
+    QWEN_GUARDRAILS.md | 48 insertions, 0 deletions
+    README.md | 76 insertions, 29 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 129 insertions, 117 deletions
+
+— 2026-03-24 Champion track logic for detection and upgrade verified.
+    Modules/UpgradeAdvisor/AdvisorData.lua | 183 insertions, 183 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 244 insertions, 244 deletions
+
+— 2026-03-24 Merge branch 'main' of https://github.com/ExponentiallyDigital/GearCrester
+
+— 2026-03-24 basic listing of gear and potential upgrades working; debug flag whos lookups
+    Core/Init.lua | 54 insertions, 1 deletion
+    GearCrester.toc | 2 insertions, 2 deletions
+    Modules/CrestTracker/CrestData.lua | 51 insertions, 1 deletion
+    Modules/InventoryScanner/ScannerBags.lua | 11 insertions, 0 deletions
+    Modules/InventoryScanner/ScannerBank.lua | 11 insertions, 0 deletions
+    Modules/InventoryScanner/ScannerEquipped.lua | 24 insertions, 0 deletions
+    Modules/Profiles/DefaultProfiles.lua | 13 insertions, 0 deletions
+    Modules/UI/Heatmap.lua | 15 insertions, 0 deletions
+    Modules/UI/SlotList.lua | 15 insertions, 0 deletions
+    Modules/UI/TooltipExtensions.lua | 11 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 43 insertions, 5 deletions
+    Modules/UpgradeAdvisor/AdvisorData.lua | 162 insertions, 9 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 229 insertions, 14 deletions
+    Modules/UpgradeAdvisor/AdvisorUI.lua | 9 insertions, 2 deletions
+    QWEN.md | 3 insertions, 0 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 116 insertions, 6 deletions
+
+— 2026-03-23 Update release_history.txt for v0.0.1
+    release_history.txt | 43 insertions, 0 deletions
+
 — 2026-03-23 v0.0.1 project scaffolding set up
     .github/workflows/release.yml | 121 insertions, 120 deletions
     LICENSE | 674 insertions, 0 deletions
