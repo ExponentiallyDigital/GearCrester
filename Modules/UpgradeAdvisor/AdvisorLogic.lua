@@ -218,7 +218,7 @@ function Logic:Evaluate(equipped, simulatedCrests)
                         remainingCrests = remainingCrests - crestCost
                     else
                         if GC.db and GC.db.debug then
-                            print(string.format("|cffff0000[DEBUG]   Cannot afford step %d→%d (need %d, have %d remaining)|r",
+                            print(string.format("|cffff0000[DEBUG]   Cannot afford step %d->%d (need %d, have %d remaining)|r",
                                 rank, nextRank, crestCost, remainingCrests))
                         end
                     end
