@@ -428,7 +428,74 @@ Per QWEN_GUARDRAILS.md, this document will be automatically appended with new en
 
 ---
 
+## 2026-03-24 — HERO Tier Calibration Helper
+
+**Summary:** Added calibration helper to compare GearCrester's track/rank detection against Blizzard's official C_Item.GetItemUpgradeItemInfo() API. This allows verification and correction of rank mappings for tier items where bonus ID mappings may differ from non-tier items.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added `CalibrateItemUpgradeInfo()` function
+- `Core/Init.lua` - Added `/gc calibrate [slot]` command
+- `Modules/Diagnostics/SelfTest.lua` - Added `TestCalibrationHelper()` test
+- `docs/testplans/diagnostics.md` - Added calibration helper test case
+- `docs/GEARCRESTER_DEV_NOTES.md` - Added calibration helper to developer tools
+
+**Notes:**
+
+- User reported HERO tier headpiece shows 1/6 in Blizzard UI but GC showed 3/6 (bonus ID 12793)
+- Calibration helper prints: bonus IDs, GC detection, Blizzard API result, match/mismatch status
+- Command: `/gc calibrate head` (or any slot name)
+- Output will guide data table corrections for tier-specific rank mappings
+- Guardrail compliance: Added new function without modifying existing detection logic
+- Next step: Run `/gc calibrate head` on user's HERO tier headpiece to confirm mismatch
+
+---
+
+## 2026-03-24 — Blizzard API Integration for Upgrade Detection
+
+**Summary:** Integrated Blizzard's authoritative C_Item.GetItemUpgradeInfo() API as the primary source for track/rank detection, with bonus-ID detection as fallback. This fixes tier/catalyst items where bonus-ID mappings don't match Blizzard's official upgrade data.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Modified `GetItemUpgradeInfo()` to try Blizzard API first, then fall back to bonus-ID detection
+- `Modules/Diagnostics/SelfTest.lua` - Added `TestBlizzardAPIIntegration()` and `TestBlizzardAPIFallback()` tests
+- `docs/testplans/diagnostics.md` - Added Blizzard API integration test case
+- `docs/GEARCRESTER_DEV_NOTES.md` - Added Blizzard API integration to developer tools
+
+**Notes:**
+
+- User reported HERO tier headpiece shows 1/6 in Blizzard UI but GC showed 3/6 based on bonus ID 12793
+- New logic: C_Item.GetItemUpgradeInfo() → parse trackString and currentLevel → return (track, rank)
+- Fallback: If API returns nil/empty, use existing bonus-ID detection (preserves legacy item support)
+- Debug logging shows "Blizzard API: track=X rank=Y" or "Blizzard API unavailable, using bonus-ID detection"
+- Guardrail compliance: Preserve existing fallback logic, only add API as primary source
+- Verification: `/gc debug on; /gc dump` should show "Blizzard API: track=HERO rank=1" for tier headpiece
+
+---
+
+## 2026-03-24 — Calibrate Command API Fix
+
+**Summary:** Fixed the `/gc calibrate` command to use the correct `C_Item.GetItemUpgradeInfo()` API instead of the deprecated/non-existent `C_Item.GetItemUpgradeItemInfo()`.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Updated `CalibrateItemUpgradeInfo()` to use correct API
+- `Modules/Diagnostics/SelfTest.lua` - Added `TestCalibrateUsesBlizzardAPI()` test
+- `README.md` - Added calibration command documentation
+- `docs/testplans/diagnostics.md` - Added calibrate command test case
+
+**Notes:**
+
+- Old API `C_Item.GetItemUpgradeItemInfo()` does not exist in Midnight and always returned nil
+- New logic: `C_Item.GetItemUpgradeInfo(itemLink)` returns authoritative track/rank data
+- Calibrate command now aligns with main detection logic (both use same API)
+- Output shows "Blizzard: no upgrade data available" when API returns nil
+- Guardrail compliance: Minimal change, only API call updated, output format preserved
+- Verification: `/gc debug on; /gc calibrate head` should show "Blizzard: track=HERO rank=1" with no "API not available" message
+
+---
+
 _Last updated: 2026-03-24_
-_Total prompts tracked: 20_
+_Total prompts tracked: 23_
 _Total files created: 12_
-_Total files modified: 25_
+_Total files modified: 28_

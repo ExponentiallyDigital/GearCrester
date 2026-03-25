@@ -47,6 +47,7 @@ function GC:OnLoad()
                 print("/gc <count> <crestType> - Simulate upgrades (e.g., /gc 40 champion)")
                 print("/gc debug on|off - Enable/disable debug output")
                 print("/gc why - Show why items are not upgradeable")
+                print("/gc calibrate [slot] - Compare GC vs Blizzard upgrade data (default: Head)")
                 print("/gc dump - Dump all items with bonus IDs")
                 print("/gc test - Run self-diagnostics")
                 print("/gc export - Export upgradeable items")
@@ -128,6 +129,34 @@ function GC:OnLoad()
                 return
             elseif cmd == "why" then
                 GC.modules.UpgradeAdvisor.Logic:PrintWhyDiagnostics()
+                return
+            elseif cmd == "calibrate" then
+                -- Calibration command: compare GC detection vs Blizzard API
+                -- Usage: /gc calibrate [slotName] - defaults to Head (slot 1)
+                local slotName = param and param:lower() or "head"
+                local slotID = nil
+
+                for id, name in pairs(GC.SLOTS) do
+                    if name:lower() == slotName then
+                        slotID = id
+                        break
+                    end
+                end
+
+                if not slotID then
+                    GC:Print("Unknown slot: " .. (param or "head") .. ". Valid: Head, Neck, Shoulder, etc.")
+                    return
+                end
+
+                -- Scan equipped gear
+                GC.modules.InventoryScanner.ScannerEquipped:Scan()
+
+                local itemData = GC.DataModel.equipped[slotID]
+                if itemData and itemData.itemLink then
+                    GC.modules.UpgradeAdvisor.Logic:CalibrateItemUpgradeInfo(itemData.itemLink, itemData.slotName)
+                else
+                    GC:Print("No item equipped in " .. (itemData and itemData.slotName or slotName))
+                end
                 return
             elseif cmd == "test" then
                 if GC.modules.Diagnostics and GC.modules.Diagnostics.SelfTest then

@@ -95,12 +95,14 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ### Developer Tools
 
-- [x] **Self-diagnostic test suite** (`/gc test` - validates 8+ subsystems)
+- [x] **Self-diagnostic test suite** (`/gc test` - validates 10+ subsystems)
 - [x] **Export functionality** (`/gc export` - outputs to SavedVariables)
 - [x] **Debug mode** (detailed logging for troubleshooting)
 - [x] **Bonus ID dump** (inspect raw bonus IDs from items)
 - [x] **Upgrade diagnostics** (explains why items can't be upgraded)
 - [x] **Slot weight management** (view, set, reset priorities)
+- [x] **Calibration helper** (`/gc calibrate [slot]` - Compare GC vs Blizzard upgrade data)
+- [x] **Blizzard API integration** (uses C_Item.GetItemUpgradeInfo() as primary detection source)
 
 ### Data Tables (Complete)
 

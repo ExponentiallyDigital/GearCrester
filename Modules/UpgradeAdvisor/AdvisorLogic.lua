@@ -136,12 +136,36 @@ local function GetItemUpgradeInfo(itemLink)
         return nil, nil
     end
 
+    -- Step 1: Try Blizzard's authoritative API first
+    local info = C_Item and C_Item.GetItemUpgradeInfo and C_Item.GetItemUpgradeInfo(itemLink)
+
+    if info and type(info) == "table" and info.currentLevel and info.trackString then
+        -- Blizzard API succeeded - use authoritative data
+        local trackName = info.trackString:upper()
+        local rank = info.currentLevel
+
+        -- Normalize track names (MYTHIC -> MYTH)
+        if trackName == "MYTHIC" then
+            trackName = "MYTH"
+        end
+
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] Blizzard API: track=%s rank=%d|r", trackName, rank))
+        end
+        return trackName, rank
+    end
+
+    -- Step 2: Blizzard API unavailable - fall back to bonus-ID detection
+    if GC.db and GC.db.debug then
+        print("|cff00ff00[DEBUG] Blizzard API unavailable, using bonus-ID detection|r")
+    end
+
     local bonusIDs = ParseBonusIDs(itemLink)
     if #bonusIDs == 0 then
         return nil, nil
     end
 
-    -- Step 1: Try canonical track detection
+    -- Step 3: Try canonical track detection
     local trackName = DetermineTrack(bonusIDs)
 
     if trackName then
@@ -167,7 +191,7 @@ local function GetItemUpgradeInfo(itemLink)
         end
     end
 
-    -- Step 2: Rank-ID inference fallback
+    -- Step 4: Rank-ID inference fallback
     -- Scan all tracks' RANK_BONUS_IDS to find matching rank bonus IDs
     local bestTrack = nil
     local bestRank = 0  -- Initialize to 0 to avoid nil comparison
@@ -228,6 +252,51 @@ end
 Logic.GetItemUpgradeInfo = GetItemUpgradeInfo
 Logic.GetItemIlvl = GetItemIlvl
 Logic.ParseBonusIDs = ParseBonusIDs
+
+-- Calibration helper: Compare GearCrester detection vs Blizzard's API
+-- Used to verify track/rank detection accuracy for tier items
+function Logic:CalibrateItemUpgradeInfo(itemLink, slotName)
+    if not itemLink then
+        print("|cffff0000[CALIBRATE] No item link provided|r")
+        return
+    end
+
+    -- Get GearCrester's detection (uses Blizzard API internally)
+    local gcTrack, gcRank = GetItemUpgradeInfo(itemLink)
+
+    -- Get Blizzard's official data directly for comparison
+    local blizzTrack, blizzRank = nil, nil
+    local blizz = C_Item and C_Item.GetItemUpgradeInfo and C_Item.GetItemUpgradeInfo(itemLink)
+
+    if blizz and type(blizz) == "table" and blizz.currentLevel and blizz.trackString then
+        blizzTrack = blizz.trackString:upper()
+        blizzRank = blizz.currentLevel
+        -- Normalize "MYTH" vs "MYTHIC"
+        if blizzTrack == "MYTHIC" then
+            blizzTrack = "MYTH"
+        end
+    end
+
+    -- Parse bonus IDs for display
+    local bonusIDs = ParseBonusIDs(itemLink)
+
+    -- Print comparison
+    print("|cff00ff98[CALIBRATE] " .. (slotName or "Item") .. "|r")
+    print("  Bonus IDs: " .. table.concat(bonusIDs, ", "))
+    print("  GearCrester: track=" .. (gcTrack or "nil") .. " rank=" .. (gcRank or "nil"))
+    if blizzTrack then
+        print("  Blizzard:    track=" .. blizzTrack .. " rank=" .. blizzRank)
+        if gcTrack == blizzTrack and gcRank == blizzRank then
+            print("  |cff00ff00[OK] Match|r")
+        else
+            print("  |cffff0000[MISMATCH] GC and Blizzard disagree|r")
+        end
+    else
+        print("  Blizzard:    no upgrade data available")
+    end
+
+    return gcTrack, gcRank, blizzTrack, blizzRank
+end
 
 function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
     local results = {}
@@ -415,7 +484,7 @@ function Logic:GetItemDiagnostics(itemLink)
 end
 
 function Logic:PrintWhyDiagnostics()
-    print("|cff00ff98GearCrester Upgrade Diagnostics:|r")
+    print("|cff00ff98GearCrester Upgrade Diagnostics (why items are not upgradable):|r")
 
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
 

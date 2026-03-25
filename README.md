@@ -42,22 +42,23 @@ GearCrester works out of the box with default "weights" or priority values for g
 
 ## Slash Commands
 
-| Command                          | Description                                                                             |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `/gc`                            | Show upgrade recommendations for equipped gear, bags, and bank                          |
-| `/gc <count> <crestType>`        | Simulate upgrades with specified crest count                                            |
-| `/gc debug on\|off`              | Enable/disable debug output                                                             |
-| `/gc dump`                       | Dump all equipped items with bonus IDs, track, and rank                                 |
-| `/gc why`                        | Explain why items are not upgradeable                                                   |
-| `/gc ui`                         | Toggle the UI frame                                                                     |
-| `/gc ui <count> <crestType>`     | Show simulated results in the UI frame                                                  |
-| `/gc test`                       | Run subsystem diagnostics                                                               |
-| `/gc export`                     | Export upgradeable items to SavedVariables                                              |
-| `/gc export <count> <crestType>` | Export upgradeable items with crest simulation                                          |
-| `/gc weight <slot> <value>`      | Set slot priority weight (1–20), lower values = higher priority, see "Slot names" below |
-| `/gc weight reset`               | Reset all slot weights                                                                  |
-| `/gc weight list`                | Show all slot weights                                                                   |
-| `/gc help`                       | Show all commands                                                                       |
+| Command                          | Description                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------- |
+| `/gc`                            | Show upgrade recommendations for equipped gear, bags, and bank                           |
+| `/gc <count> <crestType>`        | Simulate upgrades with specified crest count                                             |
+| `/gc debug on\|off`              | Enable/disable debug output                                                              |
+| `/gc dump`                       | Dump all equipped items with bonus IDs, track, and rank                                  |
+| `/gc why`                        | Explain why items are not upgradeable                                                    |
+| `/gc ui`                         | Toggle the UI frame                                                                      |
+| `/gc ui <count> <crestType>`     | Show simulated results in the UI frame                                                   |
+| `/gc test`                       | Run subsystem diagnostics                                                                |
+| `/gc export`                     | Export upgradeable items to SavedVariables                                               |
+| `/gc export <count> <crestType>` | Export upgradeable items with crest simulation                                           |
+| `/gc weight <slot> <value>`      | Set slot priority weight (1–20), lower values = higher priority, see "Slot names" below  |
+| `/gc weight reset`               | Reset all slot weights                                                                   |
+| `/gc weight list`                | Show all slot weights                                                                    |
+| `/gc help`                       | Show all commands                                                                        |
+| `/gc calibrate <slot>`           | Compare GearCrester's upgrade detection against Blizzard's C_Item.GetItemUpgradeInfo API |
 
 ### Slot names
 
@@ -81,6 +82,28 @@ This is the default priority sequence from highest to lowest:
     Trinket1
     Trinket2
 ```
+
+### Calibration Command
+
+The `/gc calibrate <slot>` command compares GearCrester's track/rank detection against Blizzard's official `C_Item.GetItemUpgradeInfo()` API for the specified equipped slot.
+
+**Example:**
+
+```
+/gc calibrate head
+```
+
+**Output:**
+
+```
+[CALIBRATE] Head
+  Bonus IDs: 6652, 13577, 12793
+  GearCrester: track=HERO rank=1
+  Blizzard:    track=HERO rank=1
+  [OK] Match
+```
+
+Use this command to verify detection accuracy, especially for tier set items where bonus-ID mappings may differ from Blizzard's upgrade system.
 
 ## Crest Types
 

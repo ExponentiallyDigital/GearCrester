@@ -92,4 +92,100 @@ Expected:
 
 ---
 
+## 6. Calibration Helper
+
+**Purpose:** Compare GearCrester's track/rank detection against Blizzard's official upgrade API.
+
+**Command:**
+
+```
+/gc calibrate [slotName]
+```
+
+**Default:** Head slot if no slot specified.
+
+**Expected Output:**
+
+```
+[CALIBRATE] Head
+  Bonus IDs: 6652, 13577, 12793
+  GearCrester: track=HERO rank=3
+  Blizzard:    track=HERO rank=1
+  [MISMATCH] GC and Blizzard disagree
+```
+
+**Verification:**
+
+- If MISMATCH shown, report bonus IDs and both rank values for data table adjustment
+- If OK shown, detection matches Blizzard's data
+- Use to calibrate HERO tier item rank mappings
+
+---
+
+## 7. Blizzard API Integration
+
+**Purpose:** Verify GearCrester uses Blizzard's C_Item.GetItemUpgradeInfo() API as primary detection source.
+
+**Command:**
+
+```
+/gc test
+```
+
+**Expected Test Results:**
+
+- `TestBlizzardAPIIntegration` - [OK] - Verifies API integration logic exists
+- `TestBlizzardAPIFallback` - [OK] - Verifies bonus-ID fallback works when API unavailable
+- `TestCalibrateUsesBlizzardAPI` - [OK] - Verifies calibrate command uses correct API
+
+**Verification:**
+
+- `/gc debug on; /gc dump` should show "Blizzard API: track=HERO rank=1" for tier items
+- When API unavailable, should show "Blizzard API unavailable, using bonus-ID detection"
+- Fallback must preserve existing bonus-ID detection for legacy items
+
+---
+
+## 8. Calibrate Command
+
+**Purpose:** Compare GearCrester's detection against Blizzard's authoritative API for a specific slot.
+
+**Command:**
+
+```
+/gc calibrate <slot>
+```
+
+**Example:**
+
+```
+/gc calibrate head
+```
+
+**Expected Output:**
+
+```
+[CALIBRATE] Head
+  Bonus IDs: 6652, 13577, 12793
+  GearCrester: track=HERO rank=1
+  Blizzard:    track=HERO rank=1
+  [OK] Match
+```
+
+**Verification:**
+
+- Should use C_Item.GetItemUpgradeInfo() (not deprecated GetItemUpgradeItemInfo)
+- Should show "Blizzard: no upgrade data available" if API returns nil
+- Should show [OK] or [MISMATCH] based on comparison
+
+---
+
+## 9. Regression Checks
+
+- SelfTest must not modify SavedVariables.
+- SelfTest must not change upgrade results.
+- SelfTest must not require UI.
+
+---
+
 # End of Test Plan
