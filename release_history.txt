@@ -1,3 +1,37 @@
+— 2026-03-26
+    v0.1.0 Basic functionality is now complete.
+    FIX crest inventory now correctly looking up in-game via API.
+    
+    Core/Init.lua | 11 insertions, 0 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/CrestTracker/CrestData.lua | 72 insertions, 59 deletions
+    Modules/Diagnostics/SelfTest.lua | 161 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 23 insertions, 10 deletions
+    README.md | 21 insertions, 0 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 57 insertions, 0 deletions
+    docs/testplans/diagnostics.md | 29 insertions, 0 deletions
+
+— 2026-03-25
+    Merge branch 'main' of https://github.com/ExponentiallyDigital/GearCrester
+    
+
+— 2026-03-25
+    v0.0.6 FIX gear lookup now uses Blizzard's API; ADD slash command to check item lookup; BUG (unfixed) not looking up available crests - fix in next version.
+    
+    Core/Init.lua | 29 insertions, 0 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 132 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 72 insertions, 3 deletions
+    README.md | 39 insertions, 16 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 3 insertions, 1 deletion
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 69 insertions, 2 deletions
+    docs/testplans/diagnostics.md | 96 insertions, 0 deletions
+
+— 2026-03-24
+    Update release_history.txt for v0.0.5
+    
+    release_history.txt | 53 insertions, 0 deletions
+
 — 2026-03-25
     v0.0.5 FIX hero gear working (tested with trinket and shoulders)
     
