@@ -105,6 +105,27 @@ The `/gc calibrate <slot>` command compares GearCrester's track/rank detection a
 
 Use this command to verify detection accuracy, especially for tier set items where bonus-ID mappings may differ from Blizzard's upgrade system.
 
+## Crest Inventory
+
+GearCrester now reads your actual crest inventory using Blizzard's `C_CurrencyInfo.GetCurrencyInfo()` API. When you run `/gc` without simulation, it shows upgrades you can afford with your current crests.
+
+Use `/gc crests` to see your current inventory:
+
+```
+/gc crests
+```
+
+**Example Output:**
+
+```
+GearCrester: Current Crest Inventory
+  Adventurer: 110
+  Veteran:    400
+  Champion:    55
+  Hero:        85
+  Myth:         0
+```
+
 ## Crest Types
 
 Valid crest types:

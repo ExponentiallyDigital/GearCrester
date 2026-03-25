@@ -305,8 +305,26 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         print("|cff00ff98[DEBUG] Starting upgrade evaluation...|r")
     end
 
+    -- Get crest counts: use simulated or real inventory
+    local crestCounts
+    if simulatedCrests then
+        crestCounts = simulatedCrests
+        if GC.db and GC.db.debug then
+            print("|cff00ff98[DEBUG] Using simulated crest counts|r")
+        end
+    else
+        -- Read real crest inventory from Blizzard's currency API
+        crestCounts = GC.modules.CrestTracker.CrestData:GetAllCrestCounts()
+        if GC.db and GC.db.debug then
+            print("|cff00ff98[DEBUG] Using real crest inventory|r")
+            for crestType, count in pairs(crestCounts) do
+                print(string.format("|cff00ff98[DEBUG]   %s: %d|r", crestType, count))
+            end
+        end
+    end
+
     -- Helper function to evaluate items from a source
-    local function EvaluateItems(items, sourceName)
+    local function EvaluateItems(items, sourceName, crestCounts)
         if not items then
             return
         end
@@ -344,12 +362,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     local crestType = Data:GetCrestType(trackName)
                     local crestCostPerStep = Data:GetCrestCost()
 
-                    local crestCount
-                    if simulatedCrests then
-                        crestCount = simulatedCrests[crestType] or 0
-                    else
-                        crestCount = GC.modules.CrestTracker.CrestData:GetCrestCount(crestType)
-                    end
+                    local crestCount = crestCounts[crestType] or 0
 
                     -- Calculate max affordable rank with proper remaining crests tracking
                     local maxRank = currentRank
@@ -400,14 +413,14 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
     end
 
     -- Evaluate all sources
-    EvaluateItems(GC.DataModel.equipped, "Equipped")
+    EvaluateItems(GC.DataModel.equipped, "Equipped", crestCounts)
 
     if includeBags then
-        EvaluateItems(GC.DataModel.bags, "Bag")
+        EvaluateItems(GC.DataModel.bags, "Bag", crestCounts)
     end
 
     if includeBank then
-        EvaluateItems(GC.DataModel.bank, "Bank")
+        EvaluateItems(GC.DataModel.bank, "Bank", crestCounts)
     end
 
     if GC.db and GC.db.debug then

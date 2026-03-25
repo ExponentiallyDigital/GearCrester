@@ -29,6 +29,11 @@ function SelfTest:RunAllTests()
     self:TestBlizzardAPIIntegration()
     self:TestBlizzardAPIFallback()
     self:TestCalibrateUsesBlizzardAPI()
+    self:TestCrestInventoryLookup()
+    self:TestUpgradeEvaluationUsesRealCrests()
+    self:TestSlashCrestsCommandExists()
+    self:TestCrestIDsCorrect()
+    self:TestCrestLookupReturnsValues()
     self:TestAdvisorLogicAPI()
     self:TestUpgradeEvaluation()
     self:TestSlashCommandRegistration()
@@ -296,6 +301,162 @@ function SelfTest:TestCalibrateUsesBlizzardAPI()
     else
         fail("Calibrate Blizzard API", "CalibrateItemUpgradeInfo failed to execute")
     end
+end
+
+function SelfTest:TestCrestInventoryLookup()
+    -- Test that GetPlayerCrestCounts returns correct table structure
+    local CrestData = GC.modules.CrestTracker.CrestData
+
+    if not CrestData or not CrestData.GetAllCrestCounts then
+        fail("Crest Inventory Lookup", "GetAllCrestCounts function not found")
+        return
+    end
+
+    -- Mock C_CurrencyInfo.GetCurrencyInfo to return known values
+    local originalGetCurrencyInfo = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
+    if not C_CurrencyInfo then
+        C_CurrencyInfo = {}
+    end
+    C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
+        -- Return different counts for each crest type
+        local counts = {
+            [3000] = {quantity = 110, name = "Adventurer's Crest"},
+            [3001] = {quantity = 400, name = "Veteran's Crest"},
+            [3002] = {quantity = 55, name = "Champion's Crest"},
+            [3003] = {quantity = 85, name = "Hero's Crest"},
+            [3004] = {quantity = 0, name = "Myth Crest"},
+        }
+        return counts[currencyID] or {}
+    end
+
+    -- Call the function
+    local counts = CrestData:GetAllCrestCounts()
+
+    -- Restore original function
+    if originalGetCurrencyInfo then
+        C_CurrencyInfo.GetCurrencyInfo = originalGetCurrencyInfo
+    end
+
+    -- Verify structure and values
+    if type(counts) ~= "table" then
+        fail("Crest Inventory Lookup", "GetAllCrestCounts did not return a table")
+        return
+    end
+
+    if counts.ADVENTURER ~= 110 or counts.VETERAN ~= 400 or counts.CHAMPION ~= 55 or counts.HERO ~= 85 then
+        fail("Crest Inventory Lookup", "GetAllCrestCounts returned incorrect values")
+        return
+    end
+
+    pass("Crest Inventory Lookup")
+end
+
+function SelfTest:TestUpgradeEvaluationUsesRealCrests()
+    -- Test that GetRecommendedUpgrades uses real crest counts when simulatedCrests is nil
+    local Logic = GC.modules.UpgradeAdvisor.Logic
+    local CrestData = GC.modules.CrestTracker.CrestData
+
+    if not Logic or not Logic.GetRecommendedUpgrades then
+        fail("Upgrade Evaluation Real Crests", "GetRecommendedUpgrades function not found")
+        return
+    end
+
+    -- Mock crest counts to HERO=80
+    local originalGetAllCrestCounts = CrestData.GetAllCrestCounts
+    CrestData.GetAllCrestCounts = function()
+        return {
+            ADVENTURER = 0,
+            VETERAN = 0,
+            CHAMPION = 0,
+            HERO = 80,
+            MYTH = 0,
+        }
+    end
+
+    -- Call with nil (should use real counts)
+    local results = Logic:GetRecommendedUpgrades(nil, false, false)
+
+    -- Restore original function
+    if originalGetAllCrestCounts then
+        CrestData.GetAllCrestCounts = originalGetAllCrestCounts
+    end
+
+    -- Verify it returns a table (actual results depend on equipped gear)
+    if type(results) == "table" then
+        pass("Upgrade Evaluation Real Crests")
+    else
+        fail("Upgrade Evaluation Real Crests", "GetRecommendedUpgrades did not return a table")
+    end
+end
+
+function SelfTest:TestSlashCrestsCommandExists()
+    -- Test that /gc crests command is registered
+    if SlashCmdList and SlashCmdList["GEARCRESTER"] then
+        pass("Slash Crests Command")
+    else
+        fail("Slash Crests Command", "GEARCRESTER slash command not registered")
+    end
+end
+
+function SelfTest:TestCrestIDsCorrect()
+    -- Test that CREST_CURRENCY_IDS contains the correct Midnight Dawncrest IDs
+    local CrestData = GC.modules.CrestTracker.CrestData
+
+    if not CrestData or not CrestData.CREST_IDS then
+        fail("Crest IDs Correct", "CREST_IDS table not found")
+        return
+    end
+
+    local ids = CrestData.CREST_IDS
+    if ids.ADVENTURER ~= 2914 or ids.VETERAN ~= 2915 or ids.CHAMPION ~= 2916 or ids.HERO ~= 2917 or ids.MYTH ~= 2918 then
+        fail("Crest IDs Correct", "CREST_IDS contains incorrect currency IDs. Expected: ADVENTURER=2914, VETERAN=2915, CHAMPION=2916, HERO=2917, MYTH=2918")
+        return
+    end
+
+    pass("Crest IDs Correct")
+end
+
+function SelfTest:TestCrestLookupReturnsValues()
+    -- Test that GetPlayerCrestCounts returns values from C_CurrencyInfo API
+    local CrestData = GC.modules.CrestTracker.CrestData
+
+    if not CrestData or not CrestData.GetAllCrestCounts then
+        fail("Crest Lookup Returns Values", "GetAllCrestCounts function not found")
+        return
+    end
+
+    -- Mock C_CurrencyInfo.GetCurrencyInfo to return known values
+    local originalGetCurrencyInfo = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
+    if not C_CurrencyInfo then
+        C_CurrencyInfo = {}
+    end
+    C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
+        -- Return quantities based on currency ID
+        local quantities = {
+            [2914] = {quantity = 110, name = "Adventurer's Crest"},
+            [2915] = {quantity = 400, name = "Veteran's Crest"},
+            [2916] = {quantity = 55, name = "Champion's Crest"},
+            [2917] = {quantity = 85, name = "Hero's Crest"},
+            [2918] = {quantity = 10, name = "Myth Crest"},
+        }
+        return quantities[currencyID] or {}
+    end
+
+    -- Call the function
+    local counts = CrestData:GetAllCrestCounts()
+
+    -- Restore original function
+    if originalGetCurrencyInfo then
+        C_CurrencyInfo.GetCurrencyInfo = originalGetCurrencyInfo
+    end
+
+    -- Verify it returns correct values for correct IDs
+    if counts.ADVENTURER ~= 110 or counts.VETERAN ~= 400 or counts.CHAMPION ~= 55 or counts.HERO ~= 85 or counts.MYTH ~= 10 then
+        fail("Crest Lookup Returns Values", "GetAllCrestCounts returned incorrect values")
+        return
+    end
+
+    pass("Crest Lookup Returns Values")
 end
 
 function SelfTest:TestAdvisorLogicAPI()

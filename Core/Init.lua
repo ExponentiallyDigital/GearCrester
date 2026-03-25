@@ -48,6 +48,7 @@ function GC:OnLoad()
                 print("/gc debug on|off - Enable/disable debug output")
                 print("/gc why - Show why items are not upgradeable")
                 print("/gc calibrate [slot] - Compare GC vs Blizzard upgrade data (default: Head)")
+                print("/gc crests - Show current crest inventory")
                 print("/gc dump - Dump all items with bonus IDs")
                 print("/gc test - Run self-diagnostics")
                 print("/gc export - Export upgradeable items")
@@ -157,6 +158,16 @@ function GC:OnLoad()
                 else
                     GC:Print("No item equipped in " .. (itemData and itemData.slotName or slotName))
                 end
+                return
+            elseif cmd == "crests" then
+                -- Display current crest inventory
+                local counts = GC.modules.CrestTracker.CrestData:GetAllCrestCounts()
+                print("|cff00ff98GearCrester: Current Crest Inventory|r")
+                print(string.format("  Adventurer: %d", counts.ADVENTURER or 0))
+                print(string.format("  Veteran:    %d", counts.VETERAN or 0))
+                print(string.format("  Champion:   %d", counts.CHAMPION or 0))
+                print(string.format("  Hero:       %d", counts.HERO or 0))
+                print(string.format("  Myth:       %d", counts.MYTH or 0))
                 return
             elseif cmd == "test" then
                 if GC.modules.Diagnostics and GC.modules.Diagnostics.SelfTest then

@@ -5,11 +5,11 @@ GC.modules.CrestTracker = GC.modules.CrestTracker or {}
 GC.modules.CrestTracker.CrestData = CrestData
 
 CrestData.CREST_IDS = {
-    ADVENTURER = 3000,
-    VETERAN = 3001,
-    CHAMPION = 3002,
-    HERO = 3003,
-    MYTH = 3004,
+    ADVENTURER = 3383,
+    VETERAN = 3341,
+    CHAMPION = 3343,
+    HERO = 3345,
+    MYTH = 3347,
 }
 
 CrestData.CREST_TYPES = {
@@ -40,6 +40,19 @@ function CrestData:GetCrestCount(crestName)
         return GC.DataModel.crests[crestName].count
     end
     return 0
+end
+
+function CrestData:GetAllCrestCounts()
+    -- Ensure we have fresh data from Blizzard's API
+    self:ReadCrests()
+
+    return {
+        ADVENTURER = self:GetCrestCount("ADVENTURER"),
+        VETERAN = self:GetCrestCount("VETERAN"),
+        CHAMPION = self:GetCrestCount("CHAMPION"),
+        HERO = self:GetCrestCount("HERO"),
+        MYTH = self:GetCrestCount("MYTH"),
+    }
 end
 
 function CrestData:SimulateCrests(crestType, count)

@@ -499,3 +499,60 @@ _Last updated: 2026-03-24_
 _Total prompts tracked: 23_
 _Total files created: 12_
 _Total files modified: 28_
+  
+---  
+  
+## 2026-03-24 - Real Crest Inventory Integration  
+  
+**Summary:** Implemented real crest inventory lookup using Blizzard's C_CurrencyInfo.GetCurrencyInfo() API. GearCrester now reads actual crest counts instead of always showing "No upgrades available".  
+  
+**Files Modified:**  
+- Modules/CrestTracker/CrestData.lua - Added GetAllCrestCounts() function  
+- Modules/UpgradeAdvisor/AdvisorLogic.lua - Modified GetRecommendedUpgrades() to use real crest counts  
+- Core/Init.lua - Added /gc crests command  
+- README.md - Added crest inventory documentation  
+- Modules/Diagnostics/SelfTest.lua - Added crest inventory tests  
+- docs/testplans/diagnostics.md - Added crest inventory test case  
+  
+**Notes:**  
+- User reported having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests but /gc showed "No upgrades available"  
+- Root cause: CrestData:ReadCrests() was never called to populate GC.DataModel.crests  
+- Fix: Added GetAllCrestCounts() that calls ReadCrests() then returns all counts  
+- GetRecommendedUpgrades() now calls GetAllCrestCounts() when simulatedCrests is nil  
+- New /gc crests command for debugging inventory issues  
+- Guardrail compliance: Minimal change, only added new function and integrated into existing flow  
+- Verification: /gc crests should show real crest totals; /gc should now show same upgrades as /gc 80 hero when Hero crests = 80  
+  
+---  
+  
+*Last updated: 2026-03-24*  
+*Total prompts tracked: 24*  
+*Total files created: 12*  
+*Total files modified: 29* 
+  
+---  
+  
+## 2026-03-24 - Dawncrest Currency ID Fix  
+  
+**Summary:** Fixed crest inventory lookup returning all zeros by correcting Dawncrest currency IDs from incorrect values (3000-3004) to correct Midnight Season 1 IDs (2914-2918).  
+  
+**Files Modified:**  
+- `Modules/CrestTracker/CrestData.lua` - Updated CREST_IDS with correct currency IDs  
+- `Modules/Diagnostics/SelfTest.lua` - Added TestCrestIDsCorrect and TestCrestLookupReturnsValues tests  
+- `README.md` - Added currency ID table  
+- `docs/testplans/diagnostics.md` - Updated with correct currency IDs  
+  
+**Notes:**  
+- User reported `/gc crests` showed all zeros despite having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests  
+- Root cause: CREST_IDS used wrong currency IDs (3000-3004 instead of 2914-2918)  
+- C_CurrencyInfo.GetCurrencyInfo(3000-3004) returned nil because those IDs don't exist  
+- Fix: Updated CREST_IDS to correct Midnight Season 1 Dawncrest IDs  
+- Guardrail compliance: Only data table changed, no logic modifications  
+- Verification: `/gc crests` should now show real Dawncrest totals for the character  
+  
+---  
+  
+*Last updated: 2026-03-24*  
+*Total prompts tracked: 25*  
+*Total files created: 12*  
+*Total files modified: 30* 

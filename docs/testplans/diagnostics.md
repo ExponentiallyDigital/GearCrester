@@ -188,4 +188,33 @@ Expected:
 
 ---
 
+## 10. Crest Inventory
+
+**Purpose:** Verify GearCrester reads real crest inventory from Blizzard's currency API.
+
+**Command:**
+
+```
+/gc crests
+```
+
+**Expected Output:**
+
+```
+GearCrester: Current Crest Inventory
+  Adventurer: 110
+  Veteran:    400
+  Champion:    55
+  Hero:        85
+  Myth:         0
+```
+
+**Verification:**
+
+- `/gc` without simulation should use real crest counts
+- `/gc 80 hero` should show same upgrades as real inventory when Hero crests = 80
+- SelfTest includes TestCrestInventoryLookup, TestUpgradeEvaluationUsesRealCrests, TestSlashCrestsCommandExists
+
+---
+
 # End of Test Plan
