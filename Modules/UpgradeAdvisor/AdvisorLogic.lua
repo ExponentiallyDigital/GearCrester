@@ -360,8 +360,20 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     end
                 else
                     -- Check for FREE upgrade using upgrader slot caps
+                    -- For bag/bank items, map slotName to slotID for cap lookup
+                    local lookupSlotID = slotID
+                    if type(slotID) == "string" then
+                        -- Bag/bank item: map slotName to numeric slotID
+                        for id, name in pairs(GC.SLOTS) do
+                            if name == slotName then
+                                lookupSlotID = id
+                                break
+                            end
+                        end
+                    end
+
                     local UpgraderScanner = GC.modules.UpgradeAdvisor.UpgraderScanner
-                    local cap = UpgraderScanner and UpgraderScanner:GetSlotCap(slotID)
+                    local cap = UpgraderScanner and UpgraderScanner:GetSlotCap(lookupSlotID)
 
                     local isFree = false
                     local capTrack = nil
@@ -403,7 +415,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                             isGoldOnly = true,
                             goldOnlyTargetRank = freeMaxRank,
                             canAfford = true,
-                            priority = Data:GetSlotPriority(slotID) or 99,
+                            priority = Data:GetSlotPriority(lookupSlotID) or 99,
                             location = itemData.location,
                         })
 
@@ -559,7 +571,7 @@ function Logic:GetItemDiagnostics(itemLink)
 end
 
 function Logic:PrintWhyDiagnostics()
-    print("|cff00ff98GearCrester: upgrade diagnostics (why items are not upgradable):|r")
+    print("|cff00ff98GearCrester: upgrade diagnostics (why items are or are not upgradable):|r")
 
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
 
