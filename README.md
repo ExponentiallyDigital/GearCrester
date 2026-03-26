@@ -58,6 +58,7 @@ GearCrester works out of the box with default "weights" or priority values for g
 | `/gc weight reset`               | Reset all slot weights                                                                   |
 | `/gc weight list`                | Show all slot weights                                                                    |
 | `/gc help`                       | Show all commands                                                                        |
+| `/gc calibrate npc`              | Scan all equipped items at the Item Upgrade NPC (must have NPC window open)              |
 | `/gc calibrate <slot>`           | Compare GearCrester's upgrade detection against Blizzard's C_Item.GetItemUpgradeInfo API |
 
 ### Slot names
@@ -83,9 +84,31 @@ This is the default priority sequence from highest to lowest:
     Trinket2
 ```
 
-### Calibration Command
+### Calibration Commands
 
-The `/gc calibrate <slot>` command compares GearCrester's track/rank detection against Blizzard's official `C_Item.GetItemUpgradeInfo()` API for the specified equipped slot.
+#### /gc calibrate npc
+
+Runs a full scan of all equipped items using the Item Upgrade NPC.
+You must have the NPC upgrade window open.
+This updates `GearCresterDB.slotCaps` and enables accurate FREE-upgrade detection.
+
+**Example:**
+
+```
+/gc calibrate npc
+```
+
+**Output:**
+
+```
+Scanning equipped items at upgrader NPC...
+Upgrader scan complete. Slot caps updated.
+```
+
+#### /gc calibrate <slot>
+
+Compares GearCrester's track/rank detection against Blizzard's official `C_Item.GetItemUpgradeInfo()` API for the specified equipped slot.
+Defaults to "head" if no slot is specified.
 
 **Example:**
 
