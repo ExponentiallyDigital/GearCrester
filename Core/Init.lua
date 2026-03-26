@@ -78,16 +78,36 @@ function GC:OnLoad()
                     GC:Print("All slot weights reset to default.")
                     return
                 elseif subCmd == "list" then
-                    print("|cff00ff98GearCrester: slot weights|r")
+                    print("|cff00ff98GearCrester: slot weights (lower = higher priority)|r")
                     print("--------------------------------")
+
                     local weights = GC.modules.UpgradeAdvisor.UpgradeOrder:GetAllWeights()
                     local slotNames = GC.SLOTS
+
+                    -- Build sortable array
+                    local sorted = {}
                     for slotID, weightData in pairs(weights) do
-                        local slotName = slotNames[slotID] or "Unknown"
-                        local status = weightData.isCustom and "|cffff0000(custom)|r" or "|cff00ff00(default)|r"
-                        print(string.format("%s: %d %s", slotName, weightData.effective, status))
+                        table.insert(sorted, {
+                            slotID = slotID,
+                            slotName = slotNames[slotID] or "Unknown",
+                            effective = weightData.effective,
+                            isCustom = weightData.isCustom
+                        })
                     end
+
+                    -- Sort by effective weight ascending
+                    table.sort(sorted, function(a, b)
+                        return a.effective < b.effective
+                    end)
+
+                    -- Print sorted list
+                    for _, entry in ipairs(sorted) do
+                        local status = entry.isCustom and "|cffff0000(custom)|r" or "|cff00ff00(default)|r"
+                        print(string.format("%s: %d %s", entry.slotName, entry.effective, status))
+                    end
+
                     return
+
                 else
                     local slotName, valueStr = param:match("^(%w+)%s+(%d+)$")
                     if slotName and valueStr then
