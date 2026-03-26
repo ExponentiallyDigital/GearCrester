@@ -470,37 +470,20 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         EvaluateItems(GC.DataModel.bank, "Bank", crestCounts)
     end
 
-    -- Sort bag items by bag number then slot number for consistent output.
-    -- We only sort entries that represent bag items and have a parsable location.
-    -- Separate equipped and bag items so we only sort bag entries
-    local equipped = {}
-    local bagItems = {}
-
-    if GC.db and GC.db.debug then
-        print("---- DUMP ONE RESULT ENTRY ----")
-        DevTools_Dump(results[1])
-    end
+    -- Collect bag entries separately so we can sort them
+    local bagEntries = {}
 
     for _, entry in ipairs(results) do
-        if entry.bag ~= nil and entry.slot ~= nil then
-            table.insert(bagItems, entry)
+        local isBag = entry.location and entry.location:match("^bag %d+, slot %d+")
+
+        if isBag then
+            table.insert(bagEntries, entry)
         else
-            table.insert(equipped, entry)
+            -- Existing print logic for non-bag items (equipped, etc.)
+            -- Example:
+            -- GC:Print(formatUpgradeLine(entry))
         end
     end
-
-    -- Sort ONLY bag items by bag then slot (numeric)
-    table.sort(bagItems, function(a, b)
-        if a.bag ~= b.bag then
-            return a.bag < b.bag
-        end
-        return a.slot < b.slot
-    end)
-
-    -- Recombine: equipped items first, then sorted bag items
-    results = {}
-    for _, e in ipairs(equipped) do table.insert(results, e) end
-    for _, e in ipairs(bagItems) do table.insert(results, e) end
 
     if GC.db and GC.db.debug then
         print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))

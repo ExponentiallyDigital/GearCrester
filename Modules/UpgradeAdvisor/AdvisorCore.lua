@@ -52,27 +52,46 @@ function Core:PrintResults(results, title)
     if title then
         print(title)
     else
-        print("|cff00ff98GearCrester: upgrade recommendations:|r")
+        print("|cff00ff98GearCrester: upgrade recommendations|r")
     end
 
+    -- Split results into non-bag and bag entries
+    local nonBag = {}
+    local bagEntries = {}
+
     for _, entry in ipairs(results) do
+        local isBag = entry.location and entry.location:match("^bag (%d+), slot (%d+)")
+        if isBag then
+            table.insert(bagEntries, entry)
+        else
+            table.insert(nonBag, entry)
+        end
+    end
+
+    -- Sort ONLY bag entries by bag then slot
+    table.sort(bagEntries, function(a, b)
+        local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
+        local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
+
+        aBag, aSlot = tonumber(aBag), tonumber(aSlot)
+        bBag, bSlot = tonumber(bBag), tonumber(bSlot)
+
+        if aBag ~= bBag then
+            return aBag < bBag
+        end
+        return aSlot < bSlot
+    end)
+
+    -- Print non-bag entries first (equipped, etc.)
+    for _, entry in ipairs(nonBag) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
-        local location = ""
-        if entry.location then
-            location = " [" .. entry.location .. "]"
-        end
-        -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
+        local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local costText = string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
-        if entry.isGoldOnly then
-            costText = "(FREE)"
-        end
-        local itemName = ""
-        if entry.itemLink then
-            itemName = " " .. entry.itemLink
-        end
-        local line = string.format(
+        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
+        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+
+        print(string.format(
             "%s%s: %d -> %d %s%s%s%s",
             entry.slotName,
             location,
@@ -82,8 +101,29 @@ function Core:PrintResults(results, title)
             goldOnlyText,
             entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or "",
             itemName
-        )
-        print(line)
+        ))
+    end
+
+    -- Print sorted bag entries
+    for _, entry in ipairs(bagEntries) do
+        local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
+        local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
+        local location = entry.location and (" [" .. entry.location .. "]") or ""
+        local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
+        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
+        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+
+        print(string.format(
+            "%s%s: %d -> %d %s%s%s%s",
+            entry.slotName,
+            location,
+            entry.currentIlvl,
+            entry.nextIlvl,
+            costText,
+            goldOnlyText,
+            entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or "",
+            itemName
+        ))
     end
 end
 
