@@ -227,7 +227,9 @@ function GC:OnLoad()
                 for slotID, cap in pairs(GearCresterDB.slotCaps or {}) do
                     hasCaps = true
                     local slotName = GC.SLOTS[slotID] or "Unknown"
-                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.currUpgrade, 6))
+                    -- Show max rank as Data.MAX_RANK for consistency (always 6/6 for Midnight Season 1)
+                    local maxRank = GC.modules.UpgradeAdvisor and GC.modules.UpgradeAdvisor.Data and GC.modules.UpgradeAdvisor.Data.MAX_RANK or 6
+                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.currUpgrade, maxRank))
                 end
 
                 if not hasCaps then
