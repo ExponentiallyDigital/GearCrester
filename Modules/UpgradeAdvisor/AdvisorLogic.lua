@@ -476,6 +476,11 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
     local equipped = {}
     local bagItems = {}
 
+    if GC.db and GC.db.debug then
+        print("---- DUMP ONE RESULT ENTRY ----")
+        DevTools_Dump(results[1])
+    end
+
     for _, entry in ipairs(results) do
         if entry.bag ~= nil and entry.slot ~= nil then
             table.insert(bagItems, entry)
