@@ -226,18 +226,19 @@ function Data:GetSlotCap(slotID)
     end
     local cap = GearCresterDB.slotCaps[slotID]
     if cap then
-        return cap.track, cap.rank
+        return cap.track, cap.currUpgrade
     end
     return nil, 0
 end
 
-function Data:SetSlotCap(slotID, track, rank)
+function Data:SetSlotCap(slotID, track, currUpgrade)
     if not GearCresterDB.slotCaps then
         GearCresterDB.slotCaps = {}
     end
     GearCresterDB.slotCaps[slotID] = {
+        slot = GC.SLOTS[slotID],
         track = track,
-        rank = rank,
+        currUpgrade = currUpgrade,
     }
 end
 

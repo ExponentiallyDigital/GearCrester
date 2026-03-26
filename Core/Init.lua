@@ -227,7 +227,7 @@ function GC:OnLoad()
                 for slotID, cap in pairs(GearCresterDB.slotCaps or {}) do
                     hasCaps = true
                     local slotName = GC.SLOTS[slotID] or "Unknown"
-                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.rank, 6))
+                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.currUpgrade, 6))
                 end
 
                 if not hasCaps then
