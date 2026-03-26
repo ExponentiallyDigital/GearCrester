@@ -47,9 +47,9 @@ function GC:OnLoad()
                 print("/gc <count> <crestType> - Simulate upgrades (e.g., /gc 40 champion)")
                 print("/gc debug on|off - Enable/disable debug output")
                 print("/gc why - Show why items are not upgradeable")
-                print("/gc calibrate [slot] - Compare GC vs Blizzard upgrade data (default: Head)")
                 print("/gc crests - Show current crest inventory")
                 print("/gc free - Show free upgrade opportunities (track-cap inheritance)")
+                print("/gc calibrate - Scan equipped items at upgrader NPC (must have NPC window open)")
                 print("/gc scan - Manually rescan inventory and bank")
                 print("/gc slotcaps - View stored slot caps")
                 print("/gc dump - Dump all items with bonus IDs")
@@ -171,6 +171,22 @@ function GC:OnLoad()
                 print(string.format("  Champion:   %d", counts.CHAMPION or 0))
                 print(string.format("  Hero:       %d", counts.HERO or 0))
                 print(string.format("  Myth:       %d", counts.MYTH or 0))
+                return
+            elseif cmd == "calibrate" then
+                -- Calibrate slot caps using upgrader NPC
+                local UpgraderScanner = GC.modules.UpgradeAdvisor.UpgraderScanner
+                if not UpgraderScanner then
+                    GC:Print("UpgraderScanner module not found.")
+                    return
+                end
+
+                if not UpgraderScanner:IsUpgraderOpen() then
+                    GC:Print("Open the Item Upgrade NPC window first, then run /gc calibrate again.")
+                    return
+                end
+
+                GC:Print("Scanning equipped items at upgrader NPC...")
+                UpgraderScanner:ScanEquippedAtUpgrader()
                 return
             elseif cmd == "free" then
                 -- Display free upgrade opportunities

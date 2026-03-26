@@ -28,6 +28,7 @@ Modules\UpgradeAdvisor\AdvisorCore.lua
 Modules\UpgradeAdvisor\AdvisorUI.lua
 Modules\UpgradeAdvisor\UpgradeOrder.lua
 Modules\UpgradeAdvisor\FreeUpgrade.lua
+Modules\UpgradeAdvisor\UpgraderScanner.lua
 
 Modules\UI\MainFrame.lua
 Modules\UI\Heatmap.lua

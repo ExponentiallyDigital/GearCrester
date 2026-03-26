@@ -359,25 +359,32 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                         print(string.format("|cffff0000[DEBUG]   Skipped: Already at max rank (%d/%d)|r", currentRank, Data.MAX_RANK))
                     end
                 else
-                    -- Determine slot cap
-                    local highestTrack, highestRank = Data:GetHighestTrackForSlot(slotID)
+                    -- Check for FREE upgrade using upgrader slot caps
+                    local UpgraderScanner = GC.modules.UpgradeAdvisor.UpgraderScanner
+                    local cap = UpgraderScanner and UpgraderScanner:GetSlotCap(slotID)
 
                     local isFree = false
-                    if highestTrack and highestRank == Data.MAX_RANK
-                       and Data:IsHigherTrack(highestTrack, trackName) then
-                        isFree = true
+                    local capTrack = nil
+                    local capMaxUpgrade = 0
+
+                    if cap and cap.track and cap.maxUpgrade == Data.MAX_RANK then
+                        capTrack = cap.track
+                        capMaxUpgrade = cap.maxUpgrade
+                        if Data:IsHigherTrack(capTrack, trackName) then
+                            isFree = true
+                        end
                     end
 
                     if isFree then
-                        -- FREE upgrade path
+                        -- FREE upgrade path (from upgrader scan)
                         local freeMaxRank = Data.MAX_RANK
                         local freeSteps = freeMaxRank - currentRank
                         local finalIlvl = Data.TRACK_ILVLS[trackName][freeMaxRank]
                         local crestType = Data:GetCrestType(trackName)
 
                         if GC.db and GC.db.debug then
-                            print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d→%d (slot cap %s %d)|r",
-                                trackName, currentRank, freeMaxRank, highestTrack, highestRank))
+                            print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d→%d (slot cap %s %d/%d)|r",
+                                trackName, currentRank, freeMaxRank, capTrack, capMaxUpgrade, Data.MAX_RANK))
                         end
 
                         table.insert(results, {
