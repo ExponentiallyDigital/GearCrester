@@ -470,28 +470,32 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         EvaluateItems(GC.DataModel.bank, "Bank", crestCounts)
     end
 
-    -- Sort bag items by bag number then slot number for consistent output
-    -- This ensures bag items are displayed in a predictable order (bag 0 slot 1, bag 0 slot 2, etc.)
-    if includeBags and #results > 0 then
-        table.sort(results, function(a, b)
-            -- Extract bag and slot from location string (e.g., "bag 0, slot 5")
-            local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
-            local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
+    -- Sort bag items by bag number then slot number for consistent output.
+    -- We only sort entries that represent bag items and have a parsable location.
+    -- Separate equipped and bag items so we only sort bag entries
+    local equipped = {}
+    local bagItems = {}
 
-            if aBag and bBag then
-                aBag, aSlot = tonumber(aBag), tonumber(aSlot)
-                bBag, bSlot = tonumber(bBag), tonumber(bSlot)
-
-                if aBag ~= bBag then
-                    return aBag < bBag
-                end
-                return aSlot < bSlot
-            end
-
-            -- Fallback: keep original order if location format doesn't match
-            return false
-        end)
+    for _, entry in ipairs(results) do
+        if entry.bag ~= nil and entry.slot ~= nil then
+            table.insert(bagItems, entry)
+        else
+            table.insert(equipped, entry)
+        end
     end
+
+    -- Sort ONLY bag items by bag then slot (numeric)
+    table.sort(bagItems, function(a, b)
+        if a.bag ~= b.bag then
+            return a.bag < b.bag
+        end
+        return a.slot < b.slot
+    end)
+
+    -- Recombine: equipped items first, then sorted bag items
+    results = {}
+    for _, e in ipairs(equipped) do table.insert(results, e) end
+    for _, e in ipairs(bagItems) do table.insert(results, e) end
 
     if GC.db and GC.db.debug then
         print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))
