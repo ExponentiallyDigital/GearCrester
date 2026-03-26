@@ -237,7 +237,9 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
 
         local info = UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         if info and info.trackName and info.currUpgrade and info.maxUpgrade then
+            -- Add slot name for easier debugging and UI display
             GearCresterDB.slotCaps[slotID] = {
+                slot         = GC.SLOTS[slotID],
                 track        = info.trackName,
                 currUpgrade  = info.currUpgrade,
                 maxUpgrade   = info.maxUpgrade,
