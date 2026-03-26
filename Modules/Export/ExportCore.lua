@@ -12,8 +12,9 @@ function Export:GenerateExportData(results)
     local exportItems = {}
 
     for _, entry in ipairs(results) do
-        local upgradeSteps = entry.nextRank - entry.currentRank
-        local totalCrestCost = upgradeSteps * entry.crestCost
+        -- Use maxRank as the final rank after upgrade (nextRank no longer exists)
+        local nextRank = entry.maxRank
+        local rankDiff = entry.maxRank - entry.currentRank
 
         table.insert(exportItems, {
             Slot = entry.slotName or "Unknown",
@@ -22,9 +23,9 @@ function Export:GenerateExportData(results)
             CurrentILvl = entry.currentIlvl,
             CurrentRank = entry.currentRank,
             Track = entry.trackName,
-            UpgradeSteps = upgradeSteps,
-            CrestCostPerStep = entry.crestCost,
-            TotalCrestCost = totalCrestCost,
+            UpgradeSteps = entry.upgradeSteps or rankDiff,
+            CrestCostPerStep = entry.crestCostPerStep or 0,
+            TotalCrestCost = entry.totalCrestCost or 0,
         })
     end
 
