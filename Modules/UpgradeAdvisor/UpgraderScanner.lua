@@ -191,6 +191,13 @@ function UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         DebugPrint(("Slot %d: Item is max rank; using current ilvl as max ilvl"):format(slotID))
     end
 
+    -- Fallback for crafted gear or items where maxItemLevel=0
+    if maxItemLevel == 0 then
+        maxItemLevel = (GetDetailedItemLevelInfo and GetDetailedItemLevelInfo(itemLink))
+                    or select(4, GetItemInfo(itemLink))
+                    or 0
+    end
+
     return {
         trackName    = trackName,
         currUpgrade  = rank,
