@@ -39,7 +39,7 @@ function Export:GenerateExportString(exportItems)
 
     local lines = {}
     table.insert(lines, "-- GearCrester Export")
-    table.insert(lines, "-- Generated: " .. (os.date and os.date("%Y-%m-%d %H:%M:%S") or "Unknown"))
+    table.insert(lines, "-- Generated: " .. (date and date("%Y-%m-%d %H:%M:%S") or "Unknown"))
     table.insert(lines, "-- Upgradeable Items")
     table.insert(lines, "")
 
@@ -85,7 +85,7 @@ function Export:RunExport(simulatedCrests)
     end
 
     GearCresterExportDB.lastExport = exportString
-    GearCresterExportDB.lastExportTime = os.date and os.date("%Y-%m-%d %H:%M:%S") or "Unknown"
+    GearCresterExportDB.lastExportTime = date and date("%Y-%m-%d %H:%M:%S") or "Unknown"
     GearCresterExportDB.exportItems = exportItems
 
     print("|cff00ff98GearCrester:|r export complete. File will be written on |cffff0000**successful logout**|r.")

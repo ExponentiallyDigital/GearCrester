@@ -1,21 +1,5 @@
 local addonName, GC = ...
 
--- Initialize SavedVariables at module load time (before ADDON_LOADED)
--- This prevents errors when SavedVariables file is missing or empty
--- Use 'or {}' pattern to safely handle nil values from missing files
-if type(GearCresterDB) ~= "table" then
-    GearCresterDB = {}
-end
-if type(GearCresterDB.slotWeights) ~= "table" then
-    GearCresterDB.slotWeights = {}
-end
-if type(GearCresterExportDB) ~= "table" then
-    GearCresterExportDB = {}
-end
-if type(GearCresterExportDB.exportItems) ~= "table" then
-    GearCresterExportDB.exportItems = {}
-end
-
 GC.name = addonName
 GC.modules = {}
 GC.db = {}

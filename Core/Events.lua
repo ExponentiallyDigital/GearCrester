@@ -14,28 +14,15 @@ frame:SetScript("OnEvent", function(_, event, arg1)
             return
         end
 
-        -- Validate and sanitize SavedVariables before use
-        -- This prevents errors from corrupted or malformed saved data
-        if type(GearCresterDB) ~= "table" then
-            GearCresterDB = {}
-            print("|cff00ff98GearCrester:|r SavedVariables corrupted - resetting to defaults")
-        end
-        if type(GearCresterDB.slotWeights) ~= "table" then
-            GearCresterDB.slotWeights = {}
-        end
-        if type(GearCresterDB.slotCaps) ~= "table" then
-            GearCresterDB.slotCaps = {}
-        end
-        if type(GearCresterDB.session) ~= "table" then
-            GearCresterDB.session = {}
-        end
+        -- Initialize SavedVariables if file didn't exist (first login after install/delete)
+        -- WoW auto-creates the file on logout, but we need safe defaults on login
+        GearCresterDB = GearCresterDB or {}
+        GearCresterDB.slotWeights = GearCresterDB.slotWeights or {}
+        GearCresterDB.slotCaps = GearCresterDB.slotCaps or {}
+        GearCresterDB.session = GearCresterDB.session or {}
 
-        if type(GearCresterExportDB) ~= "table" then
-            GearCresterExportDB = {}
-        end
-        if type(GearCresterExportDB.exportItems) ~= "table" then
-            GearCresterExportDB.exportItems = {}
-        end
+        GearCresterExportDB = GearCresterExportDB or {}
+        GearCresterExportDB.exportItems = GearCresterExportDB.exportItems or {}
 
         GC:OnLoad()
     elseif event == "PLAYER_LOGIN" then
