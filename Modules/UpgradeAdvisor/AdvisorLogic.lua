@@ -470,6 +470,29 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         EvaluateItems(GC.DataModel.bank, "Bank", crestCounts)
     end
 
+    -- Sort bag items by bag number then slot number for consistent output
+    -- This ensures bag items are displayed in a predictable order (bag 0 slot 1, bag 0 slot 2, etc.)
+    if includeBags and #results > 0 then
+        table.sort(results, function(a, b)
+            -- Extract bag and slot from location string (e.g., "bag 0, slot 5")
+            local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
+            local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
+
+            if aBag and bBag then
+                aBag, aSlot = tonumber(aBag), tonumber(aSlot)
+                bBag, bSlot = tonumber(bBag), tonumber(bSlot)
+
+                if aBag ~= bBag then
+                    return aBag < bBag
+                end
+                return aSlot < bSlot
+            end
+
+            -- Fallback: keep original order if location format doesn't match
+            return false
+        end)
+    end
+
     if GC.db and GC.db.debug then
         print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))
     end
