@@ -180,4 +180,178 @@ function Data:GetNextTrack(currentTrackName)
     return self.TRACKS[currentIndex + 1]
 end
 
+-- Check if trackA is strictly higher than trackB in the track order
+function Data:IsHigherTrack(trackA, trackB)
+    if not trackA or not trackB then
+        return false
+    end
+    local indexA = self:GetTrackIndex(trackA)
+    local indexB = self:GetTrackIndex(trackB)
+    return indexA and indexB and indexA > indexB
+end
+
+-- Get the highest track and rank for a specific equipment slot
+function Data:GetHighestTrackForSlot(slotID)
+    if not GC.DataModel or not GC.DataModel.equipped then
+        return nil, 0
+    end
+
+    local highestTrack = nil
+    local highestRank = 0
+
+    -- Scan all equipped items to find the highest track/rank for this slot
+    for equippedSlotID, itemData in pairs(GC.DataModel.equipped) do
+        if equippedSlotID == slotID and itemData.itemLink then
+            local Logic = GC.modules.UpgradeAdvisor.Logic
+            if Logic and Logic.GetItemUpgradeInfo then
+                local trackName, currentRank = Logic.GetItemUpgradeInfo(itemData.itemLink)
+                if trackName and currentRank then
+                    -- Check if this track is higher than current highest
+                    if not highestTrack or self:IsHigherTrack(trackName, highestTrack) or (trackName == highestTrack and currentRank > highestRank) then
+                        highestTrack = trackName
+                        highestRank = currentRank
+                    end
+                end
+            end
+        end
+    end
+
+    return highestTrack, highestRank
+end
+
+-- Persistent slot cap management (SavedVariables)
+function Data:GetSlotCap(slotID)
+    if not GearCresterDB or not GearCresterDB.slotCaps then
+        return nil, 0
+    end
+    local cap = GearCresterDB.slotCaps[slotID]
+    if cap then
+        return cap.track, cap.rank
+    end
+    return nil, 0
+end
+
+function Data:SetSlotCap(slotID, track, rank)
+    if not GearCresterDB.slotCaps then
+        GearCresterDB.slotCaps = {}
+    end
+    GearCresterDB.slotCaps[slotID] = {
+        track = track,
+        rank = rank,
+    }
+end
+
+function Data:UpdateSlotCapIfHigher(slotID, track, rank)
+    if not track or not rank or rank == 0 then
+        return false
+    end
+
+    local currentCapTrack, currentCapRank = self:GetSlotCap(slotID)
+
+    -- Update if no cap exists, or if new track is higher, or if same track but higher rank
+    local shouldUpdate = false
+    if not currentCapTrack then
+        shouldUpdate = true
+    elseif self:IsHigherTrack(track, currentCapTrack) then
+        shouldUpdate = true
+    elseif track == currentCapTrack and rank > currentCapRank then
+        shouldUpdate = true
+    end
+
+    if shouldUpdate then
+        self:SetSlotCap(slotID, track, rank)
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] Slot cap updated: %s → %s %d/%d|r",
+                GC.SLOTS[slotID] or "Unknown", track, rank, Data.MAX_RANK))
+        end
+        return true
+    end
+
+    return false
+end
+
+-- Get the highest track and rank for a specific equipment slot
+-- Priority: 1) Persistent slot cap, 2) Scan equipped/bags/bank
+function Data:GetHighestTrackForSlot(slotID)
+    -- Priority 1: Check persistent slot cap first
+    local capTrack, capRank = self:GetSlotCap(slotID)
+    if capTrack and capRank > 0 then
+        return capTrack, capRank
+    end
+
+    -- Priority 2: Scan available items
+    if not GC.DataModel then
+        return nil, 0
+    end
+
+    local highestTrack = nil
+    local highestRank = 0
+
+    -- Scan equipped items
+    if GC.DataModel.equipped then
+        for equippedSlotID, itemData in pairs(GC.DataModel.equipped) do
+            if equippedSlotID == slotID and itemData.itemLink then
+                local Logic = GC.modules.UpgradeAdvisor.Logic
+                if Logic and Logic.GetItemUpgradeInfo then
+                    local trackName, currentRank = Logic.GetItemUpgradeInfo(itemData.itemLink)
+                    if trackName and currentRank then
+                        -- Update slot cap if we found a higher track/rank
+                        self:UpdateSlotCapIfHigher(slotID, trackName, currentRank)
+
+                        -- Check if this track is higher than current highest
+                        if not highestTrack or self:IsHigherTrack(trackName, highestTrack) or (trackName == highestTrack and currentRank > highestRank) then
+                            highestTrack = trackName
+                            highestRank = currentRank
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Scan bags if available
+    if GC.DataModel.bags then
+        for _, itemData in pairs(GC.DataModel.bags) do
+            if itemData.itemLink then
+                local Logic = GC.modules.UpgradeAdvisor.Logic
+                if Logic and Logic.GetItemUpgradeInfo then
+                    local trackName, currentRank = Logic.GetItemUpgradeInfo(itemData.itemLink)
+                    if trackName and currentRank then
+                        -- Update slot cap if we found a higher track/rank
+                        self:UpdateSlotCapIfHigher(slotID, trackName, currentRank)
+
+                        if not highestTrack or self:IsHigherTrack(trackName, highestTrack) or (trackName == highestTrack and currentRank > highestRank) then
+                            highestTrack = trackName
+                            highestRank = currentRank
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Scan bank if available
+    if GC.DataModel.bank then
+        for _, itemData in pairs(GC.DataModel.bank) do
+            if itemData.itemLink then
+                local Logic = GC.modules.UpgradeAdvisor.Logic
+                if Logic and Logic.GetItemUpgradeInfo then
+                    local trackName, currentRank = Logic.GetItemUpgradeInfo(itemData.itemLink)
+                    if trackName and currentRank then
+                        -- Update slot cap if we found a higher track/rank
+                        self:UpdateSlotCapIfHigher(slotID, trackName, currentRank)
+
+                        if not highestTrack or self:IsHigherTrack(trackName, highestTrack) or (trackName == highestTrack and currentRank > highestRank) then
+                            highestTrack = trackName
+                            highestRank = currentRank
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return highestTrack, highestRank
+end
+
 return Data

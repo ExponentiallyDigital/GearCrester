@@ -105,6 +105,46 @@ The `/gc calibrate <slot>` command compares GearCrester's track/rank detection a
 
 Use this command to verify detection accuracy, especially for tier set items where bonus-ID mappings may differ from Blizzard's upgrade system.
 
+## Slot Caps (Important)
+
+GearCrester needs to see your items once to learn your upgrade caps.
+Blizzard does not expose slot caps through the API, so GearCrester reconstructs them.
+
+**To populate slot caps:**
+
+1. Open your **bags** once after installing the addon.
+2. Visit your **bank** once per character per season.
+
+GearCrester will automatically scan your items and store the highest track/rank
+you have ever achieved for each slot.
+You do **not** need to keep the items — once scanned, the slot cap is permanent.
+
+**Commands:**
+
+- `/gc slotcaps` — view stored slot caps
+- `/gc scan` — manually rescan inventory/bank
+- `/gc free` — list free upgrades
+
+## Free Upgrades (Track-Cap Inheritance)
+
+GearCrester automatically detects free upgrade opportunities through track-cap inheritance. If you have a higher-track item at max rank (e.g., Champion 6/6 Neck), lower-track items of the same slot (e.g., Veteran 1/6 Neck) can be upgraded to their max rank (Veteran 6/6) for FREE using gold only.
+
+Free upgrades are marked with `[FREE]` in the output.
+
+Use `/gc free` to see only free upgrade opportunities:
+
+```
+/gc free
+```
+
+**Example Output:**
+
+```
+GearCrester Free Upgrade Opportunities
+--------------------------------
+Neck [Equipped]: 233 -> 250 (FREE)
+```
+
 ## Crest Inventory
 
 GearCrester now reads your actual crest inventory using Blizzard's `C_CurrencyInfo.GetCurrencyInfo()` API. When you run `/gc` without simulation, it shows upgrades you can afford with your current crests.

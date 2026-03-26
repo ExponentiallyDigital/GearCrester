@@ -359,33 +359,26 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                         print(string.format("|cffff0000[DEBUG]   Skipped: Already at max rank (%d/%d)|r", currentRank, Data.MAX_RANK))
                     end
                 else
-                    local crestType = Data:GetCrestType(trackName)
-                    local crestCostPerStep = Data:GetCrestCost()
+                    -- Determine slot cap
+                    local highestTrack, highestRank = Data:GetHighestTrackForSlot(slotID)
 
-                    local crestCount = crestCounts[crestType] or 0
-
-                    -- Calculate max affordable rank with proper remaining crests tracking
-                    local maxRank = currentRank
-                    local remaining = crestCount
-                    local upgradeSteps = 0
-
-                    for r = currentRank, Data.MAX_RANK - 1 do
-                        if remaining >= crestCostPerStep then
-                            remaining = remaining - crestCostPerStep
-                            upgradeSteps = upgradeSteps + 1
-                            maxRank = r + 1
-                        else
-                            break
-                        end
+                    local isFree = false
+                    if highestTrack and highestRank == Data.MAX_RANK
+                       and Data:IsHigherTrack(highestTrack, trackName) then
+                        isFree = true
                     end
 
-                    if upgradeSteps > 0 then
-                        -- Get FINAL ilvl at maxRank
-                        local finalIlvl = Data.TRACK_ILVLS[trackName][maxRank]
-                        local totalCrestCost = upgradeSteps * crestCostPerStep
+                    if isFree then
+                        -- FREE upgrade path
+                        local freeMaxRank = Data.MAX_RANK
+                        local freeSteps = freeMaxRank - currentRank
+                        local finalIlvl = Data.TRACK_ILVLS[trackName][freeMaxRank]
+                        local crestType = Data:GetCrestType(trackName)
 
-                        -- Check if we can afford the FULL upgrade path
-                        local canAfford = crestCount >= totalCrestCost
+                        if GC.db and GC.db.debug then
+                            print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d→%d (slot cap %s %d)|r",
+                                trackName, currentRank, freeMaxRank, highestTrack, highestRank))
+                        end
 
                         table.insert(results, {
                             slotName = slotName,
@@ -395,17 +388,64 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                             nextIlvl = finalIlvl,
                             trackName = trackName,
                             currentRank = currentRank,
-                            maxRank = maxRank,
+                            maxRank = freeMaxRank,
                             crestType = crestType,
-                            crestCostPerStep = crestCostPerStep,
-                            totalCrestCost = totalCrestCost,
-                            upgradeSteps = upgradeSteps,
-                            isGoldOnly = false,
-                            goldOnlyTargetRank = nil,
-                            canAfford = canAfford,
+                            crestCostPerStep = 0,
+                            totalCrestCost = 0,
+                            upgradeSteps = freeSteps,
+                            isGoldOnly = true,
+                            goldOnlyTargetRank = freeMaxRank,
+                            canAfford = true,
                             priority = Data:GetSlotPriority(slotID) or 99,
                             location = itemData.location,
                         })
+
+                    else
+                        -- NORMAL crest-cost logic
+                        local crestType = Data:GetCrestType(trackName)
+                        local crestCostPerStep = Data:GetCrestCost()
+
+                        local crestCount = crestCounts[crestType] or 0
+
+                        local maxRank = currentRank
+                        local remaining = crestCount
+                        local upgradeSteps = 0
+
+                        for r = currentRank, Data.MAX_RANK - 1 do
+                            if remaining >= crestCostPerStep then
+                                remaining = remaining - crestCostPerStep
+                                upgradeSteps = upgradeSteps + 1
+                                maxRank = r + 1
+                            else
+                                break
+                            end
+                        end
+
+                        if upgradeSteps > 0 then
+                            local finalIlvl = Data.TRACK_ILVLS[trackName][maxRank]
+                            local totalCrestCost = upgradeSteps * crestCostPerStep
+                            local canAfford = crestCount >= totalCrestCost
+
+                            table.insert(results, {
+                                slotName = slotName,
+                                slotID = slotID,
+                                itemLink = itemLink,
+                                currentIlvl = currentIlvl,
+                                nextIlvl = finalIlvl,
+                                trackName = trackName,
+                                currentRank = currentRank,
+                                maxRank = maxRank,
+                                crestType = crestType,
+                                crestCostPerStep = crestCostPerStep,
+                                totalCrestCost = totalCrestCost,
+                                upgradeSteps = upgradeSteps,
+                                isGoldOnly = false,
+                                goldOnlyTargetRank = nil,
+                                canAfford = canAfford,
+                                priority = Data:GetSlotPriority(slotID) or 99,
+                                location = itemData.location,
+                            })
+                        end
                     end
                 end
             end

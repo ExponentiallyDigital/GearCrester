@@ -62,7 +62,7 @@ function Core:PrintResults(results, title)
 
     for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local goldOnlyText = entry.isGoldOnly and " [GOLD-ONLY]" or ""
+        local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
         local location = entry.location and string.format(" [%s]", entry.location) or ""
         -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
@@ -77,6 +77,44 @@ function Core:PrintResults(results, title)
             totalCost,
             goldOnlyText,
             entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
+        )
+        print(line)
+    end
+end
+
+function Core:GetFreeUpgrades()
+    -- Get all upgrades and filter for free ones only
+    local allResults = self:GetRecommendedUpgrades(nil, true, true)
+    local freeResults = {}
+
+    for _, entry in ipairs(allResults) do
+        if entry.isGoldOnly and entry.totalCrestCost == 0 then
+            table.insert(freeResults, entry)
+        end
+    end
+
+    return freeResults
+end
+
+function Core:PrintFreeUpgrades()
+    local results = self:GetFreeUpgrades()
+
+    if not results or #results == 0 then
+        GC:Print("No free upgrades available.")
+        return
+    end
+
+    print("|cff00ff98GearCrester Free Upgrade Opportunities|r")
+    print("--------------------------------")
+
+    for _, entry in ipairs(results) do
+        local location = entry.location and string.format(" [%s]", entry.location) or ""
+        local line = string.format(
+            "%s%s: %d -> %d (FREE)",
+            entry.slotName or entry.location,
+            location,
+            entry.currentIlvl,
+            entry.nextIlvl
         )
         print(line)
     end

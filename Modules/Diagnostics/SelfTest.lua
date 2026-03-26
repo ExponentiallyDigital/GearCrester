@@ -34,6 +34,10 @@ function SelfTest:RunAllTests()
     self:TestSlashCrestsCommandExists()
     self:TestCrestIDsCorrect()
     self:TestCrestLookupReturnsValues()
+    self:TestFreeUpgradeDetection()
+    self:TestFreeSlashCommand()
+    self:TestSlotCaps()
+    self:TestScanCommand()
     self:TestAdvisorLogicAPI()
     self:TestUpgradeEvaluation()
     self:TestSlashCommandRegistration()
@@ -457,6 +461,105 @@ function SelfTest:TestCrestLookupReturnsValues()
     end
 
     pass("Crest Lookup Returns Values")
+end
+
+function SelfTest:TestFreeUpgradeDetection()
+    -- Test that free upgrades (track-cap inheritance) are detected
+    local Data = GC.modules.UpgradeAdvisor.Data
+
+    if not Data or not Data.IsHigherTrack then
+        fail("Free Upgrade Detection", "IsHigherTrack function not found")
+        return
+    end
+
+    -- Test IsHigherTrack
+    if not Data:IsHigherTrack("CHAMPION", "VETERAN") then
+        fail("Free Upgrade Detection", "IsHigherTrack(CHAMPION, VETERAN) should return true")
+        return
+    end
+
+    if Data:IsHigherTrack("VETERAN", "CHAMPION") then
+        fail("Free Upgrade Detection", "IsHigherTrack(VETERAN, CHAMPION) should return false")
+        return
+    end
+
+    -- Test GetHighestTrackForSlot exists
+    if not Data.GetHighestTrackForSlot then
+        fail("Free Upgrade Detection", "GetHighestTrackForSlot function not found")
+        return
+    end
+
+    pass("Free Upgrade Detection")
+end
+
+function SelfTest:TestFreeSlashCommand()
+    -- Test that /gc free command is registered
+    local Core = GC.modules.UpgradeAdvisor.Core
+
+    if not Core or not Core.PrintFreeUpgrades then
+        fail("Free Slash Command", "PrintFreeUpgrades function not found")
+        return
+    end
+
+    if not Core.GetFreeUpgrades then
+        fail("Free Slash Command", "GetFreeUpgrades function not found")
+        return
+    end
+
+    pass("Free Slash Command")
+end
+
+function SelfTest:TestSlotCaps()
+    -- Test that slot cap functions exist and work
+    local Data = GC.modules.UpgradeAdvisor.Data
+
+    if not Data.GetSlotCap then
+        fail("Slot Caps", "GetSlotCap function not found")
+        return
+    end
+
+    if not Data.SetSlotCap then
+        fail("Slot Caps", "SetSlotCap function not found")
+        return
+    end
+
+    if not Data.UpdateSlotCapIfHigher then
+        fail("Slot Caps", "UpdateSlotCapIfHigher function not found")
+        return
+    end
+
+    -- Test basic slot cap operations
+    if not GearCresterDB.slotCaps then
+        GearCresterDB.slotCaps = {}
+    end
+
+    -- Set a test cap
+    Data:SetSlotCap(1, "CHAMPION", 6)
+
+    local track, rank = Data:GetSlotCap(1)
+    if track ~= "CHAMPION" or rank ~= 6 then
+        fail("Slot Caps", "GetSlotCap did not return expected values")
+        return
+    end
+
+    -- Test UpdateSlotCapIfHigher
+    Data:UpdateSlotCapIfHigher(1, "HERO", 3)
+    track, rank = Data:GetSlotCap(1)
+    if track ~= "HERO" or rank ~= 3 then
+        fail("Slot Caps", "UpdateSlotCapIfHigher did not update to higher track")
+        return
+    end
+
+    pass("Slot Caps")
+end
+
+function SelfTest:TestScanCommand()
+    -- Test that /gc scan command exists
+    if SlashCmdList and SlashCmdList["GEARCRESTER"] then
+        pass("Scan Command")
+    else
+        fail("Scan Command", "GEARCRESTER slash command not registered")
+    end
 end
 
 function SelfTest:TestAdvisorLogicAPI()

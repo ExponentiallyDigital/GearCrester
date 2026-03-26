@@ -556,3 +556,67 @@ _Total files modified: 28_
 *Total prompts tracked: 25*  
 *Total files created: 12*  
 *Total files modified: 30* 
+  
+---  
+  
+## 2026-03-24 - Free Upgrade Detection (Track-Cap Inheritance)  
+  
+**Summary:** Implemented free upgrade detection for track-cap inheritance. When a higher-track item is at max rank (e.g., Champion 6/6), lower-track items in the same slot (e.g., Veteran 1/6) can upgrade to their max rank for FREE.  
+  
+**Files Modified:**  
+- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added IsHigherTrack() and GetHighestTrackForSlot() helper functions  
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added free upgrade detection before crest-cost logic  
+- `Modules/UpgradeAdvisor/AdvisorCore.lua` - Added GetFreeUpgrades() and PrintFreeUpgrades() functions  
+- `Core/Init.lua` - Added /gc free command  
+- `README.md` - Documented free upgrades and /gc free command  
+- `Modules/Diagnostics/SelfTest.lua` - Added TestFreeUpgradeDetection and TestFreeSlashCommand tests  
+- `docs/testplans/free-upgrades.md` - Updated with comprehensive test cases  
+  
+**Notes:**  
+- User reported Veteran 1/6 Neck with Champion 6/6 Neck equipped showed "No upgrades available" instead of free upgrade  
+- GetHighestTrackForSlot() scans all equipped items to find highest track/rank per slot  
+- IsHigherTrack() compares track order using Data.TRACKS array position  
+- Free upgrades marked with [FREE] and crestCostPerStep=0, totalCrestCost=0  
+- /gc free filters and displays only free upgrades  
+- Guardrail compliance: Added new logic without modifying existing evaluation logic (free check happens BEFORE crest-cost logic)  
+- Verification: /gc free should list Veteran 1/6 - Neck as FREE when Champion 6/6 Neck is equipped  
+  
+---  
+  
+*Last updated: 2026-03-24*  
+*Total prompts tracked: 26*  
+*Total files created: 12*  
+*Total files modified: 31* 
+  
+---  
+  
+## 2026-03-24 - Persistent Slot Caps Implementation  
+  
+**Summary:** Implemented persistent slot caps that persist across sessions and survive item deletion. Slot caps allow free upgrade detection even when player is far from bank or no longer owns the higher-track item.  
+  
+**Files Modified:**  
+- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added GetSlotCap(), SetSlotCap(), UpdateSlotCapIfHigher(), updated GetHighestTrackForSlot()  
+- `Modules/InventoryScanner/ScannerBags.lua` - Implemented actual bag scanning  
+- `Modules/InventoryScanner/ScannerBank.lua` - Implemented actual bank scanning  
+- `Core/Events.lua` - Added controlled scanning with session flags  
+- `Core/Init.lua` - Added /gc scan and /gc slotcaps commands  
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added ::continue:: label for free upgrade skip  
+- `README.md` - Added Slot Caps documentation  
+- `Modules/Diagnostics/SelfTest.lua` - Added TestSlotCaps and TestScanCommand tests  
+  
+**Notes:**  
+- User chose Option A: persistent slot caps matching Blizzard's hidden upgrade rules  
+- SavedVariables: GearCresterDB.slotCaps[slotID] = {track, rank}  
+- Session flags: GearCresterDB.session.bagsScanned, .bankScanned  
+- Scanning: equipped+bags on login, bank once when opened, /gc scan for manual rescan  
+- GetHighestTrackForSlot() priority: 1) slot cap, 2) scan equipped/bags/bank  
+- Free upgrades work anywhere, even if item sold/deleted, even if bank closed  
+- Guardrail compliance: Slot caps only increase, never decrease (matches Blizzard behavior)  
+- Verification: /gc slotcaps shows stored caps; /gc scan forces rescan; /gc free shows free upgrades  
+  
+---  
+  
+*Last updated: 2026-03-24*  
+*Total prompts tracked: 27*  
+*Total files created: 12*  
+*Total files modified: 32* 

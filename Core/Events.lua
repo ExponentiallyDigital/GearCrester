@@ -23,6 +23,12 @@ frame:SetScript("OnEvent", function(_, event, arg1)
         if type(GearCresterDB.slotWeights) ~= "table" then
             GearCresterDB.slotWeights = {}
         end
+        if type(GearCresterDB.slotCaps) ~= "table" then
+            GearCresterDB.slotCaps = {}
+        end
+        if type(GearCresterDB.session) ~= "table" then
+            GearCresterDB.session = {}
+        end
 
         if type(GearCresterExportDB) ~= "table" then
             GearCresterExportDB = {}
@@ -33,14 +39,26 @@ frame:SetScript("OnEvent", function(_, event, arg1)
 
         GC:OnLoad()
     elseif event == "PLAYER_LOGIN" then
+        -- Scan equipped items on login
         GC.modules.InventoryScanner.ScannerEquipped:Scan()
-        GC.modules.InventoryScanner.ScannerBags:Scan()
-        GC.modules.InventoryScanner.ScannerBank:Scan()
+
+        -- Scan bags once per session
+        if not GearCresterDB.session.bagsScanned then
+            GC.modules.InventoryScanner.ScannerBags:Scan()
+            GearCresterDB.session.bagsScanned = true
+        end
+
+        -- Do NOT scan bank on login - wait for bank to be opened
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         GC.modules.InventoryScanner.ScannerEquipped:Scan()
     elseif event == "BAG_UPDATE" then
-        GC.modules.InventoryScanner.ScannerBags:Scan()
+        -- Do NOT scan on bag-open events (performance)
+        -- Only scan when explicitly requested via /gc scan
     elseif event == "PLAYERBANKSLOTS_CHANGED" then
-        GC.modules.InventoryScanner.ScannerBank:Scan()
+        -- Scan bank once when bank is opened
+        if not GearCresterDB.session.bankScanned then
+            GC.modules.InventoryScanner.ScannerBank:Scan()
+            GearCresterDB.session.bankScanned = true
+        end
     end
 end)

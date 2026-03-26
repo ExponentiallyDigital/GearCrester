@@ -49,6 +49,9 @@ function GC:OnLoad()
                 print("/gc why - Show why items are not upgradeable")
                 print("/gc calibrate [slot] - Compare GC vs Blizzard upgrade data (default: Head)")
                 print("/gc crests - Show current crest inventory")
+                print("/gc free - Show free upgrade opportunities (track-cap inheritance)")
+                print("/gc scan - Manually rescan inventory and bank")
+                print("/gc slotcaps - View stored slot caps")
                 print("/gc dump - Dump all items with bonus IDs")
                 print("/gc test - Run self-diagnostics")
                 print("/gc export - Export upgradeable items")
@@ -168,6 +171,49 @@ function GC:OnLoad()
                 print(string.format("  Champion:   %d", counts.CHAMPION or 0))
                 print(string.format("  Hero:       %d", counts.HERO or 0))
                 print(string.format("  Myth:       %d", counts.MYTH or 0))
+                return
+            elseif cmd == "free" then
+                -- Display free upgrade opportunities
+                GC.modules.UpgradeAdvisor.Core:PrintFreeUpgrades()
+                return
+            elseif cmd == "scan" then
+                -- Manual full rescan
+                if GC.db and GC.db.debug then
+                    print("|cff00ff98[DEBUG] Running full scan (manual)|r")
+                end
+
+                -- Reset session flags to force rescan
+                GearCresterDB.session.bagsScanned = false
+                GearCresterDB.session.bankScanned = false
+
+                -- Scan everything
+                GC.modules.InventoryScanner.ScannerEquipped:Scan()
+                GC.modules.InventoryScanner.ScannerBags:Scan()
+                GearCresterDB.session.bagsScanned = true
+
+                -- Only scan bank if bank is open
+                if BankFrame and BankFrame:IsShown() then
+                    GC.modules.InventoryScanner.ScannerBank:Scan()
+                    GearCresterDB.session.bankScanned = true
+                end
+
+                GC:Print("Full inventory scan complete. Type /gc to see upgrades.")
+                return
+            elseif cmd == "slotcaps" then
+                -- Display stored slot caps
+                print("|cff00ff98GearCrester Slot Caps:|r")
+                print("--------------------------------")
+
+                local hasCaps = false
+                for slotID, cap in pairs(GearCresterDB.slotCaps or {}) do
+                    hasCaps = true
+                    local slotName = GC.SLOTS[slotID] or "Unknown"
+                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.rank, 6))
+                end
+
+                if not hasCaps then
+                    print("(no data yet - equip items or open bags/bank)")
+                end
                 return
             elseif cmd == "test" then
                 if GC.modules.Diagnostics and GC.modules.Diagnostics.SelfTest then
