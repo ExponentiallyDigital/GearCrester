@@ -18,3 +18,26 @@ GC.SLOTS = {
     [16] = "MainHand",
     [17] = "OffHand",
 }
+
+-- Map equip location strings to slot names
+GC.EQUIPLOC_TO_SLOT = {
+    INVTYPE_HEAD = "Head",
+    INVTYPE_NECK = "Neck",
+    INVTYPE_SHOULDER = "Shoulder",
+    INVTYPE_CHEST = "Chest",
+    INVTYPE_ROBE = "Chest",
+    INVTYPE_WAIST = "Waist",
+    INVTYPE_LEGS = "Legs",
+    INVTYPE_FEET = "Feet",
+    INVTYPE_WRIST = "Wrist",
+    INVTYPE_HAND = "Hands",
+    INVTYPE_FINGER = "Finger",
+    INVTYPE_TRINKET = "Trinket",
+    INVTYPE_CLOAK = "Back",
+    INVTYPE_WEAPON = "MainHand",
+    INVTYPE_2HWEAPON = "MainHand",
+    INVTYPE_WEAPONMAINHAND = "MainHand",
+    INVTYPE_WEAPONOFFHAND = "OffHand",
+    INVTYPE_SHIELD = "OffHand",
+    INVTYPE_HOLDABLE = "OffHand",
+}

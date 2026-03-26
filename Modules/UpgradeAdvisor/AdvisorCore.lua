@@ -27,11 +27,6 @@ function Core:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
     local results = Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
-    -- Apply gold-only detection (only for non-simulated results)
-    if FreeUpgrade then
-        FreeUpgrade:ApplyGoldOnlyDetection(results, simulatedCrests)
-    end
-
     -- Sort using UpgradeOrder priorities
     if UpgradeOrder then
         table.sort(results, function(a, b)
@@ -57,26 +52,36 @@ function Core:PrintResults(results, title)
     if title then
         print(title)
     else
-        print("|cff00ff98GearCrester Upgrade Recommendations:|r")
+        print("|cff00ff98GearCrester: upgrade recommendations:|r")
     end
 
     for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
-        local location = entry.location and string.format(" [%s]", entry.location) or ""
+        local location = ""
+        if entry.location then
+            location = " [" .. entry.location .. "]"
+        end
         -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
+        local costText = string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
+        if entry.isGoldOnly then
+            costText = "(FREE)"
+        end
+        local itemName = ""
+        if entry.itemLink then
+            itemName = " " .. entry.itemLink
+        end
         local line = string.format(
-            "%s%s: %d -> %d (%s%s x%d|r)%s%s",
-            entry.slotName or entry.location,
+            "%s%s: %d -> %d %s%s%s%s",
+            entry.slotName,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
-            affordColor,
-            entry.crestType,
-            totalCost,
+            costText,
             goldOnlyText,
-            entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
+            entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or "",
+            itemName
         )
         print(line)
     end
@@ -104,17 +109,25 @@ function Core:PrintFreeUpgrades()
         return
     end
 
-    print("|cff00ff98GearCrester Free Upgrade Opportunities|r")
+    print("|cff00ff98GearCrester: free upgrade opportunities|r")
     print("--------------------------------")
 
     for _, entry in ipairs(results) do
-        local location = entry.location and string.format(" [%s]", entry.location) or ""
+        local location = ""
+        if entry.location then
+            location = " [" .. entry.location .. "]"
+        end
+        local itemName = ""
+        if entry.itemLink then
+            itemName = " " .. entry.itemLink
+        end
         local line = string.format(
-            "%s%s: %d -> %d (FREE)",
-            entry.slotName or entry.location,
+            "%s%s: %d -> %d [FREE]%s",
+            entry.slotName,
             location,
             entry.currentIlvl,
-            entry.nextIlvl
+            entry.nextIlvl,
+            itemName
         )
         print(line)
     end

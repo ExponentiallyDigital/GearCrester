@@ -99,7 +99,7 @@ function MainFrame:Update()
     end
 
     local lines = {}
-    table.insert(lines, "|cff00ff98GearCrester Upgrade Recommendations|r")
+    table.insert(lines, "|cff00ff98GearCrester: upgrade recommendations|r")
     table.insert(lines, "")
 
     for _, entry in ipairs(results) do

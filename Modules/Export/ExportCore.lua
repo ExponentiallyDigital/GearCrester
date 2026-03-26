@@ -87,8 +87,8 @@ function Export:RunExport(simulatedCrests)
     GearCresterExportDB.lastExportTime = os.date and os.date("%Y-%m-%d %H:%M:%S") or "Unknown"
     GearCresterExportDB.exportItems = exportItems
 
-    print("|cff00ff98GearCrester:|r Export complete. File will be written on logout.")
-    print("|cff00ff98GearCrester:|r Path: WTF/<account_name>/<character_name>/SavedVariables/GearCrester.lua")
+    print("|cff00ff98GearCrester:|r export complete. File will be written on |cffff0000**successful logout**|r.")
+    print("|cff00ff98GearCrester:|r path: WTF/Account/<account_name>/SavedVariables/GearCrester.lua")
 end
 
 function Export:PrintExport()
@@ -108,7 +108,7 @@ function Export:PrintExport()
 
     local exportItems = self:GenerateExportData(results)
     local exportString = self:GenerateExportString(exportItems)
-    print("|cff00ff98GearCrester Export|r")
+    print("|cff00ff98GearCrester: export|r")
     print("Copy the following lines:")
     print(exportString)
 end

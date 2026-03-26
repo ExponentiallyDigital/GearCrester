@@ -17,7 +17,7 @@ end
 function SelfTest:RunAllTests()
     testResults = {}
 
-    print("|cff00ff98GearCrester Self-Diagnostics|r")
+    print("|cff00ff98GearCrester: self-diagnostics|r")
     print("================================")
 
     self:TestBonusIDParsing()

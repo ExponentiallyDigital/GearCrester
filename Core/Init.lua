@@ -41,7 +41,7 @@ function GC:OnLoad()
             cmd = cmd and cmd:lower()
 
             if cmd == "help" then
-                print("|cff00ff98GearCrester Help|r")
+                print("|cff00ff98GearCrester: help|r")
                 print("--------------------------------")
                 print("/gc - Show upgrade recommendations")
                 print("/gc <count> <crestType> - Simulate upgrades (e.g., /gc 40 champion)")
@@ -77,7 +77,7 @@ function GC:OnLoad()
                     GC:Print("All slot weights reset to default.")
                     return
                 elseif subCmd == "list" then
-                    print("|cff00ff98GearCrester Slot Weights|r")
+                    print("|cff00ff98GearCrester: slot weights|r")
                     print("--------------------------------")
                     local weights = GC.modules.UpgradeAdvisor.UpgradeOrder:GetAllWeights()
                     local slotNames = GC.SLOTS
@@ -165,7 +165,7 @@ function GC:OnLoad()
             elseif cmd == "crests" then
                 -- Display current crest inventory
                 local counts = GC.modules.CrestTracker.CrestData:GetAllCrestCounts()
-                print("|cff00ff98GearCrester: Current Crest Inventory|r")
+                print("|cff00ff98GearCrester: current crest inventory|r")
                 print(string.format("  Adventurer: %d", counts.ADVENTURER or 0))
                 print(string.format("  Veteran:    %d", counts.VETERAN or 0))
                 print(string.format("  Champion:   %d", counts.CHAMPION or 0))
@@ -201,7 +201,7 @@ function GC:OnLoad()
                 return
             elseif cmd == "slotcaps" then
                 -- Display stored slot caps
-                print("|cff00ff98GearCrester Slot Caps:|r")
+                print("|cff00ff98GearCrester: slot caps|r")
                 print("--------------------------------")
 
                 local hasCaps = false
@@ -243,10 +243,10 @@ function GC:OnLoad()
                             local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests, true, true)
 
                             if not results or #results == 0 then
-                                GC.modules.UI.MainFrame:ShowResults("|cff00ff98GearCrester Upgrade Recommendations|r\n\nNo upgrades available for equipped gear, bags, or bank.")
+                                GC.modules.UI.MainFrame:ShowResults("|cff00ff98GearCrester: upgrade recommendations|r\n\nNo upgrades available for equipped gear, bags, or bank.")
                             else
                                 local lines = {}
-                                table.insert(lines, "|cff00ff98GearCrester Upgrade Recommendations (Simulated: " .. count .. " " .. crestTypeUpper .. ")|r")
+                                table.insert(lines, "|cff00ff98GearCrester: upgrade recommendations (simulated: " .. count .. " " .. crestTypeUpper .. ")|r")
                                 table.insert(lines, "")
 
                                 for _, entry in ipairs(results) do
@@ -335,7 +335,7 @@ function GC:OnLoad()
                     local AdvisorCore = GC.modules.UpgradeAdvisor.Core
                     local simulatedCrests = GC.modules.CrestTracker.CrestData:SimulateCrests(crestTypeUpper, count)
                     local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests, true, true)
-                    AdvisorCore:PrintResults(results, string.format("|cff00ff98GearCrester Upgrade Recommendations (Simulated: %d %s):|r", count, crestTypeUpper))
+                    AdvisorCore:PrintResults(results, string.format("|cff00ff98GearCrester: upgrade recommendations (simulated: %d %s)|r", count, crestTypeUpper))
                 else
                     GC:Print("Invalid crest type. Valid types: ADVENTURER, VETERAN, CHAMPION, HERO, MYTH")
                 end

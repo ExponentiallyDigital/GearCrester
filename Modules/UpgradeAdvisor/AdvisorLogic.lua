@@ -471,7 +471,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 end
 
 function Logic:DumpAllItems()
-    print("|cff00ff98GearCrester Bonus ID Dump:|r")
+    print("|cff00ff98GearCrester: bonus ID dump:|r")
 
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
 
@@ -537,7 +537,7 @@ function Logic:GetItemDiagnostics(itemLink)
 end
 
 function Logic:PrintWhyDiagnostics()
-    print("|cff00ff98GearCrester Upgrade Diagnostics (why items are not upgradable):|r")
+    print("|cff00ff98GearCrester: upgrade diagnostics (why items are not upgradable):|r")
 
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
 
