@@ -38,9 +38,8 @@ function Export:GenerateExportString(exportItems)
     end
 
     local lines = {}
-    table.insert(lines, "-- GearCrester Export")
-    table.insert(lines, "-- Generated: " .. (date and date("%Y-%m-%d %H:%M:%S") or "Unknown"))
-    table.insert(lines, "-- Upgradeable Items")
+    table.insert(lines, "GearCrester upgradeable items")
+    table.insert(lines, "Generated: " .. (date and date("%Y-%m-%d %H:%M:%S") or "Unknown"))
     table.insert(lines, "")
 
     for _, item in ipairs(exportItems) do
@@ -68,6 +67,13 @@ function Export:RunExport(simulatedCrests)
     if not Logic then
         print("|cffff0000GearCrester|r Export failed: UpgradeAdvisor.Logic module not available")
         return
+    end
+
+    -- Ensure the data model is populated before exporting
+    if GC.modules.InventoryScanner then
+        GC.modules.InventoryScanner.ScannerEquipped:Scan()
+        GC.modules.InventoryScanner.ScannerBags:Scan()
+        GC.modules.InventoryScanner.ScannerBank:Scan()
     end
 
     local results = Logic.GetRecommendedUpgrades(Logic, simulatedCrests, true, true)
@@ -100,6 +106,13 @@ function Export:PrintExport()
         return
     end
 
+    -- Ensure the data model is populated before exporting
+    if GC.modules.InventoryScanner then
+        GC.modules.InventoryScanner.ScannerEquipped:Scan()
+        GC.modules.InventoryScanner.ScannerBags:Scan()
+        GC.modules.InventoryScanner.ScannerBank:Scan()
+    end
+
     local results = Logic.GetRecommendedUpgrades(Logic, nil, true, true)
 
     if not results or #results == 0 then
@@ -109,8 +122,17 @@ function Export:PrintExport()
 
     local exportItems = self:GenerateExportData(results)
     local exportString = self:GenerateExportString(exportItems)
+
+    -- Also write to SavedVariables (same as RunExport)
+    if not GearCresterExportDB then
+        GearCresterExportDB = {}
+    end
+
+    GearCresterExportDB.lastExport = exportString
+    GearCresterExportDB.lastExportTime = date and date("%Y-%m-%d %H:%M:%S") or "Unknown"
+    GearCresterExportDB.exportItems = exportItems
+
     print("|cff00ff98GearCrester: export|r")
-    print("Copy the following lines:")
     print(exportString)
 end
 
