@@ -38,7 +38,7 @@ function Export:GenerateExportString(exportItems)
     end
 
     local lines = {}
-    table.insert(lines, "GearCrester upgradeable items")
+    table.insert(lines, "\nGearCrester upgradeable items")
     table.insert(lines, "Generated: " .. (date and date("%Y-%m-%d %H:%M:%S") or "Unknown"))
     table.insert(lines, "")
 
@@ -48,13 +48,13 @@ function Export:GenerateExportString(exportItems)
         if item.Location then
             table.insert(lines, "Location = " .. item.Location)
         end
-        table.insert(lines, "ItemLink = " .. (item.ItemLink or "nil"))
-        table.insert(lines, "CurrentILvl = " .. (item.CurrentILvl or "nil"))
-        table.insert(lines, "CurrentRank = " .. (item.CurrentRank or "nil"))
-        table.insert(lines, "Track = " .. (item.Track or "nil"))
-        table.insert(lines, "UpgradeSteps = " .. item.UpgradeSteps)
-        table.insert(lines, "CrestCostPerStep = " .. item.CrestCostPerStep)
-        table.insert(lines, "TotalCrestCost = " .. item.TotalCrestCost)
+        table.insert(lines, "Item link = " .. (item.ItemLink or "nil"))
+        table.insert(lines, "Current ilevel = " .. (item.CurrentILvl or "nil"))
+        table.insert(lines, "Current rank = " .. (item.CurrentRank or "nil"))
+        table.insert(lines, "Track = " .. GC.ColorTrack(item.Track or "nil"))
+        table.insert(lines, "Upgrade steps = " .. item.UpgradeSteps)
+        table.insert(lines, "Crest cost per step = " .. item.CrestCostPerStep)
+        table.insert(lines, "Total crest cost = " .. item.TotalCrestCost)
         table.insert(lines, "")
     end
 

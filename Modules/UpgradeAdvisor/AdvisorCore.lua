@@ -88,7 +88,7 @@ function Core:PrintResults(results, title)
         local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
         local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
+        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, GC.ColorTrack(entry.crestType), totalCost)
         local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
 
         print(string.format(
@@ -110,7 +110,7 @@ function Core:PrintResults(results, title)
         local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
         local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, entry.crestType, totalCost)
+        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, GC.ColorTrack(entry.crestType), totalCost)
         local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
 
         print(string.format(

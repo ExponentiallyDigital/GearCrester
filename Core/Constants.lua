@@ -41,3 +41,18 @@ GC.EQUIPLOC_TO_SLOT = {
     INVTYPE_SHIELD = "OffHand",
     INVTYPE_HOLDABLE = "OffHand",
 }
+
+-- Track colour codes for printed output
+GC.TRACK_COLORS = {
+    ADVENTURER = "|cffffff00",
+    VETERAN    = "|cff00ff00",
+    CHAMPION   = "|cffb04bff",
+    HERO       = "|cffff66ff",
+    MYTH       = "|cffff0000",
+}
+
+function GC.ColorTrack(track)
+    local c = GC.TRACK_COLORS[track]
+    if not c then return track end
+    return c .. track .. "|r"
+end

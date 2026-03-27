@@ -113,7 +113,7 @@ function MainFrame:Update()
             entry.currentIlvl,
             entry.nextIlvl,
             affordColor,
-            entry.crestType,
+            GC.ColorTrack(entry.crestType),
             totalCost)
         table.insert(lines, line)
     end

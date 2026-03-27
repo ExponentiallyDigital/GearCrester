@@ -53,7 +53,7 @@ local function DetermineTrack(bonusIDs)
                 for _, trackBonusID in ipairs(trackBonusIDs) do
                     if bonusID == trackBonusID then
                         if GC.db and GC.db.debug then
-                            print(string.format("|cff00ff00[DEBUG] MATCH! Bonus ID %d found in %s track|r", bonusID, trackName))
+                            print(string.format("|cff00ff00[DEBUG] MATCH! Bonus ID %d found in %s track|r", bonusID, GC.ColorTrack(trackName)))
                         end
                         return trackName
                     end
@@ -150,7 +150,7 @@ local function GetItemUpgradeInfo(itemLink)
         end
 
         if GC.db and GC.db.debug then
-            print(string.format("|cff00ff00[DEBUG] Blizzard API: track=%s rank=%d|r", trackName, rank))
+            print(string.format("|cff00ff00[DEBUG] Blizzard API: track=%s rank=%d|r", GC.ColorTrack(trackName), rank))
         end
         return trackName, rank
     end
@@ -175,14 +175,14 @@ local function GetItemUpgradeInfo(itemLink)
         if rank then
             -- Both track and rank found canonically
             if GC.db and GC.db.debug then
-                print(string.format("|cff00ff00[DEBUG] Canonical: %s track rank %d|r", trackName, rank))
+                print(string.format("|cff00ff00[DEBUG] Canonical: %s track rank %d|r", GC.ColorTrack(trackName), rank))
             end
             return trackName, rank
         end
 
         -- Track found but rank missing - attempt rank-id inference fallback
         if GC.db and GC.db.debug then
-            print(string.format("|cff00ff00[DEBUG] Track=%s found but rank missing - running rank-id fallback|r", trackName))
+            print(string.format("|cff00ff00[DEBUG] Track=%s found but rank missing - running rank-id fallback|r", GC.ColorTrack(trackName)))
         end
     else
         -- No canonical track - will attempt full inference below
@@ -283,9 +283,9 @@ function Logic:CalibrateItemUpgradeInfo(itemLink, slotName)
     -- Print comparison
     print("|cff00ff98[CALIBRATE] " .. (slotName or "Item") .. "|r")
     print("  Bonus IDs: " .. table.concat(bonusIDs, ", "))
-    print("  GearCrester: track=" .. (gcTrack or "nil") .. " rank=" .. (gcRank or "nil"))
+    print("  GearCrester: track=" .. GC.ColorTrack(gcTrack or "nil") .. " rank=" .. (gcRank or "nil"))
     if blizzTrack then
-        print("  Blizzard:    track=" .. blizzTrack .. " rank=" .. blizzRank)
+        print("  Blizzard:    track=" .. GC.ColorTrack(blizzTrack) .. " rank=" .. blizzRank)
         if gcTrack == blizzTrack and gcRank == blizzRank then
             print("  |cff00ff00[OK] Match|r")
         else
@@ -318,7 +318,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         if GC.db and GC.db.debug then
             print("|cff00ff98[DEBUG] Using real crest inventory|r")
             for crestType, count in pairs(crestCounts) do
-                print(string.format("|cff00ff98[DEBUG]   %s: %d|r", crestType, count))
+                print(string.format("|cff00ff98[DEBUG]   %s: %d|r", GC.ColorTrack(crestType), count))
             end
         end
     end
@@ -343,7 +343,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
                 if GC.db and GC.db.debug then
                     print(string.format("|cff00ff98[DEBUG] %s=%s ilvl=%d track=%s rank=%d|r",
-                        sourceName, slotName or "Unknown", currentIlvl, trackName or "nil", currentRank or 0))
+                        sourceName, slotName or "Unknown", currentIlvl, GC.ColorTrack(trackName or "nil"), currentRank or 0))
                 end
 
                 if not trackName then
@@ -521,7 +521,7 @@ function Logic:DumpAllItems()
             print(string.format("%s: ilvl=%d track=%s rank=%s bonusIDs=[%s]",
                 slotName or "Unknown",
                 ilvl,
-                trackName or "nil",
+                GC.ColorTrack(trackName or "nil"),
                 currentRank or "nil",
                 table.concat(bonusIDs, ", ") or "none"))
         end

@@ -233,7 +233,7 @@ function GC:OnLoad()
                     local slotName = GC.SLOTS[slotID] or "Unknown"
                     -- Show max rank as Data.MAX_RANK for consistency (always 6/6 for Midnight Season 1)
                     local maxRank = GC.modules.UpgradeAdvisor and GC.modules.UpgradeAdvisor.Data and GC.modules.UpgradeAdvisor.Data.MAX_RANK or 6
-                    print(string.format("%s: %s %d/%d", slotName, cap.track, cap.currUpgrade, maxRank))
+                    print(string.format("%s: %s %d/%d", slotName, GC.ColorTrack(cap.track), cap.currUpgrade, maxRank))
                 end
 
                 if not hasCaps then
@@ -285,7 +285,7 @@ function GC:OnLoad()
                                         entry.currentIlvl,
                                         entry.nextIlvl,
                                         affordColor,
-                                        entry.crestType,
+                                        GC.ColorTrack(entry.crestType),
                                         totalCost)
                                     table.insert(lines, line)
                                 end
@@ -360,7 +360,7 @@ function GC:OnLoad()
                     local AdvisorCore = GC.modules.UpgradeAdvisor.Core
                     local simulatedCrests = GC.modules.CrestTracker.CrestData:SimulateCrests(crestTypeUpper, count)
                     local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests, true, true)
-                    AdvisorCore:PrintResults(results, string.format("|cff00ff98GearCrester: upgrade recommendations (simulated: %d %s)|r", count, crestTypeUpper))
+                    AdvisorCore:PrintResults(results, string.format("|cff00ff98GearCrester: upgrade recommendations (simulated: %d %s)|r", count, GC.ColorTrack(crestTypeUpper)))
                 else
                     GC:Print("Invalid crest type. Valid types: ADVENTURER, VETERAN, CHAMPION, HERO, MYTH")
                 end

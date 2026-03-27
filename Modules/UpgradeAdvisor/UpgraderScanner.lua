@@ -159,7 +159,7 @@ function UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         trackName = "MYTH"
     end
 
-    DebugPrint(("Slot %d: Blizzard API succeeded (%s %d/%d)"):format(slotID, trackName, rank, maxRank))
+    DebugPrint(("Slot %d: Blizzard API succeeded (%s %d/%d)"):format(slotID, GC.ColorTrack(trackName), rank, maxRank))
 
     ----------------------------------------------------------------
     -- STEP 2: Determine max item level
@@ -254,7 +254,7 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
             }
             captured = captured + 1
             DebugPrint(("%s (%d): %s %d/%d (max ilvl %d)"):format(
-                slotName, slotID, info.trackName, info.currUpgrade, info.maxUpgrade, info.maxItemLevel or 0
+                slotName, slotID, GC.ColorTrack(info.trackName), info.currUpgrade, info.maxUpgrade, info.maxItemLevel or 0
             ))
         else
             failed = failed + 1
