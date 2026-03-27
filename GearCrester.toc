@@ -2,7 +2,7 @@
 ## Title: GearCrester
 ## Notes: Upgrade advisor and crest planner for Midnight gear progression
 ## Author: ArcNineOhNine
-## Version: 0.1.4
+## Version: 0.1.5
 ## Category: ArcNineOhNine
 ## IconTexture: Interface\AddOns\GearCrester\media\GearCrester-icon
 ## SavedVariables: GearCresterDB, GearCresterExportDB

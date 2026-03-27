@@ -50,7 +50,7 @@ function MainFrame:Create()
     local html = CreateFrame("SimpleHTML", nil, scrollFrame)
     html:SetWidth(scrollFrame:GetWidth())
     html:SetHeight(1)  -- Height will be set by content
-    html:SetFontObject("p", "GameFontNormalSmall")
+    html:SetFontObject("p", "GameFontHighlightSmall")  -- Non-bold white text
     html:SetHyperlinksEnabled(true)
     scrollFrame:SetScrollChild(html)
 
@@ -154,11 +154,7 @@ function MainFrame:Update()
         return str:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
     end
 
-    local function itemNameFromLink(itemLink)
-        return itemLink:match("|h%[(.-)%]|h") or itemLink
-    end
-
-    -- Build HTML content
+    -- Build HTML content - keep WoW item links intact (they include quality colors)
     local htmlContent = "<html><body>"
     htmlContent = htmlContent .. "<p>GearCrester: upgrade recommendations</p>"
     htmlContent = htmlContent .. "<p></p>"
@@ -179,22 +175,23 @@ function MainFrame:Update()
             costText = string.format("(%s x%d)", trackColored, totalCost)
         end
 
-        local line = string.format("%s%s: %d -> %d %s",
+        local line = string.format("• %s%s: %d -> %d %s",
             entry.slotName or entry.location,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
             costText)
 
+        -- Append WoW item link directly (preserves quality color codes)
         if entry.itemLink then
-            local name = itemNameFromLink(entry.itemLink)
-            local href = htmlEscape(entry.itemLink)
-            line = htmlEscape(line) .. " <a href=\"" .. href .. "\">" .. htmlEscape("[" .. name .. "]") .. "</a>"
-        else
-            line = htmlEscape(line)
+            line = line .. " " .. entry.itemLink
         end
 
-        htmlContent = htmlContent .. "<p>" .. line .. "</p>"
+        -- Escape HTML special chars but preserve WoW escape sequences
+        line = line:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+
+        -- Add blank line after each item
+        htmlContent = htmlContent .. "<p>" .. line .. "</p><p></p>"
     end
 
     htmlContent = htmlContent .. "</body></html>"
@@ -213,27 +210,21 @@ function MainFrame:ShowResults(text)
         return str:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
     end
 
-    local function itemNameFromLink(itemLink)
-        return itemLink:match("|h%[(.-)%]|h") or itemLink
-    end
-
-    -- Convert plain text to HTML
+    -- Convert plain text to HTML with bullet points and spacing
     local htmlContent = "<html><body>"
     for line in text:gmatch("[^\n]+") do
-        local rawLine = line
-        if line:find("|Hitem:") then
-            local itemLink = line:match("(|Hitem:[^|]-|h%[[^%]]-%]|h)")
-            if itemLink then
-                local name = itemNameFromLink(itemLink)
-                local safeHref = htmlEscape(itemLink)
-                line = htmlEscape(line:gsub(itemLink, "")) .. " <a href=\"" .. safeHref .. "\">" .. htmlEscape("[" .. name .. "]") .. "</a>"
-            else
-                line = htmlEscape(rawLine)
+        -- Add bullet point to item lines
+        if line:find(": %d -> %d") then
+            if not line:find("^%s*•") then
+                line = "• " .. line
             end
+            -- Escape HTML but preserve WoW escape sequences (colors, links)
+            line = line:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+            htmlContent = htmlContent .. "<p>" .. line .. "</p><p></p>"
         else
-            line = htmlEscape(rawLine)
+            -- Header or other text, no bullet
+            htmlContent = htmlContent .. "<p>" .. htmlEscape(line) .. "</p>"
         end
-        htmlContent = htmlContent .. "<p>" .. line .. "</p>"
     end
     htmlContent = htmlContent .. "</body></html>"
 
