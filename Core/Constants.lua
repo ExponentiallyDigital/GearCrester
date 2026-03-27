@@ -44,11 +44,11 @@ GC.EQUIPLOC_TO_SLOT = {
 
 -- Track colour codes for printed output
 GC.TRACK_COLORS = {
-    ADVENTURER = "|cffffff00",
-    VETERAN    = "|cff00ff00",
-    CHAMPION   = "|cffb04bff",
-    HERO       = "|cffff66ff",
-    MYTH       = "|cffff0000",
+    ADVENTURER = "|cffffff00",  -- Yellow
+    VETERAN    = "|cff00ff00",  -- Green
+    CHAMPION   = "|cffb04bff",  -- Purple
+    HERO       = "|cffff66ff",  -- Pink
+    MYTH       = "|cffff0000",  -- Red
 }
 
 function GC.ColorTrack(track)

@@ -360,7 +360,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     end
                 else
                     -- Check for FREE upgrade using upgrader slot caps
-                    -- For bag/bank items, map slotName to slotID for cap lookup
+                    -- For bag/bank items, map slotName to numeric slotID for cap lookup
                     local lookupSlotID = slotID
                     if type(slotID) == "string" then
                         -- Bag/bank item: map slotName to numeric slotID
@@ -374,6 +374,15 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
                     local UpgraderScanner = GC.modules.UpgradeAdvisor.UpgraderScanner
                     local cap = UpgraderScanner and UpgraderScanner:GetSlotCap(lookupSlotID)
+
+                    if GC.db and GC.db.debug then
+                        print(string.format("|cff00ff98[DEBUG]   Slot cap lookup: slotID=%s lookupSlotID=%s cap=%s|r",
+                            tostring(slotID), tostring(lookupSlotID), cap and "found" or "nil"))
+                        if cap then
+                            print(string.format("|cff00ff98[DEBUG]     cap.track=%s cap.maxUpgrade=%d Data.MAX_RANK=%d|r",
+                                cap.track, cap.maxUpgrade, Data.MAX_RANK))
+                        end
+                    end
 
                     local isFree = false
                     local capTrack = nil

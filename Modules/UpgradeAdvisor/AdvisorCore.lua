@@ -85,21 +85,33 @@ function Core:PrintResults(results, title)
     -- Print non-bag entries first (equipped, etc.)
     for _, entry in ipairs(nonBag) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
         local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, GC.ColorTrack(entry.crestType), totalCost)
+        local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
+        local costText
+        local goldOnlyText = ""
+        if entry.isGoldOnly then
+            if entry.goldOnlyTargetRank then
+                costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
+            else
+                costText = string.format("(%s FREE)", track)
+            end
+        else
+            costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
+            goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
+        end
         local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+        local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
 
         print(string.format(
-            "%s%s: %d -> %d %s%s%s%s",
+            "%s%s: %d -> %d %s%s%s%s%s",
             entry.slotName,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
             costText,
             goldOnlyText,
-            entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or "",
+            rankText,
             itemName
         ))
     end
@@ -107,21 +119,33 @@ function Core:PrintResults(results, title)
     -- Print sorted bag entries
     for _, entry in ipairs(bagEntries) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
         local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local costText = entry.isGoldOnly and "(FREE)" or string.format("(%s%s x%d|r)", affordColor, GC.ColorTrack(entry.crestType), totalCost)
+        local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
+        local costText
+        local goldOnlyText = ""
+        if entry.isGoldOnly then
+            if entry.goldOnlyTargetRank then
+                costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
+            else
+                costText = string.format("(%s FREE)", track)
+            end
+        else
+            costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
+            goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
+        end
         local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+        local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
 
         print(string.format(
-            "%s%s: %d -> %d %s%s%s%s",
+            "%s%s: %d -> %d %s%s%s%s%s",
             entry.slotName,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
             costText,
             goldOnlyText,
-            entry.goldOnlyTargetRank and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or "",
+            rankText,
             itemName
         ))
     end

@@ -189,11 +189,11 @@ function GC:OnLoad()
                 -- Display current crest inventory
                 local counts = GC.modules.CrestTracker.CrestData:GetAllCrestCounts()
                 print("|cff00ff98GearCrester: current crest inventory|r")
-                print(string.format("  Adventurer: %d", counts.ADVENTURER or 0))
-                print(string.format("  Veteran:    %d", counts.VETERAN or 0))
-                print(string.format("  Champion:   %d", counts.CHAMPION or 0))
-                print(string.format("  Hero:       %d", counts.HERO or 0))
-                print(string.format("  Myth:       %d", counts.MYTH or 0))
+                print(string.format("  %s: %d", GC.ColorTrack("ADVENTURER"), counts.ADVENTURER or 0))
+                print(string.format("  %s: %d", GC.ColorTrack("VETERAN"), counts.VETERAN or 0))
+                print(string.format("  %s: %d", GC.ColorTrack("CHAMPION"), counts.CHAMPION or 0))
+                print(string.format("  %s: %d", GC.ColorTrack("HERO"), counts.HERO or 0))
+                print(string.format("  %s: %d", GC.ColorTrack("MYTH"), counts.MYTH or 0))
                 return
             elseif cmd == "free" then
                 -- Display free upgrade opportunities
