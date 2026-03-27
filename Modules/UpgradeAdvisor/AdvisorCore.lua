@@ -104,7 +104,7 @@ function Core:PrintResults(results, title)
         local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
 
         print(string.format(
-            "%s%s: %d -> %d %s%s%s%s%s",
+            "%s%s: %d -> %d %s%s%s%s",
             entry.slotName,
             location,
             entry.currentIlvl,
@@ -138,7 +138,7 @@ function Core:PrintResults(results, title)
         local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
 
         print(string.format(
-            "%s%s: %d -> %d %s%s%s%s%s",
+            "%s%s: %d -> %d %s%s%s%s",
             entry.slotName,
             location,
             entry.currentIlvl,
