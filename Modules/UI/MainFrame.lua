@@ -42,85 +42,101 @@ function MainFrame:Create()
     end)
     frame.closeButton = closeButton
 
-    -- Create ScrollingMessageFrame for hyperlink support
-    local msgFrame = CreateFrame("ScrollingMessageFrame", "GearCresterMessageFrame", frame)
-    msgFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
-    msgFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
-    msgFrame:SetFontObject("GameFontNormal")
-    msgFrame:SetJustifyH("LEFT")
-    msgFrame:SetFading(false)
-    msgFrame:SetMaxLines(500)
-    msgFrame:SetHyperlinksEnabled(true)
+    -- ScrollFrame + EditBox approach (guaranteed top alignment)
+    local scroll = CreateFrame("ScrollFrame", "GearCresterScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
+    scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
+    frame.scroll = scroll
 
-    -- Insert new messages at the top so the first printed line appears at the top of the frame
-    msgFrame:SetInsertMode("TOP")
-
-    -- Create scrollbar (manual sync, ScrollingMessageFrame does not support SetScrollBar)
-    local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
-    frame.scrollbar = scrollbar
-    scrollbar:SetPoint("TOPLEFT", msgFrame, "TOPRIGHT", 4, -16)
-    scrollbar:SetPoint("BOTTOMLEFT", msgFrame, "BOTTOMRIGHT", 4, 16)
-    scrollbar:SetMinMaxValues(0, 0)
-    scrollbar:SetValueStep(1)
-    scrollbar:SetObeyStepOnDrag(true)
-
-    -- When scrollbar moves → scroll the message frame
-    scrollbar:SetScript("OnValueChanged", function(self, value)
-        msgFrame:SetScrollOffset(value)
-    end)
-
-    -- When mouse wheel moves → update scrollbar
-    msgFrame:EnableMouseWheel(true)
-    msgFrame:SetScript("OnMouseWheel", function(self, delta)
-        local min, max = scrollbar:GetMinMaxValues()
-        local current = scrollbar:GetValue()
-        local newValue = current - delta * 3
-        newValue = math.max(min, math.min(max, newValue))
-        scrollbar:SetValue(newValue)
-    end)
-
-    -- Update scrollbar range whenever new text is added
-    hooksecurefunc(msgFrame, "AddMessage", function()
-        local total = msgFrame:GetNumMessages()
-
-        -- Calculate visible lines based on font height
-        local _, fontHeight = msgFrame:GetFont()
-        local visible = math.floor(msgFrame:GetHeight() / fontHeight)
-
-        local maxOffset = total - visible
-        if maxOffset < 0 then maxOffset = 0 end
-
-        scrollbar:SetMinMaxValues(0, maxOffset)
-    end)
-
-    -- Enable hyperlink interactions
-    msgFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
-        GameTooltip:SetHyperlink(link)
-        GameTooltip:Show()
-    end)
-
-    msgFrame:SetScript("OnHyperlinkLeave", function(self)
-        GameTooltip:Hide()
-    end)
-
-    msgFrame:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+    local edit = CreateFrame("EditBox", "GearCresterEditBox", scroll)
+    edit:SetMultiLine(true)
+    edit:SetFontObject("GameFontNormal")
+    edit:SetWidth(scroll:GetWidth())
+    edit:SetAutoFocus(false)
+    edit:EnableMouse(true)
+    edit:SetScript("OnEscapePressed", function() frame:Hide() end)
+    edit:SetScript("OnHyperlinkClick", function(self, link, text, button)
         if IsModifiedClick() then
             HandleModifiedItemClick(link)
         else
             ChatEdit_InsertLink(link)
         end
     end)
+    edit:SetScript("OnHyperlinkEnter", function(self, link, text)
+        GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+        GameTooltip:SetHyperlink(link)
+        GameTooltip:Show()
+    end)
+    edit:SetScript("OnHyperlinkLeave", function(self)
+        GameTooltip:Hide()
+    end)
+    edit:SetText("") -- start empty
+    edit:SetCursorPosition(0)
+    edit:ClearFocus()
+    edit:SetMaxLetters(0) -- no limit
 
-    frame.msgFrame = msgFrame
+    -- Make the edit read-only: intercept keyboard input
+    edit:SetScript("OnKeyDown", function() end)
+    edit:SetScript("OnChar", function() end)
 
-    -- When the frame is shown, force scroll to top
-    frame:HookScript("OnShow", function()
-        msgFrame:SetScrollOffset(0)
+    scroll:SetScrollChild(edit)
+
+    -- Create a manual scrollbar (sync with scroll frame)
+    local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
+    frame.scrollbar = scrollbar
+    scrollbar:SetPoint("TOPLEFT", scroll, "TOPRIGHT", 4, -16)
+    scrollbar:SetPoint("BOTTOMLEFT", scroll, "BOTTOMRIGHT", 4, 16)
+    scrollbar:SetMinMaxValues(0, 0)
+    scrollbar:SetValueStep(1)
+    scrollbar:SetObeyStepOnDrag(true)
+
+    scrollbar:SetScript("OnValueChanged", function(self, value)
+        scroll:SetVerticalScroll(value)
+    end)
+
+    -- Mouse wheel on scroll area
+    scroll:EnableMouseWheel(true)
+    scroll:SetScript("OnMouseWheel", function(self, delta)
+        local min, max = scrollbar:GetMinMaxValues()
+        local current = scrollbar:GetValue()
+        local newValue = current - delta * 20
+        newValue = math.max(min, math.min(max, newValue))
+        scrollbar:SetValue(newValue)
+    end)
+
+    -- Resize handler to update edit width and scrollbar range
+    scroll:SetScript("OnSizeChanged", function()
+        edit:SetWidth(scroll:GetWidth())
+        -- update scrollbar range
+        local _, fh = edit:GetFont()
+        local totalHeight = edit:GetNumLines() * (fh or 14)
+        local visible = scroll:GetHeight()
+        local max = math.max(0, totalHeight - visible)
+        scrollbar:SetMinMaxValues(0, max)
+        scrollbar:SetValue(0)
+        scroll:SetVerticalScroll(0)
+    end)
+
+    -- Helper to set content and reset scroll to top
+    frame.SetContent = function(self, text)
+        edit:SetText(text)
+        edit:HighlightText(0,0) -- ensure no selection
+        -- Force top
+        scroll:SetVerticalScroll(0)
         if frame.scrollbar then
             frame.scrollbar:SetValue(0)
         end
-    end)
+        -- Update scrollbar range
+        local _, fh = edit:GetFont()
+        local totalLines = edit:GetNumLines()
+        local totalHeight = totalLines * (fh or 14)
+        local visible = scroll:GetHeight()
+        local max = math.max(0, totalHeight - visible)
+        frame.scrollbar:SetMinMaxValues(0, max)
+    end
+
+    frame.msgEdit = edit
+    frame.msgScroll = scroll
 
     frame:Hide()
     self.frame = frame
@@ -157,19 +173,16 @@ function MainFrame:Update()
     local results = GC.modules.UpgradeAdvisor.Core:GetRecommendedUpgrades(nil, true, true)
 
     if not results or #results == 0 then
-        self.frame.msgFrame:Clear()
-        self.frame.msgFrame:AddMessage("No upgrades available for equipped gear, bags, or bank.")
+        self.frame:SetContent("No upgrades available for equipped gear, bags, or bank.")
         return
     end
 
-    -- Clear and add header
-    self.frame.msgFrame:Clear()
-    self.frame.msgFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
-    self.frame.msgFrame:AddMessage("")
+    -- Build the full text (preserve colors and item links)
+    local lines = {}
+    table.insert(lines, "|cff00ff98GearCrester: upgrade recommendations|r")
+    table.insert(lines, "")
 
-    -- Add messages in reverse so the first recommendation appears at the top when using TOP insert mode
-    for i = #results, 1, -1 do
-        local entry = results[i]
+    for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local location = entry.location and string.format(" [%s]", entry.location) or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
@@ -192,59 +205,19 @@ function MainFrame:Update()
             entry.nextIlvl,
             costText,
             itemName)
-        self.frame.msgFrame:AddMessage(line)
+        table.insert(lines, line)
     end
 
-    -- Immediate attempt to set top (may be overridden by internal auto-scroll)
-    self.frame.msgFrame:SetScrollOffset(0)
-    if self.frame.scrollbar then
-        self.frame.scrollbar:SetValue(0)
-    end
+    -- Join lines into a single string with newlines
+    local text = table.concat(lines, "\n")
 
-    -- Schedule a next-frame reset (ensures we run after internal layout/auto-scroll)
-    if C_Timer and C_Timer.After then
-        C_Timer.After(0, function()
-            if not self.frame or not self.frame.msgFrame then return end
-            self.frame.msgFrame:SetScrollOffset(0)
-            if self.frame.scrollbar then
-                self.frame.scrollbar:SetValue(0)
-            end
-        end)
+    -- Set content and force top alignment
+    self.frame:SetContent(text)
 
-        -- Extra small delay to cover clients where 0 may still be too early
-        C_Timer.After(0.05, function()
-            if not self.frame or not self.frame.msgFrame then return end
-            self.frame.msgFrame:SetScrollOffset(0)
-            if self.frame.scrollbar then
-                self.frame.scrollbar:SetValue(0)
-            end
-        end)
-    end
-
-    -- Ensure we also reset when the frame is resized (layout can change visible lines)
-    -- Hook once: store a flag so we don't attach multiple hooks if Update is called repeatedly.
-    if not self._gc_sizeHooked then
-        self._gc_sizeHooked = true
-        self.frame:HookScript("OnSizeChanged", function()
-            if not self.frame or not self.frame.msgFrame then return end
-            -- small timer to allow layout to settle after resize
-            if C_Timer and C_Timer.After then
-                C_Timer.After(0, function()
-                    if not self.frame or not self.frame.msgFrame then return end
-                    self.frame.msgFrame:SetScrollOffset(0)
-                    if self.frame.scrollbar then
-                        self.frame.scrollbar:SetValue(0)
-                    end
-                end)
-            else
-                self.frame.msgFrame:SetScrollOffset(0)
-                if self.frame.scrollbar then
-                    self.frame.scrollbar:SetValue(0)
-                end
-            end
-        end)
-    end
+    -- Show the frame
+    self.frame:Show()
 end
+
 
 function MainFrame:ShowResults(text)
     if not self.frame then
