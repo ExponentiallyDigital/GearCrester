@@ -162,11 +162,12 @@ function MainFrame:Update()
         return
     end
 
+    -- Clear and add header
     self.frame.msgFrame:Clear()
     self.frame.msgFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
     self.frame.msgFrame:AddMessage("")
 
-    -- Add messages in reverse so the first recommendation appears at the top
+    -- Add messages in reverse so the first recommendation appears at the top when using TOP insert mode
     for i = #results, 1, -1 do
         local entry = results[i]
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
@@ -194,12 +195,55 @@ function MainFrame:Update()
         self.frame.msgFrame:AddMessage(line)
     end
 
-    -- Ensure scrollbar range is updated (hooksecurefunc already updates min/max when AddMessage runs)
-    -- Reset scrollbar to top (safe immediate reset because insert mode is TOP)
+    -- Immediate attempt to set top (may be overridden by internal auto-scroll)
+    self.frame.msgFrame:SetScrollOffset(0)
     if self.frame.scrollbar then
         self.frame.scrollbar:SetValue(0)
     end
-    self.frame.msgFrame:SetScrollOffset(0)
+
+    -- Schedule a next-frame reset (ensures we run after internal layout/auto-scroll)
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+            if not self.frame or not self.frame.msgFrame then return end
+            self.frame.msgFrame:SetScrollOffset(0)
+            if self.frame.scrollbar then
+                self.frame.scrollbar:SetValue(0)
+            end
+        end)
+
+        -- Extra small delay to cover clients where 0 may still be too early
+        C_Timer.After(0.05, function()
+            if not self.frame or not self.frame.msgFrame then return end
+            self.frame.msgFrame:SetScrollOffset(0)
+            if self.frame.scrollbar then
+                self.frame.scrollbar:SetValue(0)
+            end
+        end)
+    end
+
+    -- Ensure we also reset when the frame is resized (layout can change visible lines)
+    -- Hook once: store a flag so we don't attach multiple hooks if Update is called repeatedly.
+    if not self._gc_sizeHooked then
+        self._gc_sizeHooked = true
+        self.frame:HookScript("OnSizeChanged", function()
+            if not self.frame or not self.frame.msgFrame then return end
+            -- small timer to allow layout to settle after resize
+            if C_Timer and C_Timer.After then
+                C_Timer.After(0, function()
+                    if not self.frame or not self.frame.msgFrame then return end
+                    self.frame.msgFrame:SetScrollOffset(0)
+                    if self.frame.scrollbar then
+                        self.frame.scrollbar:SetValue(0)
+                    end
+                end)
+            else
+                self.frame.msgFrame:SetScrollOffset(0)
+                if self.frame.scrollbar then
+                    self.frame.scrollbar:SetValue(0)
+                end
+            end
+        end)
+    end
 end
 
 function MainFrame:ShowResults(text)
