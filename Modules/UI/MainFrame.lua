@@ -54,6 +54,7 @@ function MainFrame:Create()
 
     -- Create scrollbar (manual sync, ScrollingMessageFrame does not support SetScrollBar)
     local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
+    frame.scrollbar = scrollbar
     scrollbar:SetPoint("TOPLEFT", msgFrame, "TOPRIGHT", 4, -16)
     scrollbar:SetPoint("BOTTOMLEFT", msgFrame, "BOTTOMRIGHT", 4, 16)
     scrollbar:SetMinMaxValues(0, 0)
@@ -109,6 +110,14 @@ function MainFrame:Create()
     end)
 
     frame.msgFrame = msgFrame
+
+    -- Always scroll to top after the frame refreshes
+    msgFrame:HookScript("OnDisplayRefreshed", function(self)
+        self:SetScrollOffset(0)
+        if frame.scrollbar then
+            frame.scrollbar:SetValue(0)
+        end
+    end)
 
     frame:Hide()
     self.frame = frame
@@ -178,6 +187,11 @@ function MainFrame:Update()
             costText,
             itemName)
         self.frame.msgFrame:AddMessage(line)
+    end
+    -- Scroll to top after populating the frame
+    self.frame.msgFrame:SetScrollOffset(0)
+    if self.frame.scrollbar then
+        self.frame.scrollbar:SetValue(0)
     end
 end
 
