@@ -342,21 +342,23 @@ This document tracks all feature prompts, architectural changes, module addition
 
 ---
 
-## Future Updates
+## 2026-03-27 — MainFrame UI Refactor: ScrollFrame + SimpleHTML
 
-Per QWEN_GUARDRAILS.md, this document will be automatically appended with new entries when:
+**Summary:** Replaced ScrollingMessageFrame with ScrollFrame + SimpleHTML for better display control, proper sorting, and maintainable hyperlink handling.
 
-- New feature prompts are executed
-- Architectural changes are made
-- New modules are added
-- Test plans are created or modified
-- Guardrails are updated
+**Files Modified:**
 
-**Next planned features (from backlog):**
+- `Modules/UI/MainFrame.lua` - Replaced ScrollingMessageFrame with ScrollFrame containing SimpleHTML, updated Update() and ShowResults() to build HTML content with proper sorting (non-bag first, bag entries by bag/slot), preserved hyperlink tooltips and click behavior.
+- `Core/Init.lua` - Updated /gc ui <count> <crestType> command to apply same sorting logic as UI frame.
+- `docs/testplans/ui-overview.md` - Updated test plan to reflect implemented UI with sorting, hyperlinks, and scrolling.
 
-- Compare two gear sets feature (Priority: Medium)
-- Weekly/seasonal crest cap tracking (v0.3)
-- Heatmap UI (v0.4)
+**Notes:**
+
+- SimpleHTML provides native hyperlink support with OnHyperlinkEnter/Leave/Click handlers.
+- Content sorted like /gc command: equipped items first, bag items by bag number then slot number.
+- HTML content built with <a href="itemlink"> tags for clickable items.
+- ScrollFrame provides proper scrolling without insert mode hacks.
+- Maintains all existing functionality while being more robust and extensible.
 
 ---
 
@@ -446,6 +448,35 @@ Per QWEN_GUARDRAILS.md, this document will be automatically appended with new en
 - Calibration helper prints: bonus IDs, GC detection, Blizzard API result, match/mismatch status
 - Command: `/gc calibrate head` (or any slot name)
 - Output will guide data table corrections for tier-specific rank mappings
+
+---
+
+## 2026-03-27 — MainFrame UI Rendering Fixes: Colors, Fonts, Hyperlinks
+
+**Summary:** Fixed three critical rendering bugs in MainFrame UI: (1) track names now display in their corresponding colors (yellow for ADVENTURER, green for VETERAN, etc.), (2) hyperlinks no longer show duplicate unclickable text after the item name, (3) frame text is now in regular (non-bold) font for better readability.
+
+**Files Modified:**
+
+- `Modules/UI/MainFrame.lua` - Changed SimpleHTML font from `GameFontNormal` (bold) to `GameFontNormalSmall` (regular), added `GC.ColorTrack()` call to color track names in HTML output, fixed hyperlink rendering to display only bracketed item name without duplicate raw text.
+- `docs/testplans/ui-overview.md` - Updated test plan to specify track color requirements and non-bold font expectation.
+
+**Test Plans Updated:**
+
+- `docs/testplans/ui-overview.md` - Added explicit color expectations for all five tracks and font rendering requirements.
+
+**Notes:**
+
+- Bug #1: Track names were uncolored in HTML (color codes stripped during SimpleHTML rendering)
+    - Fix: Apply `GC.ColorTrack()` before inserting into HTML string
+- Bug #2: Hyperlinks showed both item link data (`|Hitem:...`) and item name, creating double-display
+    - Fix: Wrap item name in brackets `[ItemName]` and omit raw link data from display
+- Bug #3: `GameFontNormal` renders bold by default
+    - Fix: Use `GameFontNormalSmall` which is regular weight
+- Guardrail 1.1 compliance: Changed rendering only (display layer), no core logic or frame structure modified
+- Verification: `/gc ui` and `/gc ui 50 hero` show colored track names, single clickable item links with proper names, non-bold text
+
+---
+
 - Guardrail compliance: Added new function without modifying existing detection logic
 - Next step: Run `/gc calibrate head` on user's HERO tier headpiece to confirm mismatch
 
@@ -499,124 +530,132 @@ _Last updated: 2026-03-24_
 _Total prompts tracked: 23_
 _Total files created: 12_
 _Total files modified: 28_
-  
----  
-  
-## 2026-03-24 - Real Crest Inventory Integration  
-  
-**Summary:** Implemented real crest inventory lookup using Blizzard's C_CurrencyInfo.GetCurrencyInfo() API. GearCrester now reads actual crest counts instead of always showing "No upgrades available".  
-  
-**Files Modified:**  
-- Modules/CrestTracker/CrestData.lua - Added GetAllCrestCounts() function  
-- Modules/UpgradeAdvisor/AdvisorLogic.lua - Modified GetRecommendedUpgrades() to use real crest counts  
-- Core/Init.lua - Added /gc crests command  
-- README.md - Added crest inventory documentation  
-- Modules/Diagnostics/SelfTest.lua - Added crest inventory tests  
-- docs/testplans/diagnostics.md - Added crest inventory test case  
-  
-**Notes:**  
-- User reported having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests but /gc showed "No upgrades available"  
-- Root cause: CrestData:ReadCrests() was never called to populate GC.DataModel.crests  
-- Fix: Added GetAllCrestCounts() that calls ReadCrests() then returns all counts  
-- GetRecommendedUpgrades() now calls GetAllCrestCounts() when simulatedCrests is nil  
-- New /gc crests command for debugging inventory issues  
-- Guardrail compliance: Minimal change, only added new function and integrated into existing flow  
-- Verification: /gc crests should show real crest totals; /gc should now show same upgrades as /gc 80 hero when Hero crests = 80  
-  
----  
-  
-*Last updated: 2026-03-24*  
-*Total prompts tracked: 24*  
-*Total files created: 12*  
-*Total files modified: 29* 
-  
----  
-  
-## 2026-03-24 - Dawncrest Currency ID Fix  
-  
-**Summary:** Fixed crest inventory lookup returning all zeros by correcting Dawncrest currency IDs from incorrect values (3000-3004) to correct Midnight Season 1 IDs (2914-2918).  
-  
-**Files Modified:**  
-- `Modules/CrestTracker/CrestData.lua` - Updated CREST_IDS with correct currency IDs  
-- `Modules/Diagnostics/SelfTest.lua` - Added TestCrestIDsCorrect and TestCrestLookupReturnsValues tests  
-- `README.md` - Added currency ID table  
-- `docs/testplans/diagnostics.md` - Updated with correct currency IDs  
-  
-**Notes:**  
-- User reported `/gc crests` showed all zeros despite having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests  
-- Root cause: CREST_IDS used wrong currency IDs (3000-3004 instead of 2914-2918)  
-- C_CurrencyInfo.GetCurrencyInfo(3000-3004) returned nil because those IDs don't exist  
-- Fix: Updated CREST_IDS to correct Midnight Season 1 Dawncrest IDs  
-- Guardrail compliance: Only data table changed, no logic modifications  
-- Verification: `/gc crests` should now show real Dawncrest totals for the character  
-  
----  
-  
-*Last updated: 2026-03-24*  
-*Total prompts tracked: 25*  
-*Total files created: 12*  
-*Total files modified: 30* 
-  
----  
-  
-## 2026-03-24 - Free Upgrade Detection (Track-Cap Inheritance)  
-  
-**Summary:** Implemented free upgrade detection for track-cap inheritance. When a higher-track item is at max rank (e.g., Champion 6/6), lower-track items in the same slot (e.g., Veteran 1/6) can upgrade to their max rank for FREE.  
-  
-**Files Modified:**  
-- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added IsHigherTrack() and GetHighestTrackForSlot() helper functions  
-- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added free upgrade detection before crest-cost logic  
-- `Modules/UpgradeAdvisor/AdvisorCore.lua` - Added GetFreeUpgrades() and PrintFreeUpgrades() functions  
-- `Core/Init.lua` - Added /gc free command  
-- `README.md` - Documented free upgrades and /gc free command  
-- `Modules/Diagnostics/SelfTest.lua` - Added TestFreeUpgradeDetection and TestFreeSlashCommand tests  
-- `docs/testplans/free-upgrades.md` - Updated with comprehensive test cases  
-  
-**Notes:**  
-- User reported Veteran 1/6 Neck with Champion 6/6 Neck equipped showed "No upgrades available" instead of free upgrade  
-- GetHighestTrackForSlot() scans all equipped items to find highest track/rank per slot  
-- IsHigherTrack() compares track order using Data.TRACKS array position  
-- Free upgrades marked with [FREE] and crestCostPerStep=0, totalCrestCost=0  
-- /gc free filters and displays only free upgrades  
-- Guardrail compliance: Added new logic without modifying existing evaluation logic (free check happens BEFORE crest-cost logic)  
-- Verification: /gc free should list Veteran 1/6 - Neck as FREE when Champion 6/6 Neck is equipped  
-  
----  
-  
-*Last updated: 2026-03-24*  
-*Total prompts tracked: 26*  
-*Total files created: 12*  
-*Total files modified: 31* 
-  
----  
-  
-## 2026-03-24 - Persistent Slot Caps Implementation  
-  
-**Summary:** Implemented persistent slot caps that persist across sessions and survive item deletion. Slot caps allow free upgrade detection even when player is far from bank or no longer owns the higher-track item.  
-  
-**Files Modified:**  
-- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added GetSlotCap(), SetSlotCap(), UpdateSlotCapIfHigher(), updated GetHighestTrackForSlot()  
-- `Modules/InventoryScanner/ScannerBags.lua` - Implemented actual bag scanning  
-- `Modules/InventoryScanner/ScannerBank.lua` - Implemented actual bank scanning  
-- `Core/Events.lua` - Added controlled scanning with session flags  
-- `Core/Init.lua` - Added /gc scan and /gc slotcaps commands  
-- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added ::continue:: label for free upgrade skip  
-- `README.md` - Added Slot Caps documentation  
-- `Modules/Diagnostics/SelfTest.lua` - Added TestSlotCaps and TestScanCommand tests  
-  
-**Notes:**  
-- User chose Option A: persistent slot caps matching Blizzard's hidden upgrade rules  
-- SavedVariables: GearCresterDB.slotCaps[slotID] = {track, rank}  
-- Session flags: GearCresterDB.session.bagsScanned, .bankScanned  
-- Scanning: equipped+bags on login, bank once when opened, /gc scan for manual rescan  
-- GetHighestTrackForSlot() priority: 1) slot cap, 2) scan equipped/bags/bank  
-- Free upgrades work anywhere, even if item sold/deleted, even if bank closed  
-- Guardrail compliance: Slot caps only increase, never decrease (matches Blizzard behavior)  
-- Verification: /gc slotcaps shows stored caps; /gc scan forces rescan; /gc free shows free upgrades  
-  
----  
-  
-*Last updated: 2026-03-24*  
-*Total prompts tracked: 27*  
-*Total files created: 12*  
-*Total files modified: 32* 
+
+---
+
+## 2026-03-24 - Real Crest Inventory Integration
+
+**Summary:** Implemented real crest inventory lookup using Blizzard's C_CurrencyInfo.GetCurrencyInfo() API. GearCrester now reads actual crest counts instead of always showing "No upgrades available".
+
+**Files Modified:**
+
+- Modules/CrestTracker/CrestData.lua - Added GetAllCrestCounts() function
+- Modules/UpgradeAdvisor/AdvisorLogic.lua - Modified GetRecommendedUpgrades() to use real crest counts
+- Core/Init.lua - Added /gc crests command
+- README.md - Added crest inventory documentation
+- Modules/Diagnostics/SelfTest.lua - Added crest inventory tests
+- docs/testplans/diagnostics.md - Added crest inventory test case
+
+**Notes:**
+
+- User reported having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests but /gc showed "No upgrades available"
+- Root cause: CrestData:ReadCrests() was never called to populate GC.DataModel.crests
+- Fix: Added GetAllCrestCounts() that calls ReadCrests() then returns all counts
+- GetRecommendedUpgrades() now calls GetAllCrestCounts() when simulatedCrests is nil
+- New /gc crests command for debugging inventory issues
+- Guardrail compliance: Minimal change, only added new function and integrated into existing flow
+- Verification: /gc crests should show real crest totals; /gc should now show same upgrades as /gc 80 hero when Hero crests = 80
+
+---
+
+_Last updated: 2026-03-24_
+_Total prompts tracked: 24_
+_Total files created: 12_
+_Total files modified: 29_
+
+---
+
+## 2026-03-24 - Dawncrest Currency ID Fix
+
+**Summary:** Fixed crest inventory lookup returning all zeros by correcting Dawncrest currency IDs from incorrect values (3000-3004) to correct Midnight Season 1 IDs (2914-2918).
+
+**Files Modified:**
+
+- `Modules/CrestTracker/CrestData.lua` - Updated CREST_IDS with correct currency IDs
+- `Modules/Diagnostics/SelfTest.lua` - Added TestCrestIDsCorrect and TestCrestLookupReturnsValues tests
+- `README.md` - Added currency ID table
+- `docs/testplans/diagnostics.md` - Updated with correct currency IDs
+
+**Notes:**
+
+- User reported `/gc crests` showed all zeros despite having 110 Adventurer, 400 Veteran, 55 Champion, 85 Hero crests
+- Root cause: CREST_IDS used wrong currency IDs (3000-3004 instead of 2914-2918)
+- C_CurrencyInfo.GetCurrencyInfo(3000-3004) returned nil because those IDs don't exist
+- Fix: Updated CREST_IDS to correct Midnight Season 1 Dawncrest IDs
+- Guardrail compliance: Only data table changed, no logic modifications
+- Verification: `/gc crests` should now show real Dawncrest totals for the character
+
+---
+
+_Last updated: 2026-03-24_
+_Total prompts tracked: 25_
+_Total files created: 12_
+_Total files modified: 30_
+
+---
+
+## 2026-03-24 - Free Upgrade Detection (Track-Cap Inheritance)
+
+**Summary:** Implemented free upgrade detection for track-cap inheritance. When a higher-track item is at max rank (e.g., Champion 6/6), lower-track items in the same slot (e.g., Veteran 1/6) can upgrade to their max rank for FREE.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added IsHigherTrack() and GetHighestTrackForSlot() helper functions
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added free upgrade detection before crest-cost logic
+- `Modules/UpgradeAdvisor/AdvisorCore.lua` - Added GetFreeUpgrades() and PrintFreeUpgrades() functions
+- `Core/Init.lua` - Added /gc free command
+- `README.md` - Documented free upgrades and /gc free command
+- `Modules/Diagnostics/SelfTest.lua` - Added TestFreeUpgradeDetection and TestFreeSlashCommand tests
+- `docs/testplans/free-upgrades.md` - Updated with comprehensive test cases
+
+**Notes:**
+
+- User reported Veteran 1/6 Neck with Champion 6/6 Neck equipped showed "No upgrades available" instead of free upgrade
+- GetHighestTrackForSlot() scans all equipped items to find highest track/rank per slot
+- IsHigherTrack() compares track order using Data.TRACKS array position
+- Free upgrades marked with [FREE] and crestCostPerStep=0, totalCrestCost=0
+- /gc free filters and displays only free upgrades
+- Guardrail compliance: Added new logic without modifying existing evaluation logic (free check happens BEFORE crest-cost logic)
+- Verification: /gc free should list Veteran 1/6 - Neck as FREE when Champion 6/6 Neck is equipped
+
+---
+
+_Last updated: 2026-03-24_
+_Total prompts tracked: 26_
+_Total files created: 12_
+_Total files modified: 31_
+
+---
+
+## 2026-03-24 - Persistent Slot Caps Implementation
+
+**Summary:** Implemented persistent slot caps that persist across sessions and survive item deletion. Slot caps allow free upgrade detection even when player is far from bank or no longer owns the higher-track item.
+
+**Files Modified:**
+
+- `Modules/UpgradeAdvisor/AdvisorData.lua` - Added GetSlotCap(), SetSlotCap(), UpdateSlotCapIfHigher(), updated GetHighestTrackForSlot()
+- `Modules/InventoryScanner/ScannerBags.lua` - Implemented actual bag scanning
+- `Modules/InventoryScanner/ScannerBank.lua` - Implemented actual bank scanning
+- `Core/Events.lua` - Added controlled scanning with session flags
+- `Core/Init.lua` - Added /gc scan and /gc slotcaps commands
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Added ::continue:: label for free upgrade skip
+- `README.md` - Added Slot Caps documentation
+- `Modules/Diagnostics/SelfTest.lua` - Added TestSlotCaps and TestScanCommand tests
+
+**Notes:**
+
+- User chose Option A: persistent slot caps matching Blizzard's hidden upgrade rules
+- SavedVariables: GearCresterDB.slotCaps[slotID] = {track, rank}
+- Session flags: GearCresterDB.session.bagsScanned, .bankScanned
+- Scanning: equipped+bags on login, bank once when opened, /gc scan for manual rescan
+- GetHighestTrackForSlot() priority: 1) slot cap, 2) scan equipped/bags/bank
+- Free upgrades work anywhere, even if item sold/deleted, even if bank closed
+- Guardrail compliance: Slot caps only increase, never decrease (matches Blizzard behavior)
+- Verification: /gc slotcaps shows stored caps; /gc scan forces rescan; /gc free shows free upgrades
+
+---
+
+_Last updated: 2026-03-24_
+_Total prompts tracked: 27_
+_Total files created: 12_
+_Total files modified: 32_

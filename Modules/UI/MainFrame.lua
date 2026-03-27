@@ -42,27 +42,28 @@ function MainFrame:Create()
     end)
     frame.closeButton = closeButton
 
-    -- ScrollingMessageFrame (supports hyperlinks)
-    local msgFrame = CreateFrame("ScrollingMessageFrame", "GearCresterMessageFrame", frame)
-    msgFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
-    msgFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
-    msgFrame:SetFontObject("GameFontNormal")
-    msgFrame:SetJustifyH("LEFT")
-    msgFrame:SetFading(false)
-    msgFrame:SetMaxLines(500)
-    msgFrame:SetHyperlinksEnabled(true)
-    msgFrame:SetInsertMode("TOP")
+    -- ScrollFrame with SimpleHTML for content display
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
+    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
 
-    -- Hyperlink handlers (tooltip + click)
-    msgFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
+    local html = CreateFrame("SimpleHTML", nil, scrollFrame)
+    html:SetWidth(scrollFrame:GetWidth())
+    html:SetHeight(1)  -- Height will be set by content
+    html:SetFontObject("p", "GameFontNormalSmall")
+    html:SetHyperlinksEnabled(true)
+    scrollFrame:SetScrollChild(html)
+
+    -- Hyperlink handlers
+    html:SetScript("OnHyperlinkEnter", function(self, linkData, link)
         GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
         GameTooltip:SetHyperlink(link)
         GameTooltip:Show()
     end)
-    msgFrame:SetScript("OnHyperlinkLeave", function(self)
+    html:SetScript("OnHyperlinkLeave", function(self)
         GameTooltip:Hide()
     end)
-    msgFrame:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+    html:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
         if IsModifiedClick() then
             HandleModifiedItemClick(link)
         else
@@ -70,46 +71,8 @@ function MainFrame:Create()
         end
     end)
 
-    frame.msgFrame = msgFrame
-
-    -- Manual scrollbar synced to ScrollingMessageFrame
-    local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
-    frame.scrollbar = scrollbar
-    scrollbar:SetPoint("TOPLEFT", msgFrame, "TOPRIGHT", 4, -16)
-    scrollbar:SetPoint("BOTTOMLEFT", msgFrame, "BOTTOMRIGHT", 4, 16)
-    scrollbar:SetMinMaxValues(0, 0)
-    scrollbar:SetValueStep(1)
-    scrollbar:SetObeyStepOnDrag(true)
-
-    scrollbar:SetScript("OnValueChanged", function(self, value)
-        msgFrame:SetScrollOffset(value)
-    end)
-
-    -- Mouse wheel on message frame updates scrollbar
-    msgFrame:EnableMouseWheel(true)
-    msgFrame:SetScript("OnMouseWheel", function(self, delta)
-        local min, max = scrollbar:GetMinMaxValues()
-        local current = scrollbar:GetValue()
-        local newValue = current - delta * 3
-        newValue = math.max(min, math.min(max, newValue))
-        scrollbar:SetValue(newValue)
-    end)
-
-    -- Keep scrollbar range updated when messages change
-    hooksecurefunc(msgFrame, "AddMessage", function()
-        local total = msgFrame:GetNumMessages()
-        local _, fontHeight = msgFrame:GetFont()
-        local visible = (fontHeight and fontHeight > 0) and math.floor(msgFrame:GetHeight() / fontHeight) or 0
-        local maxOffset = total - visible
-        if maxOffset < 0 then maxOffset = 0 end
-        scrollbar:SetMinMaxValues(0, maxOffset)
-    end)
-
-    -- When shown, ensure top alignment
-    frame:HookScript("OnShow", function()
-        msgFrame:SetScrollOffset(0)
-        if frame.scrollbar then frame.scrollbar:SetValue(0) end
-    end)
+    frame.html = html
+    frame.scrollFrame = scrollFrame
 
     frame:Hide()
     self.frame = frame
@@ -147,71 +110,98 @@ function MainFrame:Update()
     local results = GC.modules.UpgradeAdvisor.Core:GetRecommendedUpgrades(nil, true, true)
 
     if not results or #results == 0 then
-        self.frame.msgFrame:Clear()
-        self.frame.msgFrame:AddMessage("|cff00ff98GearCrester:|r No upgrades available for equipped gear, bags, or bank.")
+        self.frame.html:SetText("<html><body><p>GearCrester: No upgrades available for equipped gear, bags, or bank.</p></body></html>")
         return
     end
 
-    -- Build lines and add to ScrollingMessageFrame (TOP insert mode)
-    local mf = self.frame.msgFrame
-    mf:Clear()
-
-    mf:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
-    mf:AddMessage("")
+    -- Sort results like PrintResults: non-bag first, then bag entries sorted by bag/slot
+    local nonBag = {}
+    local bagEntries = {}
 
     for _, entry in ipairs(results) do
-        local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local location = entry.location and string.format(" [%s]", entry.location) or ""
+        local isBag = entry.location and entry.location:match("^bag (%d+), slot (%d+)")
+        if isBag then
+            table.insert(bagEntries, entry)
+        else
+            table.insert(nonBag, entry)
+        end
+    end
+
+    -- Sort bag entries by bag number then slot number
+    table.sort(bagEntries, function(a, b)
+        local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
+        local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
+
+        aBag, aSlot = tonumber(aBag), tonumber(aSlot)
+        bBag, bSlot = tonumber(bBag), tonumber(bSlot)
+
+        if aBag ~= bBag then
+            return aBag < bBag
+        end
+        return aSlot < bSlot
+    end)
+
+    -- Combine sorted results
+    local sortedResults = {}
+    for _, entry in ipairs(nonBag) do
+        table.insert(sortedResults, entry)
+    end
+    for _, entry in ipairs(bagEntries) do
+        table.insert(sortedResults, entry)
+    end
+
+    local function htmlEscape(str)
+        return str:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
+    end
+
+    local function itemNameFromLink(itemLink)
+        return itemLink:match("|h%[(.-)%]|h") or itemLink
+    end
+
+    -- Build HTML content
+    local htmlContent = "<html><body>"
+    htmlContent = htmlContent .. "<p>GearCrester: upgrade recommendations</p>"
+    htmlContent = htmlContent .. "<p></p>"
+
+    for _, entry in ipairs(sortedResults) do
+        local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
+        local track = entry.trackName or entry.crestType or "UNKNOWN"
+        local trackColored = GC.ColorTrack(track)
         local costText
         if entry.isGoldOnly then
             if entry.goldOnlyTargetRank then
-                costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
+                costText = string.format("(%s FREE to rank %d)", trackColored, entry.goldOnlyTargetRank)
             else
-                costText = string.format("(%s FREE)", track)
+                costText = string.format("(%s FREE)", trackColored)
             end
         else
-            costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
+            costText = string.format("(%s x%d)", trackColored, totalCost)
         end
-        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
-        local line = string.format("%s%s: %d -> %d %s%s",
+
+        local line = string.format("%s%s: %d -> %d %s",
             entry.slotName or entry.location,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
-            costText,
-            itemName)
-        mf:AddMessage(line)
+            costText)
+
+        if entry.itemLink then
+            local name = itemNameFromLink(entry.itemLink)
+            local href = htmlEscape(entry.itemLink)
+            line = htmlEscape(line) .. " <a href=\"" .. href .. "\">" .. htmlEscape("[" .. name .. "]") .. "</a>"
+        else
+            line = htmlEscape(line)
+        end
+
+        htmlContent = htmlContent .. "<p>" .. line .. "</p>"
     end
 
-    -- After adding messages, force top alignment after layout completes
-    if C_Timer and C_Timer.After then
-        C_Timer.After(0.02, function()
-            if mf and mf.SetScrollOffset then
-                mf:SetScrollOffset(0)
-            end
-            if self.frame.scrollbar then
-                self.frame.scrollbar:SetValue(0)
-            end
-        end)
-    else
-        -- fallback: tiny OnUpdate frame
-        local t = 0
-        local f = CreateFrame("Frame")
-        f:SetScript("OnUpdate", function(self, elapsed)
-            t = t + elapsed
-            if t >= 0.02 then
-                if mf and mf.SetScrollOffset then mf:SetScrollOffset(0) end
-                if self.frame and self.frame.scrollbar then self.frame.scrollbar:SetValue(0) end
-                self:SetScript("OnUpdate", nil)
-                self:Hide()
-            end
-        end)
-        f:Show()
-    end
+    htmlContent = htmlContent .. "</body></html>"
+    self.frame.html:SetText(htmlContent)
 
-    self.frame:Show()
+    -- Adjust height after setting content
+    self.frame.html:SetHeight(self.frame.html:GetContentHeight())
 end
 
 function MainFrame:ShowResults(text)
@@ -219,13 +209,36 @@ function MainFrame:ShowResults(text)
         self:Create()
     end
 
-    self.frame.msgFrame:Clear()
-
-    -- Split text by newlines and add each line
-    for line in text:gmatch("[^\n]+") do
-        self.frame.msgFrame:AddMessage(line)
+    local function htmlEscape(str)
+        return str:gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;")
     end
 
+    local function itemNameFromLink(itemLink)
+        return itemLink:match("|h%[(.-)%]|h") or itemLink
+    end
+
+    -- Convert plain text to HTML
+    local htmlContent = "<html><body>"
+    for line in text:gmatch("[^\n]+") do
+        local rawLine = line
+        if line:find("|Hitem:") then
+            local itemLink = line:match("(|Hitem:[^|]-|h%[[^%]]-%]|h)")
+            if itemLink then
+                local name = itemNameFromLink(itemLink)
+                local safeHref = htmlEscape(itemLink)
+                line = htmlEscape(line:gsub(itemLink, "")) .. " <a href=\"" .. safeHref .. "\">" .. htmlEscape("[" .. name .. "]") .. "</a>"
+            else
+                line = htmlEscape(rawLine)
+            end
+        else
+            line = htmlEscape(rawLine)
+        end
+        htmlContent = htmlContent .. "<p>" .. line .. "</p>"
+    end
+    htmlContent = htmlContent .. "</body></html>"
+
+    self.frame.html:SetText(htmlContent)
+    self.frame.html:SetHeight(self.frame.html:GetContentHeight())
     self.frame:Show()
 end
 

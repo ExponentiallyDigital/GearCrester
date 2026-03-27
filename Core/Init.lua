@@ -267,26 +267,73 @@ function GC:OnLoad()
                             local simulatedCrests = GC.modules.CrestTracker.CrestData:SimulateCrests(crestTypeUpper, count)
                             local results = AdvisorCore:GetRecommendedUpgrades(simulatedCrests, true, true)
 
-                            if not results or #results == 0 then
+                            -- Sort results like PrintResults: non-bag first, then bag entries sorted by bag/slot
+                            local nonBag = {}
+                            local bagEntries = {}
+
+                            for _, entry in ipairs(results) do
+                                local isBag = entry.location and entry.location:match("^bag (%d+), slot (%d+)")
+                                if isBag then
+                                    table.insert(bagEntries, entry)
+                                else
+                                    table.insert(nonBag, entry)
+                                end
+                            end
+
+                            -- Sort bag entries by bag number then slot number
+                            table.sort(bagEntries, function(a, b)
+                                local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
+                                local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
+
+                                aBag, aSlot = tonumber(aBag), tonumber(aSlot)
+                                bBag, bSlot = tonumber(bBag), tonumber(bSlot)
+
+                                if aBag ~= bBag then
+                                    return aBag < bBag
+                                end
+                                return aSlot < bSlot
+                            end)
+
+                            -- Combine sorted results
+                            local sortedResults = {}
+                            for _, entry in ipairs(nonBag) do
+                                table.insert(sortedResults, entry)
+                            end
+                            for _, entry in ipairs(bagEntries) do
+                                table.insert(sortedResults, entry)
+                            end
+
+                            if not sortedResults or #sortedResults == 0 then
                                 GC.modules.UI.MainFrame:ShowResults("|cff00ff98GearCrester: upgrade recommendations|r\n\nNo upgrades available for equipped gear, bags, or bank.")
                             else
                                 local lines = {}
                                 table.insert(lines, "|cff00ff98GearCrester: upgrade recommendations (simulated: " .. count .. " " .. crestTypeUpper .. ")|r")
                                 table.insert(lines, "")
 
-                                for _, entry in ipairs(results) do
+                                for _, entry in ipairs(sortedResults) do
                                     local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
                                     local location = entry.location and string.format(" [%s]", entry.location) or ""
                                     -- Guardrail 1.1: Display total crest cost for upgrade path, not per-step cost
                                     local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-                                    local line = string.format("%s%s: %d -> %d (%s%s x%d|r)",
+                                    local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
+                                    local costText
+                                    if entry.isGoldOnly then
+                                        if entry.goldOnlyTargetRank then
+                                            costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
+                                        else
+                                            costText = string.format("(%s FREE)", track)
+                                        end
+                                    else
+                                        costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
+                                    end
+                                    local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+                                    local line = string.format("%s%s: %d -> %d %s%s",
                                         entry.slotName or entry.location,
                                         location,
                                         entry.currentIlvl,
                                         entry.nextIlvl,
-                                        affordColor,
-                                        GC.ColorTrack(entry.crestType),
-                                        totalCost)
+                                        costText,
+                                        itemName)
                                     table.insert(lines, line)
                                 end
 
