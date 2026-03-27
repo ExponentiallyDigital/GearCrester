@@ -308,7 +308,7 @@ function SelfTest:TestCalibrateUsesBlizzardAPI()
 end
 
 function SelfTest:TestCrestInventoryLookup()
-    -- Test that GetPlayerCrestCounts returns correct table structure
+    -- Test that GetAllCrestCounts returns correct table structure
     local CrestData = GC.modules.CrestTracker.CrestData
 
     if not CrestData or not CrestData.GetAllCrestCounts then
@@ -322,13 +322,13 @@ function SelfTest:TestCrestInventoryLookup()
         C_CurrencyInfo = {}
     end
     C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
-        -- Return different counts for each crest type
+        -- Return different counts for each crest type (using actual currency IDs)
         local counts = {
-            [3000] = {quantity = 110, name = "Adventurer's Crest"},
-            [3001] = {quantity = 400, name = "Veteran's Crest"},
-            [3002] = {quantity = 55, name = "Champion's Crest"},
-            [3003] = {quantity = 85, name = "Hero's Crest"},
-            [3004] = {quantity = 0, name = "Myth Crest"},
+            [3383] = {quantity = 110, name = "Adventurer's Crest"},
+            [3341] = {quantity = 400, name = "Veteran's Crest"},
+            [3343] = {quantity = 55, name = "Champion's Crest"},
+            [3345] = {quantity = 85, name = "Hero's Crest"},
+            [3347] = {quantity = 0, name = "Myth Crest"},
         }
         return counts[currencyID] or {}
     end
@@ -403,7 +403,7 @@ function SelfTest:TestSlashCrestsCommandExists()
 end
 
 function SelfTest:TestCrestIDsCorrect()
-    -- Test that CREST_CURRENCY_IDS contains the correct Midnight Dawncrest IDs
+    -- Test that CREST_IDS contains the correct currency IDs
     local CrestData = GC.modules.CrestTracker.CrestData
 
     if not CrestData or not CrestData.CREST_IDS then
@@ -412,8 +412,10 @@ function SelfTest:TestCrestIDsCorrect()
     end
 
     local ids = CrestData.CREST_IDS
-    if ids.ADVENTURER ~= 2914 or ids.VETERAN ~= 2915 or ids.CHAMPION ~= 2916 or ids.HERO ~= 2917 or ids.MYTH ~= 2918 then
-        fail("Crest IDs Correct", "CREST_IDS contains incorrect currency IDs. Expected: ADVENTURER=2914, VETERAN=2915, CHAMPION=2916, HERO=2917, MYTH=2918")
+    -- Verify IDs match actual Midnight currency IDs
+    if ids.ADVENTURER ~= 3383 or ids.VETERAN ~= 3341 or ids.CHAMPION ~= 3343 or ids.HERO ~= 3345 or ids.MYTH ~= 3347 then
+        fail("Crest IDs Correct", string.format("CREST_IDS contains incorrect currency IDs. Got: ADVENTURER=%d, VETERAN=%d, CHAMPION=%d, HERO=%d, MYTH=%d",
+            ids.ADVENTURER or 0, ids.VETERAN or 0, ids.CHAMPION or 0, ids.HERO or 0, ids.MYTH or 0))
         return
     end
 
@@ -421,7 +423,7 @@ function SelfTest:TestCrestIDsCorrect()
 end
 
 function SelfTest:TestCrestLookupReturnsValues()
-    -- Test that GetPlayerCrestCounts returns values from C_CurrencyInfo API
+    -- Test that GetAllCrestCounts returns values from C_CurrencyInfo API
     local CrestData = GC.modules.CrestTracker.CrestData
 
     if not CrestData or not CrestData.GetAllCrestCounts then
@@ -435,13 +437,13 @@ function SelfTest:TestCrestLookupReturnsValues()
         C_CurrencyInfo = {}
     end
     C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
-        -- Return quantities based on currency ID
+        -- Return quantities based on currency ID (using actual currency IDs)
         local quantities = {
-            [2914] = {quantity = 110, name = "Adventurer's Crest"},
-            [2915] = {quantity = 400, name = "Veteran's Crest"},
-            [2916] = {quantity = 55, name = "Champion's Crest"},
-            [2917] = {quantity = 85, name = "Hero's Crest"},
-            [2918] = {quantity = 10, name = "Myth Crest"},
+            [3383] = {quantity = 110, name = "Adventurer's Crest"},
+            [3341] = {quantity = 400, name = "Veteran's Crest"},
+            [3343] = {quantity = 55, name = "Champion's Crest"},
+            [3345] = {quantity = 85, name = "Hero's Crest"},
+            [3347] = {quantity = 10, name = "Myth Crest"},
         }
         return quantities[currencyID] or {}
     end
