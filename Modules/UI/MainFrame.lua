@@ -188,11 +188,13 @@ function MainFrame:Update()
             itemName)
         self.frame.msgFrame:AddMessage(line)
     end
-    -- Scroll to top after populating the frame
-    self.frame.msgFrame:SetScrollOffset(0)
-    if self.frame.scrollbar then
-        self.frame.scrollbar:SetValue(0)
-    end
+    -- Scroll to top on next frame (ScrollingMessageFrame always scrolls to bottom)
+    C_Timer.After(0, function()
+        self.frame.msgFrame:SetScrollOffset(0)
+        if self.frame.scrollbar then
+            self.frame.scrollbar:SetValue(0)
+        end
+    end)
 end
 
 function MainFrame:ShowResults(text)
