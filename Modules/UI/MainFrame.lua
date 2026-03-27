@@ -52,6 +52,9 @@ function MainFrame:Create()
     msgFrame:SetMaxLines(500)
     msgFrame:SetHyperlinksEnabled(true)
 
+    -- Insert new messages at the top so the first printed line appears at the top of the frame
+    msgFrame:SetInsertMode("TOP")
+
     -- Create scrollbar (manual sync, ScrollingMessageFrame does not support SetScrollBar)
     local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
     frame.scrollbar = scrollbar
@@ -163,7 +166,9 @@ function MainFrame:Update()
     self.frame.msgFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
     self.frame.msgFrame:AddMessage("")
 
-    for _, entry in ipairs(results) do
+    -- Add messages in reverse so the first recommendation appears at the top
+    for i = #results, 1, -1 do
+        local entry = results[i]
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local location = entry.location and string.format(" [%s]", entry.location) or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
@@ -188,13 +193,13 @@ function MainFrame:Update()
             itemName)
         self.frame.msgFrame:AddMessage(line)
     end
-    -- Scroll to top on next frame (ScrollingMessageFrame always scrolls to bottom)
-    C_Timer.After(0, function()
-        self.frame.msgFrame:SetScrollOffset(0)
-        if self.frame.scrollbar then
-            self.frame.scrollbar:SetValue(0)
-        end
-    end)
+
+    -- Ensure scrollbar range is updated (hooksecurefunc already updates min/max when AddMessage runs)
+    -- Reset scrollbar to top (safe immediate reset because insert mode is TOP)
+    if self.frame.scrollbar then
+        self.frame.scrollbar:SetValue(0)
+    end
+    self.frame.msgFrame:SetScrollOffset(0)
 end
 
 function MainFrame:ShowResults(text)
