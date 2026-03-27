@@ -42,22 +42,35 @@ function MainFrame:Create()
     end)
     frame.closeButton = closeButton
 
-    local scrollFrame = CreateFrame("ScrollFrame", "GearCresterScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    -- Use ScrollingMessageFrame for hyperlink support
+    local scrollFrame = CreateFrame("ScrollingMessageFrame", "GearCresterScrollFrame", frame)
     scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
     scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
+    scrollFrame:SetFading(false)
+    scrollFrame:SetMaxLines(100)
+    scrollFrame:SetJustifyH("LEFT")
+    scrollFrame:SetHyperlinksEnabled(true)
+
+    -- Enable hyperlink interactions
+    scrollFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
+        GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
+        GameTooltip:SetHyperlink(link)
+        GameTooltip:Show()
+    end)
+
+    scrollFrame:SetScript("OnHyperlinkLeave", function(self)
+        GameTooltip:Hide()
+    end)
+
+    scrollFrame:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+        if IsModifiedClick() then
+            HandleModifiedItemClick(link)
+        else
+            ChatEdit_InsertLink(link)
+        end
+    end)
+
     frame.scrollFrame = scrollFrame
-
-    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
-    scrollChild:SetSize(frameWidth - 50, frameHeight - 50)
-    scrollFrame:SetScrollChild(scrollChild)
-    frame.scrollChild = scrollChild
-
-    local output = scrollChild:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    output:SetPoint("TOPLEFT", scrollChild, "TOPLEFT", 5, -5)
-    output:SetPoint("TOPRIGHT", scrollChild, "TOPRIGHT", -5, -5)
-    output:SetJustifyH("LEFT")
-    output:SetJustifyV("TOP")
-    frame.output = output
 
     frame:Hide()
     self.frame = frame
@@ -94,13 +107,14 @@ function MainFrame:Update()
     local results = GC.modules.UpgradeAdvisor.Core:GetRecommendedUpgrades(nil, true, true)
 
     if not results or #results == 0 then
-        self.frame.output:SetText("No upgrades available for equipped gear, bags, or bank.")
+        self.frame.scrollFrame:Clear()
+        self.frame.scrollFrame:AddMessage("No upgrades available for equipped gear, bags, or bank.")
         return
     end
 
-    local lines = {}
-    table.insert(lines, "|cff00ff98GearCrester: upgrade recommendations|r")
-    table.insert(lines, "")
+    self.frame.scrollFrame:Clear()
+    self.frame.scrollFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
+    self.frame.scrollFrame:AddMessage("")
 
     for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
@@ -125,17 +139,22 @@ function MainFrame:Update()
             entry.nextIlvl,
             costText,
             itemName)
-        table.insert(lines, line)
+        self.frame.scrollFrame:AddMessage(line)
     end
-
-    self.frame.output:SetText(table.concat(lines, "\n"))
 end
 
 function MainFrame:ShowResults(text)
     if not self.frame then
         self:Create()
     end
-    self.frame.output:SetText(text)
+
+    self.frame.scrollFrame:Clear()
+
+    -- Split text by newlines and add each line
+    for line in text:gmatch("[^\n]+") do
+        self.frame.scrollFrame:AddMessage(line)
+    end
+
     self.frame:Show()
 end
 
