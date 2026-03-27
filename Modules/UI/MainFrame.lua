@@ -77,11 +77,17 @@ function MainFrame:Create()
 
     -- Update scrollbar range whenever new text is added
     hooksecurefunc(msgFrame, "AddMessage", function()
-        local maxOffset = msgFrame:GetNumMessages() - msgFrame:GetVisibleLines()
+        local total = msgFrame:GetNumMessages()
+
+        -- Calculate visible lines based on font height
+        local _, fontHeight = msgFrame:GetFont()
+        local visible = math.floor(msgFrame:GetHeight() / fontHeight)
+
+        local maxOffset = total - visible
         if maxOffset < 0 then maxOffset = 0 end
+
         scrollbar:SetMinMaxValues(0, maxOffset)
     end)
-
 
     -- Enable hyperlink interactions
     msgFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
