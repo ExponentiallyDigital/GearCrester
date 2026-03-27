@@ -52,14 +52,36 @@ function MainFrame:Create()
     msgFrame:SetMaxLines(500)
     msgFrame:SetHyperlinksEnabled(true)
 
-    -- Enable scrollbar
-    local scrollbar = CreateFrame("Slider", nil, msgFrame, "UIPanelScrollBarTemplate")
+    -- Create scrollbar (manual sync, ScrollingMessageFrame does not support SetScrollBar)
+    local scrollbar = CreateFrame("Slider", nil, frame, "UIPanelScrollBarTemplate")
     scrollbar:SetPoint("TOPLEFT", msgFrame, "TOPRIGHT", 4, -16)
     scrollbar:SetPoint("BOTTOMLEFT", msgFrame, "BOTTOMRIGHT", 4, 16)
+    scrollbar:SetMinMaxValues(0, 0)
+    scrollbar:SetValueStep(1)
+    scrollbar:SetObeyStepOnDrag(true)
+
+    -- When scrollbar moves → scroll the message frame
     scrollbar:SetScript("OnValueChanged", function(self, value)
         msgFrame:SetScrollOffset(value)
     end)
-    msgFrame:SetScrollBar(scrollbar)
+
+    -- When mouse wheel moves → update scrollbar
+    msgFrame:EnableMouseWheel(true)
+    msgFrame:SetScript("OnMouseWheel", function(self, delta)
+        local min, max = scrollbar:GetMinMaxValues()
+        local current = scrollbar:GetValue()
+        local newValue = current - delta * 3
+        newValue = math.max(min, math.min(max, newValue))
+        scrollbar:SetValue(newValue)
+    end)
+
+    -- Update scrollbar range whenever new text is added
+    hooksecurefunc(msgFrame, "AddMessage", function()
+        local maxOffset = msgFrame:GetNumMessages() - msgFrame:GetVisibleLines()
+        if maxOffset < 0 then maxOffset = 0 end
+        scrollbar:SetMinMaxValues(0, maxOffset)
+    end)
+
 
     -- Enable hyperlink interactions
     msgFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
