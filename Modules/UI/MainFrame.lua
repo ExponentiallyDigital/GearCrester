@@ -117,12 +117,14 @@ function MainFrame:Update()
         else
             costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
         end
-        local line = string.format("%s%s: %d -> %d %s",
+        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
+        local line = string.format("%s%s: %d -> %d %s%s",
             entry.slotName or entry.location,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
-            costText)
+            costText,
+            itemName)
         table.insert(lines, line)
     end
 
