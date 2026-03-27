@@ -42,27 +42,37 @@ function MainFrame:Create()
     end)
     frame.closeButton = closeButton
 
-    -- Use ScrollingMessageFrame for hyperlink support
-    local scrollFrame = CreateFrame("ScrollingMessageFrame", "GearCresterScrollFrame", frame)
-    scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
-    scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
-    scrollFrame:SetFading(false)
-    scrollFrame:SetMaxLines(100)
-    scrollFrame:SetJustifyH("LEFT")
-    scrollFrame:SetHyperlinksEnabled(true)
+    -- Create ScrollingMessageFrame for hyperlink support
+    local msgFrame = CreateFrame("ScrollingMessageFrame", "GearCresterMessageFrame", frame)
+    msgFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -25)
+    msgFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -30, 10)
+    msgFrame:SetFontObject("GameFontNormal")
+    msgFrame:SetJustifyH("LEFT")
+    msgFrame:SetFading(false)
+    msgFrame:SetMaxLines(500)
+    msgFrame:SetHyperlinksEnabled(true)
+
+    -- Enable scrollbar
+    local scrollbar = CreateFrame("Slider", nil, msgFrame, "UIPanelScrollBarTemplate")
+    scrollbar:SetPoint("TOPLEFT", msgFrame, "TOPRIGHT", 4, -16)
+    scrollbar:SetPoint("BOTTOMLEFT", msgFrame, "BOTTOMRIGHT", 4, 16)
+    scrollbar:SetScript("OnValueChanged", function(self, value)
+        msgFrame:SetScrollOffset(value)
+    end)
+    msgFrame:SetScrollBar(scrollbar)
 
     -- Enable hyperlink interactions
-    scrollFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
+    msgFrame:SetScript("OnHyperlinkEnter", function(self, linkData, link)
         GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
         GameTooltip:SetHyperlink(link)
         GameTooltip:Show()
     end)
 
-    scrollFrame:SetScript("OnHyperlinkLeave", function(self)
+    msgFrame:SetScript("OnHyperlinkLeave", function(self)
         GameTooltip:Hide()
     end)
 
-    scrollFrame:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
+    msgFrame:SetScript("OnHyperlinkClick", function(self, linkData, link, button)
         if IsModifiedClick() then
             HandleModifiedItemClick(link)
         else
@@ -70,7 +80,7 @@ function MainFrame:Create()
         end
     end)
 
-    frame.scrollFrame = scrollFrame
+    frame.msgFrame = msgFrame
 
     frame:Hide()
     self.frame = frame
@@ -107,14 +117,14 @@ function MainFrame:Update()
     local results = GC.modules.UpgradeAdvisor.Core:GetRecommendedUpgrades(nil, true, true)
 
     if not results or #results == 0 then
-        self.frame.scrollFrame:Clear()
-        self.frame.scrollFrame:AddMessage("No upgrades available for equipped gear, bags, or bank.")
+        self.frame.msgFrame:Clear()
+        self.frame.msgFrame:AddMessage("No upgrades available for equipped gear, bags, or bank.")
         return
     end
 
-    self.frame.scrollFrame:Clear()
-    self.frame.scrollFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
-    self.frame.scrollFrame:AddMessage("")
+    self.frame.msgFrame:Clear()
+    self.frame.msgFrame:AddMessage("|cff00ff98GearCrester: upgrade recommendations|r")
+    self.frame.msgFrame:AddMessage("")
 
     for _, entry in ipairs(results) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
@@ -139,7 +149,7 @@ function MainFrame:Update()
             entry.nextIlvl,
             costText,
             itemName)
-        self.frame.scrollFrame:AddMessage(line)
+        self.frame.msgFrame:AddMessage(line)
     end
 end
 
@@ -148,11 +158,11 @@ function MainFrame:ShowResults(text)
         self:Create()
     end
 
-    self.frame.scrollFrame:Clear()
+    self.frame.msgFrame:Clear()
 
     -- Split text by newlines and add each line
     for line in text:gmatch("[^\n]+") do
-        self.frame.scrollFrame:AddMessage(line)
+        self.frame.msgFrame:AddMessage(line)
     end
 
     self.frame:Show()
