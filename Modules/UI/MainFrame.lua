@@ -111,9 +111,9 @@ function MainFrame:Create()
 
     frame.msgFrame = msgFrame
 
-    -- Always scroll to top after the frame refreshes
-    msgFrame:HookScript("OnDisplayRefreshed", function(self)
-        self:SetScrollOffset(0)
+    -- When the frame is shown, force scroll to top
+    frame:HookScript("OnShow", function()
+        msgFrame:SetScrollOffset(0)
         if frame.scrollbar then
             frame.scrollbar:SetValue(0)
         end
