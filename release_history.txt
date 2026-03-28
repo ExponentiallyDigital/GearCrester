@@ -1,3 +1,237 @@
+— 2026-03-28
+    v0.1.6 fixed gc tests, all now functional - 18 bugs to be fixed
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 22 insertions, 6 deletions
+
+— 2026-03-27
+    untested FIX for subsystem tests
+    
+    Modules/Diagnostics/SelfTest.lua | 19 insertions, 17 deletions
+
+— 2026-03-27
+    v0.1.5 working prototype - UI and menu ok, commands and logic to be fixed.
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UI/MainFrame.lua | 20 insertions, 29 deletions
+
+— 2026-03-27
+    Via GHCP - fixed UI frame text poistioning , converted frame type, sorted output correctly, but introduced extra characters on hover links.
+    
+    Core/Init.lua | 53 insertions, 6 deletions
+    Modules/UI/MainFrame.lua | 116 insertions, 103 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 171 insertions, 132 deletions
+    docs/testplans/ui-overview.md | 58 insertions, 18 deletions
+
+— 2026-03-27
+    Working frame, but text at bottom
+    
+    Modules/UI/MainFrame.lua | 78 insertions, 83 deletions
+
+— 2026-03-27
+    FIX ui text location WORKING! But highlight links now broken :/
+    
+    Modules/UI/MainFrame.lua | 89 insertions, 116 deletions
+
+— 2026-03-27
+    FIX scroll
+    
+    Modules/UI/MainFrame.lua | 48 insertions, 4 deletions
+
+— 2026-03-27
+    FIX UI text
+    
+    Modules/UI/MainFrame.lua | 13 insertions, 8 deletions
+
+— 2026-03-27
+    FIX frame scroll
+    
+    Modules/UI/MainFrame.lua | 7 insertions, 5 deletions
+
+— 2026-03-27
+    FIX UI frame text location
+    
+    Modules/UI/MainFrame.lua | 3 insertions, 3 deletions
+
+— 2026-03-27
+    FIX vertical UI text positioning
+    
+    Modules/UI/MainFrame.lua | 14 insertions, 0 deletions
+
+— 2026-03-27
+    FIX for secure func hook
+    
+    Modules/UI/MainFrame.lua | 8 insertions, 2 deletions
+
+— 2026-03-27
+    FIX scollbar UI
+    
+    Modules/UI/MainFrame.lua | 25 insertions, 3 deletions
+
+— 2026-03-27
+    FIX UI font not rendering
+    
+    Modules/UI/MainFrame.lua | 30 insertions, 20 deletions
+
+— 2026-03-27
+    FIX hotlinks in "/gc ui"
+    
+    Modules/UI/MainFrame.lua | 39 insertions, 20 deletions
+
+— 2026-03-27
+    FIX hotlink not displayed on UI
+    
+    Modules/UI/MainFrame.lua | 4 insertions, 2 deletions
+
+— 2026-03-27
+    FIX "/gc" console error
+    
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 2 insertions, 2 deletions
+
+— 2026-03-27
+    FIX "/gc" formatting "free" display, also partity now with "/gc ui" DOC partial readme update
+    
+    Core/Constants.lua | 5 insertions, 5 deletions
+    Core/Init.lua | 5 insertions, 5 deletions
+    Modules/UI/MainFrame.lua | 13 insertions, 5 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 32 insertions, 8 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 10 insertions, 1 deletion
+    README.md | 86 insertions, 130 deletions
+
+— 2026-03-27
+    ADD colorisation of track names; UPDATE export string text
+    
+    Core/Constants.lua | 15 insertions, 0 deletions
+    Core/Init.lua | 3 insertions, 3 deletions
+    Modules/Export/ExportCore.lua | 8 insertions, 8 deletions
+    Modules/UI/MainFrame.lua | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 2 insertions, 2 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 9 insertions, 9 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 2 insertions, 2 deletions
+
+— 2026-03-27
+    FIX report not going to savedvariables, only on screen
+    
+    Modules/Export/ExportCore.lua | 26 insertions, 4 deletions
+
+— 2026-03-27
+    FIX saved variables not existingh at startup displays an error
+    
+    Core/Events.lua | 9 insertions, 22 deletions
+    Core/Init.lua | 0 insertions, 16 deletions
+    Modules/Export/ExportCore.lua | 2 insertions, 2 deletions
+
+— 2026-03-27
+    FIX export error
+    
+    Modules/Export/ExportCore.lua | 6 insertions, 5 deletions
+
+— 2026-03-27
+    FIX sort weighting list display by priority
+    
+    Core/Init.lua | 24 insertions, 4 deletions
+
+— 2026-03-27
+    FIC "/gc free" not calculating free (no crest) upgrades
+    
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 15 insertions, 3 deletions
+
+— 2026-03-27
+    FIX "./gc slotcaps" max rank display
+    
+    Core/Init.lua | 3 insertions, 1 deletion
+
+— 2026-03-27
+    FIX for maxItemLevel=0 eg crafted gear
+    
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 7 insertions, 0 deletions
+
+— 2026-03-27
+    FIX updated GetSlotCap, SetSlotCap,
+    
+    Core/Init.lua | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorData.lua | 4 insertions, 3 deletions
+
+— 2026-03-27
+    0.1.4 ADD slot name to slotcaps table in savedvariables
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 2 insertions, 0 deletions
+
+— 2026-03-27
+    0.1.3 FIX "/gc" recommendation output sorting
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 57 insertions, 17 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 9 insertions, 26 deletions
+
+— 2026-03-27
+    0.1.2b FIX bag sorting
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 5 insertions, 0 deletions
+
+— 2026-03-27
+    v0.1.2a FIX bag sort for recommendations
+    
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 25 insertions, 21 deletions
+
+— 2026-03-27
+    ADD sort bag items by bag number then slot number
+    
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 23 insertions, 0 deletions
+
+— 2026-03-27
+    FIX gearcap slot scanning at NPC;
+    BUGS exist for: "gc free" not account for bank/bag items; "gc slotcaps" output incorrect for max level slots
+    
+    Core/Init.lua | 25 insertions, 22 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 204 insertions, 62 deletions
+    README.md | 25 insertions, 2 deletions
+
+— 2026-03-27
+    ADD scanning for slot caps at NPC
+    
+    Core/Init.lua | 17 insertions, 1 deletion
+    GearCrester.toc | 1 insertion, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 15 insertions, 8 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 134 insertions, 0 deletions
+
+— 2026-03-26
+    unified output strings to same format;
+    
+    Core/Constants.lua | 43 insertions, 20 deletions
+    Core/Init.lua | 7 insertions, 7 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 1 insertion, 1 deletion
+    Modules/Export/ExportCore.lua | 3 insertions, 3 deletions
+    Modules/InventoryScanner/ScannerBags.lua | 48 insertions, 7 deletions
+    Modules/InventoryScanner/ScannerBank.lua | 48 insertions, 7 deletions
+    Modules/UI/MainFrame.lua | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 31 insertions, 18 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 2 insertions, 2 deletions
+
+— 2026-03-26
+    v0.1.1 FIX gold only upgrades not being announced; ADD /gc scan; FIX ScannerBank.lua]:14. Bag and bank scanning is now correct. ERROR: if an upgrade is gold only vs using crests, not noted, always assumes crests tyo upgrade vs free
+    
+    Core/Events.lua | 22 insertions, 4 deletions
+    Core/Init.lua | 46 insertions, 0 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 103 insertions, 0 deletions
+    Modules/InventoryScanner/ScannerBags.lua | 24 insertions, 1 deletion
+    Modules/InventoryScanner/ScannerBank.lua | 24 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 39 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorData.lua | 174 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 71 insertions, 31 deletions
+    README.md | 40 insertions, 0 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 64 insertions, 0 deletions
+
+— 2026-03-25
+    Update release_history.txt for v0.1.0
+    
+    release_history.txt | 34 insertions, 0 deletions
+
 — 2026-03-26
     v0.1.0 Basic functionality is now complete.
     FIX crest inventory now correctly looking up in-game via API.
