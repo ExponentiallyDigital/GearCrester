@@ -2,42 +2,34 @@
 ## Title: GearCrester
 ## Notes: Upgrade advisor and crest planner for Midnight gear progression
 ## Author: ArcNineOhNine
-## Version: 0.1.6
+## Version: 0.2.0
 ## Category: ArcNineOhNine
 ## IconTexture: Interface\AddOns\GearCrester\media\GearCrester-icon
 ## SavedVariables: GearCresterDB, GearCresterExportDB
 
 Core\Init.lua
-Core\Events.lua
 Core\Constants.lua
 Core\Utils.lua
 Core\DataModel.lua
+Core\Events.lua
+Core\Commands.lua
 
-Modules\InventoryScanner\ScannerCore.lua
+Modules\InventoryScanner\ScannerUtils.lua
 Modules\InventoryScanner\ScannerEquipped.lua
 Modules\InventoryScanner\ScannerBags.lua
 Modules\InventoryScanner\ScannerBank.lua
 
 Modules\CrestTracker\CrestData.lua
-Modules\CrestTracker\CrestCaps.lua
-Modules\CrestTracker\ResetTimer.lua
 
 Modules\UpgradeAdvisor\AdvisorData.lua
 Modules\UpgradeAdvisor\AdvisorLogic.lua
 Modules\UpgradeAdvisor\AdvisorCore.lua
-Modules\UpgradeAdvisor\AdvisorUI.lua
 Modules\UpgradeAdvisor\UpgradeOrder.lua
 Modules\UpgradeAdvisor\FreeUpgrade.lua
 Modules\UpgradeAdvisor\UpgraderScanner.lua
 
-Modules\UI\MainFrame.lua
-Modules\UI\Heatmap.lua
-Modules\UI\SlotList.lua
-Modules\UI\TooltipExtensions.lua
-Modules\UI\InventoryOverview.lua
-
-Modules\Profiles\ProfileManager.lua
-Modules\Profiles\DefaultProfiles.lua
+Modules\UI\UIUtils.lua
+Modules\UI\DashboardFrame.lua
 
 Modules\Diagnostics\SelfTest.lua
 

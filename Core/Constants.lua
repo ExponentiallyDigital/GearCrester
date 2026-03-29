@@ -56,3 +56,9 @@ function GC.ColorTrack(track)
     if not c then return track end
     return c .. track .. "|r"
 end
+
+-- Reverse lookup: slot name -> slot ID
+GC.SLOT_NAME_TO_ID = {}
+for id, name in pairs(GC.SLOTS) do
+    GC.SLOT_NAME_TO_ID[name:lower()] = id
+end
