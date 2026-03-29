@@ -8,7 +8,7 @@ local handlers = {}
 
 function Commands:Register()
     SlashCmdList["GEARCRESTER"] = function(msg)
-        local args = (msg or ""):trim()
+        local args = GC.Trim(msg or "")
 
         if args == "" then
             -- Default: show upgrade recommendations
@@ -20,7 +20,7 @@ function Commands:Register()
 
         local cmd, param = args:match("^(%w+)%s*(.*)$")
         cmd = cmd and cmd:lower() or ""
-        param = param or ""
+        param = GC.Trim(param or "")
 
         local handler = handlers[cmd]
         if handler then
@@ -85,15 +85,30 @@ handlers["debug"] = function(param)
     end
 end
 
-handlers["dump"] = function()
+handlers["dump"] = function(param)
+    -- dump command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     GC.modules.UpgradeAdvisor.Logic:DumpAllItems()
 end
 
-handlers["why"] = function()
+handlers["why"] = function(param)
+    -- why command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     GC.modules.UpgradeAdvisor.Logic:PrintWhyDiagnostics()
 end
 
-handlers["crests"] = function()
+handlers["crests"] = function(param)
+    -- crests command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     local counts = GC.modules.CrestTracker.CrestData:GetAllCrestCounts()
     print("|cff00ff98GearCrester: crest inventory|r")
     for _, name in ipairs({"ADVENTURER","VETERAN","CHAMPION","HERO","MYTH"}) do
@@ -101,11 +116,21 @@ handlers["crests"] = function()
     end
 end
 
-handlers["free"] = function()
+handlers["free"] = function(param)
+    -- free command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     GC.modules.UpgradeAdvisor.Core:PrintFreeUpgrades()
 end
 
-handlers["scan"] = function()
+handlers["scan"] = function(param)
+    -- scan command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     GearCresterDB.session.bagsScanned = false
     GearCresterDB.session.bankScanned = false
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
@@ -118,7 +143,12 @@ handlers["scan"] = function()
     GC:Print("Full scan complete. Type /gc to see upgrades.")
 end
 
-handlers["slotcaps"] = function()
+handlers["slotcaps"] = function(param)
+    -- slotcaps command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     print("|cff00ff98GearCrester: slot caps|r")
     print("--------------------------------")
     local hasCaps = false
@@ -131,13 +161,18 @@ handlers["slotcaps"] = function()
     if not hasCaps then print("(no data yet)") end
 end
 
-handlers["test"] = function()
+handlers["test"] = function(param)
+    -- test command does not accept parameters
+    if param and #param > 0 then
+        GC:Print("Unknown command. Use /gc help.")
+        return
+    end
     local st = GC.modules.Diagnostics and GC.modules.Diagnostics.SelfTest
     if st then st:RunAllTests() else GC:Print("SelfTest module not found.") end
 end
 
 handlers["calibrate"] = function(param)
-    local sub = param:lower():trim()
+    local sub = GC.Trim(param:lower())
     if sub == "npc" then
         local US = GC.modules.UpgradeAdvisor.UpgraderScanner
         if not US then GC:Print("UpgraderScanner not found."); return end

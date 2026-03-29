@@ -533,8 +533,13 @@ function Logic:DumpAllItems()
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
             local ilvl = GetItemIlvl(itemLink)
 
-            print(string.format("%s: ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+            -- Extract item name from link for display
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+
+            print(string.format("%s: %s %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
                 slotName or "Unknown",
+                itemLink,  -- Clickable item link
+                itemName,
                 ilvl,
                 GC.ColorTrack(trackName or "nil"),
                 currentRank or "nil",
@@ -596,10 +601,13 @@ function Logic:PrintWhyDiagnostics()
 
         if itemLink then
             local diagnostics = self:GetItemDiagnostics(itemLink)
-            print(string.format("%s: %s", slotName or "Unknown", diagnostics.reason))
-            if #diagnostics.bonusIDs > 0 then
-                print(string.format("  Bonus IDs: %s", table.concat(diagnostics.bonusIDs, ", ")))
-            end
+            -- Extract item name from link for display
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            print(string.format("%s: %s %s - %s",
+                slotName or "Unknown",
+                itemLink,  -- Clickable item link
+                itemName,
+                diagnostics.reason))
         else
             print(string.format("%s: No item equipped", slotName or "Unknown"))
         end

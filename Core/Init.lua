@@ -7,6 +7,12 @@ GC.db = {}
 -- for supression of calibration text when "/gc test" is run
 GC.suppressCalibrationOutput = false
 
+-- String trim helper (WoW Lua doesn't have string.trim)
+function GC.Trim(s)
+    if not s then return "" end
+    return (s:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 -- Valid crest types (shared constant)
 GC.VALID_CREST_TYPES = {
     ADVENTURER = true,
