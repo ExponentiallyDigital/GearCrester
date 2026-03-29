@@ -593,8 +593,13 @@ end
 function Logic:PrintWhyDiagnostics()
     print("|cff00ff98GearCrester: upgrade diagnostics (why items are or are not upgradable):|r")
 
+    -- Scan all inventory sources
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
+    GC.modules.InventoryScanner.ScannerBags:Scan()
+    GC.modules.InventoryScanner.ScannerBank:Scan()
 
+    -- Check equipped items
+    print("|cff00ff98--- Equipped Items ---|r")
     for slotID, itemData in pairs(GC.DataModel.equipped) do
         local itemLink = itemData.itemLink
         local slotName = itemData.slotName
@@ -611,6 +616,46 @@ function Logic:PrintWhyDiagnostics()
         else
             print(string.format("%s: No item equipped", slotName or "Unknown"))
         end
+    end
+
+    -- Check bag items
+    print("|cff00ff98--- Bag Items ---|r")
+    local bagCount = 0
+    for itemKey, itemData in pairs(GC.DataModel.bags) do
+        local itemLink = itemData.itemLink
+        if itemLink then
+            local diagnostics = self:GetItemDiagnostics(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            print(string.format("%s: %s %s - %s",
+                itemData.location or itemKey,
+                itemLink,
+                itemName,
+                diagnostics.reason))
+            bagCount = bagCount + 1
+        end
+    end
+    if bagCount == 0 then
+        print("(no items in bags)")
+    end
+
+    -- Check bank items
+    print("|cff00ff98--- Bank Items ---|r")
+    local bankCount = 0
+    for itemKey, itemData in pairs(GC.DataModel.bank) do
+        local itemLink = itemData.itemLink
+        if itemLink then
+            local diagnostics = self:GetItemDiagnostics(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            print(string.format("%s: %s %s - %s",
+                itemData.location or itemKey,
+                itemLink,
+                itemName,
+                diagnostics.reason))
+            bankCount = bankCount + 1
+        end
+    end
+    if bankCount == 0 then
+        print("(no items in bank)")
     end
 end
 
