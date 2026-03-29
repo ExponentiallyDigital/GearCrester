@@ -62,7 +62,7 @@ Chest: 266 -> 269 (HERO x20)
 Expected:
 
 - 3-step upgrades show `(HERO x60)`
-- ILvl progression follows HERO track table (259→263→266→269)
+- ILvl progression follows HERO track table (259->263->266->269)
 
 ---
 

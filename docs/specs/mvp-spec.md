@@ -72,9 +72,9 @@ items only and prints recommendations to chat.
 Example:
 
 GearCrester Upgrade Recommendations:
-MainHand: 476 → 480 (Hero Crest x2)
-Head: 470 → 473 (Veteran Crest x1)
-Chest: 470 → 473 (Veteran Crest x1)
+MainHand: 476 -> 480 (Hero Crest x2)
+Head: 470 -> 473 (Veteran Crest x1)
+Chest: 470 -> 473 (Veteran Crest x1)
 
 ---
 

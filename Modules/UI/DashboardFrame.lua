@@ -37,7 +37,7 @@ function Dashboard:Create()
     -- Title bar (centered, below icon)
     local titleBar = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     titleBar:SetPoint("TOP", frame, "TOP", 0, -5)
-    titleBar:SetText("|cff00ff98GearCrester|r")
+    titleBar:SetText("|cff00ff98GearCrester v" .. (GC.version or "") .. "|r")
     frame.titleBar = titleBar
 
     -- Close button
@@ -52,7 +52,7 @@ function Dashboard:Create()
     tabContainer:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -47)  -- Moved down 5px more to -47
     frame.tabContainer = tabContainer
 
-    local tabWidth = (frameWidth - 20) / 3 - 5
+    local tabWidth = (frameWidth - 20) / 4 - 8  -- Divided by 4 tabs, minus 8px spacing for tighter fit
     local upgradesTab = UIUtils:CreateTabButton(tabContainer, "Upgrades", tabWidth, function() self:ShowTab("upgrades") end)
     upgradesTab:SetPoint("TOPLEFT", tabContainer, "TOPLEFT", 0, 0)
     self.upgradesTab = upgradesTab
@@ -65,6 +65,10 @@ function Dashboard:Create()
     inventoryTab:SetPoint("TOPLEFT", crestsTab, "TOPRIGHT", 5, 0)
     self.inventoryTab = inventoryTab
 
+    local helpTab = UIUtils:CreateTabButton(tabContainer, "Help", tabWidth, function() self:ShowTab("help") end)
+    helpTab:SetPoint("TOPLEFT", inventoryTab, "TOPRIGHT", 5, 0)
+    self.helpTab = helpTab
+
     -- Content area (moved down 14px to avoid overlap with tabs)
     local contentArea = UIUtils:CreatePanel(frame, nil, frameWidth - 20, frameHeight - 70)
     contentArea:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, -74)  -- Moved down from -60 to -74
@@ -74,6 +78,7 @@ function Dashboard:Create()
     self:CreateUpgradesPanel(contentArea)
     self:CreateCrestsPanel(contentArea)
     self:CreateInventoryPanel(contentArea)
+    self:CreateHelpPanel(contentArea)
 
     frame:Hide()
     self.frame = frame
@@ -135,31 +140,43 @@ function Dashboard:ShowTab(tabName)
     if self.upgradesTab then self.upgradesTab:SetActive(tabName == "upgrades") end
     if self.crestsTab then self.crestsTab:SetActive(tabName == "crests") end
     if self.inventoryTab then self.inventoryTab:SetActive(tabName == "equipped") end
+    if self.helpTab then self.helpTab:SetActive(tabName == "help") end
 
     -- Ensure panels exist
     if not self.upgradesPanel then self:CreateUpgradesPanel(self.frame.contentArea) end
     if not self.crestsPanel then self:CreateCrestsPanel(self.frame.contentArea) end
     if not self.inventoryPanel then self:CreateInventoryPanel(self.frame.contentArea) end
+    if not self.helpPanel then self:CreateHelpPanel(self.frame.contentArea) end
 
     -- Show/hide panels
     self.upgradesPanel:Show()
     self.crestsPanel:Show()
     self.inventoryPanel:Show()
+    self.helpPanel:Show()
 
     if tabName == "upgrades" then
         self.upgradesPanel:Show()
         self.crestsPanel:Hide()
         self.inventoryPanel:Hide()
+        self.helpPanel:Hide()
         self:UpdateUpgradesPanel()  -- Populate with default /gc results
     elseif tabName == "crests" then
         self.upgradesPanel:Hide()
         self.crestsPanel:Show()
         self.inventoryPanel:Hide()
+        self.helpPanel:Hide()
         self:UpdateCrestsPanel()
+    elseif tabName == "help" then
+        self.upgradesPanel:Hide()
+        self.crestsPanel:Hide()
+        self.inventoryPanel:Hide()
+        self.helpPanel:Show()
+        self:UpdateHelpPanel()
     else
         self.upgradesPanel:Hide()
         self.crestsPanel:Hide()
         self.inventoryPanel:Show()
+        self.helpPanel:Hide()
         self:UpdateInventoryPanel()
     end
 end
@@ -209,13 +226,13 @@ function Dashboard:UpdateUpgradesPanel(results, title)
 
     -- Add title
     local titleLabel = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    titleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", 5, -5)
+    titleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", 5, -7)  -- Moved up 2 lines from -5 to -7
     titleLabel:SetText(title or "|cff00ff98Upgrade Recommendations|r")
     titleLabel:SetJustifyH("LEFT")
     panel.titleLabel = titleLabel
 
-    -- Add upgrade entries
-    local yOffset = -25
+    -- Add upgrade entries (start below title with proper spacing)
+    local yOffset = -25  -- Standard spacing below title
     if results and #results > 0 then
         for i, entry in ipairs(results) do
             -- Create a button widget for clickable item links
@@ -370,6 +387,85 @@ function Dashboard:UpdateInventoryPanel()
     end
 
     content:SetHeight(math.max(300, -yOffset + 10))
+end
+
+function Dashboard:CreateHelpPanel(parent)
+    local panel = UIUtils:CreatePanel(parent, "Slash Commands", parent:GetWidth() - 20, parent:GetHeight() - 20)
+    panel:SetPoint("TOPLEFT", parent, "TOPLEFT", 10, -10)
+    panel:Hide()
+    self.helpPanel = panel
+
+    local scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", panel, "TOPLEFT", 10, -25)
+    scroll:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -10, 10)
+    panel.scroll = scroll
+
+    local content = CreateFrame("Frame", nil, scroll)
+    content:SetSize(scroll:GetWidth(), 400)
+    scroll:SetScrollChild(content)
+    panel.content = content
+end
+
+function Dashboard:UpdateHelpPanel()
+    local panel = self.helpPanel
+    local content = panel.content
+
+    -- Clear existing content
+    if panel.items then
+        for _, item in ipairs(panel.items) do
+            if item then
+                item:Hide()
+                item:SetParent(nil)
+            end
+        end
+    end
+    panel.items = {}
+
+    if panel.titleLabel then
+        panel.titleLabel:Hide()
+        panel.titleLabel:SetParent(nil)
+        panel.titleLabel = nil
+    end
+
+    content:SetHeight(400)
+
+    -- Add title
+    local titleLabel = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    titleLabel:SetPoint("TOPLEFT", content, "TOPLEFT", 5, -5)
+    titleLabel:SetText("|cff00ff98Available Slash Commands|r")
+    titleLabel:SetJustifyH("LEFT")
+    panel.titleLabel = titleLabel
+
+    -- List of slash commands
+    local commands = {
+        "/gc - Show upgrade recommendations",
+        "/gc <count> <crestType> - Simulate upgrades (e.g., /gc 40 champion)",
+        "/gc debug on|off - Toggle debug output",
+        "/gc why - Show why items are not upgradeable",
+        "/gc crests - Show crest inventory",
+        "/gc free - Show free upgrade opportunities",
+        "/gc calibrate npc - Scan at upgrader NPC",
+        "/gc calibrate <slot> - Compare GC vs Blizzard data",
+        "/gc scan - Rescan inventory and bank",
+        "/gc slotcaps - View stored slot caps",
+        "/gc dump - Dump items with bonus IDs",
+        "/gc test - Run self-diagnostics",
+        "/gc export [count crestType] - Export items",
+        "/gc ui [count crestType] - Toggle dashboard UI",
+        "/gc weight <slot> <value> - Set priority (1-20)",
+        "/gc weight reset|list - Manage weights",
+    }
+
+    local yOffset = -25
+    for _, cmd in ipairs(commands) do
+        local line = content:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+        line:SetPoint("TOPLEFT", content, "TOPLEFT", 5, yOffset)
+        line:SetJustifyH("LEFT")
+        line:SetText(cmd)
+        yOffset = yOffset - 18
+    end
+
+    content:SetHeight(math.max(400, -yOffset + 10))
 end
 
 function Dashboard:Toggle()

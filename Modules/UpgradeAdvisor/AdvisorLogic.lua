@@ -280,19 +280,25 @@ function Logic:CalibrateItemUpgradeInfo(itemLink, slotName)
     -- Parse bonus IDs for display
     local bonusIDs = ParseBonusIDs(itemLink)
 
-    -- Print comparison
-    print("|cff00ff98[CALIBRATE] " .. (slotName or "Item") .. "|r")
-    print("  Bonus IDs: " .. table.concat(bonusIDs, ", "))
-    print("  GearCrester: track=" .. GC.ColorTrack(gcTrack or "nil") .. " rank=" .. (gcRank or "nil"))
+    -- Print comparison (respect suppression flag)
+    local function CalibPrint(msg)
+        if not GC.suppressCalibrationOutput then
+            print(msg)
+        end
+    end
+
+    CalibPrint("|cff00ff98[CALIBRATE] " .. (slotName or "Item") .. "|r")
+    CalibPrint("  Bonus IDs: " .. table.concat(bonusIDs, ", "))
+    CalibPrint("  GearCrester: track=" .. GC.ColorTrack(gcTrack or "nil") .. " rank=" .. (gcRank or "nil"))
     if blizzTrack then
-        print("  Blizzard:    track=" .. GC.ColorTrack(blizzTrack) .. " rank=" .. blizzRank)
+        CalibPrint("  Blizzard:    track=" .. GC.ColorTrack(blizzTrack) .. " rank=" .. blizzRank)
         if gcTrack == blizzTrack and gcRank == blizzRank then
-            print("  |cff00ff00[OK] Match|r")
+            CalibPrint("  |cff00ff00[OK] Match|r")
         else
-            print("  |cffff0000[MISMATCH] GC and Blizzard disagree|r")
+            CalibPrint("  |cffff0000[MISMATCH] GC and Blizzard disagree|r")
         end
     else
-        print("  Blizzard:    no upgrade data available")
+        CalibPrint("  Blizzard:    no upgrade data available")
     end
 
     return gcTrack, gcRank, blizzTrack, blizzRank
@@ -404,7 +410,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                         local crestType = Data:GetCrestType(trackName)
 
                         if GC.db and GC.db.debug then
-                            print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d→%d (slot cap %s %d/%d)|r",
+                            print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d->%d (slot cap %s %d/%d)|r",
                                 trackName, currentRank, freeMaxRank, capTrack, capMaxUpgrade, Data.MAX_RANK))
                         end
 

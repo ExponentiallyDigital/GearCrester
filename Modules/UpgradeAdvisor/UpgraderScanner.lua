@@ -19,9 +19,9 @@ local function DebugPrint(msg)
     end
 end
 
--- Very loose "is upgrader usable" check: API present and NPC window presumably open
+-- is the upgrade NPC's dialogue box open?
 function UpgraderScanner:IsUpgraderOpen()
-    return C_ItemUpgrade and C_ItemUpgrade.GetItemUpgradeItemInfo ~= nil
+    return ItemUpgradeFrame and ItemUpgradeFrame:IsShown()
 end
 
 local function ClearUpgradeSelection()
@@ -222,8 +222,6 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
         table.insert(slots, slotID)
     end
     table.sort(slots)
-
-    GC:Print("Scanning equipped items at upgrader NPC...")
 
     local slotIndex = 1
     local captured = 0

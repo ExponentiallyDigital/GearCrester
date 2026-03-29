@@ -1,5 +1,12 @@
 local addonName, GC = ...
 
+-- String trim function (not available in WoW Lua by default)
+if not string.trim then
+    string.trim = function(s)
+        return (s:gsub("^%s*(.-)%s*$", "%1"))
+    end
+end
+
 function GC:SafeCall(func, ...)
     if type(func) == "function" then
         return pcall(func, ...)

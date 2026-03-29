@@ -23,7 +23,7 @@ Use it after any code change, feature addition, or Qwen-generated update.
 - [ ] Run `/gc`
 - [ ] Output appears with:
     - Slot name
-    - Current ilvl → next ilvl
+    - Current ilvl -> next ilvl
     - Crest type + cost
     - Location tag (Equipped/Bag/Bank)
 
@@ -95,7 +95,7 @@ Use it after any code change, feature addition, or Qwen-generated update.
 - [ ] `/gc 40 hero`
 - [ ] HERO track items detected (bonus ID 12700)
 - [ ] 2-step upgrades show `(HERO x40)`
-- [ ] ILvl progression follows HERO table (259→263→266→269→272→276)
+- [ ] ILvl progression follows HERO table (259->263->266->269->272->276)
 
 - [ ] `/gc 60 hero`
 - [ ] 3-step upgrades show `(HERO x60)`

@@ -137,7 +137,7 @@ handlers["test"] = function()
 end
 
 handlers["calibrate"] = function(param)
-    local sub = param:lower()
+    local sub = param:lower():trim()
     if sub == "npc" then
         local US = GC.modules.UpgradeAdvisor.UpgraderScanner
         if not US then GC:Print("UpgraderScanner not found."); return end

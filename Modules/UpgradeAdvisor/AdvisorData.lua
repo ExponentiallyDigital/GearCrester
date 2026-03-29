@@ -262,7 +262,7 @@ function Data:UpdateSlotCapIfHigher(slotID, track, rank)
     if shouldUpdate then
         self:SetSlotCap(slotID, track, rank)
         if GC.db and GC.db.debug then
-            print(string.format("|cff00ff00[DEBUG] Slot cap updated: %s → %s %d/%d|r",
+            print(string.format("|cff00ff00[DEBUG] Slot cap updated: %s -> %s %d/%d|r",
                 GC.SLOTS[slotID] or "Unknown", track, rank, Data.MAX_RANK))
         end
         return true

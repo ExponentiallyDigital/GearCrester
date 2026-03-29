@@ -31,7 +31,7 @@ recommendations are computed.
     - slot priorities
     - crest cost tables
     - upgrade track mappings
-    - rank → ilvl tables
+    - rank -> ilvl tables
 
 ---
 
@@ -94,12 +94,12 @@ recommendations are computed.
 
 ### Crest Cost Table
 
-- Rank → crest cost
-- Track → crest type
+- Rank -> crest cost
+- Track -> crest type
 
 ### Ilvl Table
 
-- Track + rank → ilvl
+- Track + rank -> ilvl
 
 ---
 

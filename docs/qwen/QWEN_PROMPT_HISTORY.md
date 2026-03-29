@@ -54,7 +54,7 @@ This document tracks all feature prompts, architectural changes, module addition
 **Notes:**
 
 - All modules now use `GC.modules.UpgradeAdvisor = GC.modules.UpgradeAdvisor or {}` pattern
-- TOC load order: AdvisorData → AdvisorLogic → AdvisorCore → AdvisorUI
+- TOC load order: AdvisorData -> AdvisorLogic -> AdvisorCore -> AdvisorUI
 
 ---
 
@@ -421,7 +421,7 @@ This document tracks all feature prompts, architectural changes, module addition
 **Notes:**
 
 - Root cause: Shoulder with bonus IDs {6652, 13577, 12794} - CHAMPION track markers (6652, 13577) but HERO rank marker (12794)
-- Old behavior: DetermineTrack returned "CHAMPION", DetermineRank returned nil → item skipped
+- Old behavior: DetermineTrack returned "CHAMPION", DetermineRank returned nil -> item skipped
 - New behavior: When rank detection fails, scan ALL tracks' RANK_BONUS_IDS to find matching rank ID
 - Rank-ID match (12794 = HERO rank 4) takes precedence, returns ("HERO", 4)
 - Debug logging shows full inference chain
@@ -496,7 +496,7 @@ This document tracks all feature prompts, architectural changes, module addition
 **Notes:**
 
 - User reported HERO tier headpiece shows 1/6 in Blizzard UI but GC showed 3/6 based on bonus ID 12793
-- New logic: C_Item.GetItemUpgradeInfo() → parse trackString and currentLevel → return (track, rank)
+- New logic: C_Item.GetItemUpgradeInfo() -> parse trackString and currentLevel -> return (track, rank)
 - Fallback: If API returns nil/empty, use existing bonus-ID detection (preserves legacy item support)
 - Debug logging shows "Blizzard API: track=X rank=Y" or "Blizzard API unavailable, using bonus-ID detection"
 - Guardrail compliance: Preserve existing fallback logic, only add API as primary source

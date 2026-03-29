@@ -17,8 +17,11 @@ end
 function SelfTest:RunAllTests()
     testResults = {}
 
+    -- Suppress calibration output during self-test so it doesn't confuse results
+    GC.suppressCalibrationOutput = true
+
     print("|cff00ff98GearCrester: self-diagnostics|r")
-    print("================================")
+    print("=============================")
 
     self:TestBonusIDParsing()
     self:TestTrackDetection()
@@ -73,6 +76,9 @@ function SelfTest:RunAllTests()
     else
         print("|cff00ff00All tests passed.|r")
     end
+
+    -- Re-enable calibration output for normal use
+    GC.suppressCalibrationOutput = false
 end
 
 function SelfTest:TestBonusIDParsing()
@@ -676,10 +682,16 @@ function SelfTest:TestSlashCommandRegistration()
 end
 
 function SelfTest:TestUIFrameAvailability()
-    if GC.modules.UI and GC.modules.UI.MainFrame then
-        pass("UI Frame Availability")
+    -- Test for new Dashboard UI (replaced old MainFrame)
+    if GC.modules.UI and GC.modules.UI.Dashboard then
+        local dashboard = GC.modules.UI.Dashboard
+        if dashboard.Create and dashboard.Toggle and dashboard.ShowTab then
+            pass("UI Frame Availability")
+        else
+            fail("UI Frame Availability", "Dashboard module missing required functions")
+        end
     else
-        fail("UI Frame Availability", "MainFrame module not found")
+        fail("UI Frame Availability", "Dashboard module not found")
     end
 end
 

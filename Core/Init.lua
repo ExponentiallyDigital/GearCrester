@@ -4,6 +4,9 @@ GC.name = addonName
 GC.modules = {}
 GC.db = {}
 
+-- for supression of calibration text when "/gc test" is run
+GC.suppressCalibrationOutput = false
+
 -- Valid crest types (shared constant)
 GC.VALID_CREST_TYPES = {
     ADVENTURER = true,
@@ -15,15 +18,9 @@ GC.VALID_CREST_TYPES = {
 
 function GC:OnLoad()
     GC.db = GearCresterDB
-
-    local version = "0.2.0"
-    if C_AddOns and C_AddOns.GetAddOnMetadata then
-        version = C_AddOns.GetAddOnMetadata(addonName, "Version") or version
-    end
-
+    local version = C_AddOns and C_AddOns.GetAddOnMetadata(addonName, "Version") or "unknown"
     GC.version = version
     GC.modules.Commands:Register()
-
     GC:Print("v" .. version .. " loaded. Use /gc or /gc help.")
 end
 

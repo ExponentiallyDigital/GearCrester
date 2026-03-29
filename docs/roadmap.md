@@ -38,7 +38,7 @@ It is the primary reference for what to build next.
 - [ ] Weekly cap detection
 - [ ] Seasonal cap detection
 - [ ] Reset timer (region‑based)
-- [ ] Tier rollover logic (5→1)
+- [ ] Tier rollover logic (5->1)
 - [ ] Crest efficiency score (CES)
 
 ---

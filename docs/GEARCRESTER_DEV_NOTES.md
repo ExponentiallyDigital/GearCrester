@@ -46,7 +46,7 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 - [x] **Multi-step upgrade path display** (shows all affordable steps, not just next rank)
 - [x] **Flat 20-crest cost** per upgrade step
 - [x] **Total crest cost display** (shows full path cost: upgradeSteps × 20)
-- [x] **Upgrade order system** with default slot priorities (weapons → armor → trinkets)
+- [x] **Upgrade order system** with default slot priorities (weapons -> armor -> trinkets)
 - [x] **User-defined slot weights** (1-20, lower = higher priority, saved to SavedVariables)
 - [x] **Gold-only upgrade detection** (same track, higher rank owned = free upgrade to that rank)
 - [x] **Crest simulation** (test scenarios: "what if I have 40/100/150 crests?")
@@ -134,7 +134,7 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 - [ ] **Weekly/seasonal crest cap tracking** - Does not track how many crests you can earn per week/season
 - [ ] **Reset timer** - Does not show time until weekly reset or when new crests become available
-- [ ] **Tier breakpoint detection** - Does not warn when upgrading rank 5→6 "wastes" crests (should upgrade to next tier instead)
+- [ ] **Tier breakpoint detection** - Does not warn when upgrading rank 5->6 "wastes" crests (should upgrade to next tier instead)
 - [ ] **Visual gear list by tier/ilevel** - No graphical display, grid view, or sortable list (text output only)
 - [ ] **Bag/bank item upgrades** - Cannot show what bag/bank items can be upgraded (scanning is stubbed)
 - [ ] **Gold cost display** - Does not show actual gold cost for gold-only upgrades
@@ -243,7 +243,7 @@ Lower number = higher priority (upgraded first)
 **Notes:**
 
 - All upgrades cost 20 crests per step
-- Rank 5→6 of one tier equals rank 1-2 of next tier (tier breakpoint)
+- Rank 5->6 of one tier equals rank 1-2 of next tier (tier breakpoint)
 - Gold-only upgrades available when owning higher-rank item of same track
 
 ---
