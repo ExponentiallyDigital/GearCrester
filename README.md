@@ -39,7 +39,9 @@ _This is a proof of concept release to ensure that logic and data are correct, m
 # Configuration
 
 1. Open your bank and bags so GearCrester can see what gear you have available
-2. Head over to the upgrade NPC and open their dialogue box then run `/gc calibrate npc` to scan the higest level you've obtained for your gear, this is used by the crest "free" (requiring gold only) upgrade scanner
+    - run /gc scan
+2. Head over to the upgrade NPC and open their dialogue box then
+   run `/gc calibrate npc` to scan the higest level you've obtained for your gear, this is used by the crest "free" (requiring gold only) upgrade scanner
 3. GearCrester works out of the box with default "weights" or priority values for gear slot upgrade sequencing. The order can be modified via `/gc weight <slot <value>` slash commands, see below. Any changes you make to weights are saved, and can be listed or reset via the below commands.
 
 ---

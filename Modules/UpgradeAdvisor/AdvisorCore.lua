@@ -27,18 +27,8 @@ function Core:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
     local results = Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
 
-    -- Sort using UpgradeOrder priorities
-    if UpgradeOrder then
-        table.sort(results, function(a, b)
-            local priorityA = UpgradeOrder:GetEffectivePriority(a.slotID)
-            local priorityB = UpgradeOrder:GetEffectivePriority(b.slotID)
-
-            if priorityA ~= priorityB then
-                return priorityA < priorityB
-            end
-            return a.nextIlvl > b.nextIlvl
-        end)
-    end
+    -- Sort using the reusable sorting function
+    GC.SortUpgradeResults(results)
 
     return results
 end
@@ -173,6 +163,9 @@ function Core:PrintFreeUpgrades()
         return
     end
 
+    -- Sort results using the reusable sorting function
+    GC.SortUpgradeResults(results)
+
     print("|cff00ff98GearCrester: free upgrade opportunities|r")
     print("--------------------------------")
 
@@ -185,13 +178,15 @@ function Core:PrintFreeUpgrades()
         if entry.itemLink then
             itemName = " " .. entry.itemLink
         end
+        local trackText = entry.trackName and GC.ColorTrack(entry.trackName) or "Unknown"
         local line = string.format(
-            "%s%s: %d -> %d [FREE]%s",
+            "%s%s: %d -> %d [FREE]%s (%s)",
             entry.slotName,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
-            itemName
+            itemName,
+            trackText
         )
         print(line)
     end

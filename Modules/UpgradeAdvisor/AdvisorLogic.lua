@@ -598,64 +598,122 @@ function Logic:PrintWhyDiagnostics()
     GC.modules.InventoryScanner.ScannerBags:Scan()
     GC.modules.InventoryScanner.ScannerBank:Scan()
 
-    -- Check equipped items
-    print("|cff00ff98--- Equipped Items ---|r")
+    -- Helper function to check if an item can be equipped
+    local function CanBeEquipped(itemLink)
+        if not itemLink then return false end
+        -- Get inventory slot ID from item info
+        local _, _, _, _, _, _, _, _, _, equipSlot = GetItemInfo(itemLink)
+        -- Check if it has a valid equipment slot (1-19 are valid slots)
+        return equipSlot and equipSlot ~= "" and equipSlot ~= "INVTYPE_NON_EQUIP"
+    end
+
+    -- Collect all items into a single list for sorting
+    local allItems = {}
+
+    -- Add equipped items (always equipable by definition)
     for slotID, itemData in pairs(GC.DataModel.equipped) do
         local itemLink = itemData.itemLink
-        local slotName = itemData.slotName
-
         if itemLink then
             local diagnostics = self:GetItemDiagnostics(itemLink)
-            -- Extract item name from link for display
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            print(string.format("%s: %s %s - %s",
-                slotName or "Unknown",
-                itemLink,  -- Clickable item link
-                itemName,
-                diagnostics.reason))
-        else
-            print(string.format("%s: No item equipped", slotName or "Unknown"))
+            table.insert(allItems, {
+                location = nil,  -- equipped
+                slotID = slotID,
+                slotName = itemData.slotName,
+                itemLink = itemLink,
+                itemName = itemName,
+                reason = diagnostics.reason,
+                trackName = diagnostics.trackName,
+            })
         end
     end
 
-    -- Check bag items
-    print("|cff00ff98--- Bag Items ---|r")
-    local bagCount = 0
+    -- Add bag items (only if equipable)
     for itemKey, itemData in pairs(GC.DataModel.bags) do
         local itemLink = itemData.itemLink
-        if itemLink then
+        if itemLink and CanBeEquipped(itemLink) then
             local diagnostics = self:GetItemDiagnostics(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            print(string.format("%s: %s %s - %s",
-                itemData.location or itemKey,
-                itemLink,
-                itemName,
-                diagnostics.reason))
-            bagCount = bagCount + 1
+            table.insert(allItems, {
+                location = itemData.location or itemKey,
+                slotID = nil,
+                slotName = nil,
+                itemLink = itemLink,
+                itemName = itemName,
+                reason = diagnostics.reason,
+                trackName = diagnostics.trackName,
+            })
         end
-    end
-    if bagCount == 0 then
-        print("(no items in bags)")
     end
 
-    -- Check bank items
-    print("|cff00ff98--- Bank Items ---|r")
-    local bankCount = 0
+    -- Add bank items (only if equipable)
     for itemKey, itemData in pairs(GC.DataModel.bank) do
         local itemLink = itemData.itemLink
-        if itemLink then
+        if itemLink and CanBeEquipped(itemLink) then
             local diagnostics = self:GetItemDiagnostics(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            print(string.format("%s: %s %s - %s",
-                itemData.location or itemKey,
-                itemLink,
-                itemName,
-                diagnostics.reason))
-            bankCount = bankCount + 1
+            table.insert(allItems, {
+                location = itemData.location or itemKey,
+                slotID = nil,
+                slotName = nil,
+                itemLink = itemLink,
+                itemName = itemName,
+                reason = diagnostics.reason,
+                trackName = diagnostics.trackName,
+            })
         end
     end
-    if bankCount == 0 then
-        print("(no items in bank)")
+
+    -- Sort all items using the reusable sorting function
+    GC.SortUpgradeResults(allItems)
+
+    -- Print sorted results by location type
+    local lastLocationType = nil
+    for _, item in ipairs(allItems) do
+        local currentLocationType = item.location and "bag" or "equipped"
+
+        -- Print section header when location type changes
+        if currentLocationType ~= lastLocationType then
+            if lastLocationType == nil then
+                print("|cff00ff98--- Equipped Items ---|r")
+            elseif currentLocationType == "bag" and lastLocationType == "equipped" then
+                print("|cff00ff98--- Bag Items ---|r")
+            end
+            lastLocationType = currentLocationType
+        end
+
+        -- Print item with colorized track name
+        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
+        print(string.format("%s: %s %s - %s (%s)",
+            item.location or (item.slotName or "Unknown"),
+            item.itemLink,
+            item.itemName,
+            item.reason,
+            trackText))
+    end
+
+    -- Print bank section if we have bank items
+    local hasBank = false
+    for _, item in ipairs(allItems) do
+        if item.location and item.location:match("^bank") then
+            hasBank = true
+            break
+        end
+    end
+
+    if hasBank then
+        print("|cff00ff98--- Bank Items ---|r")
+        for _, item in ipairs(allItems) do
+            if item.location and item.location:match("^bank") then
+                local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
+                print(string.format("%s: %s %s - %s (%s)",
+                    item.location,
+                    item.itemLink,
+                    item.itemName,
+                    item.reason,
+                    trackText))
+            end
+        end
     end
 end
 
