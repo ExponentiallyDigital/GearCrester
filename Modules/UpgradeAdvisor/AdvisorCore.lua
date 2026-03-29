@@ -39,75 +39,16 @@ function Core:PrintResults(results, title)
         return
     end
 
+    -- Sort results using the reusable sorting function
+    GC.SortUpgradeResults(results)
+
     if title then
         print(title)
     else
         print("|cff00ff98GearCrester: upgrade recommendations|r")
     end
 
-    -- Split results into non-bag and bag entries
-    local nonBag = {}
-    local bagEntries = {}
-
     for _, entry in ipairs(results) do
-        local isBag = entry.location and entry.location:match("^bag (%d+), slot (%d+)")
-        if isBag then
-            table.insert(bagEntries, entry)
-        else
-            table.insert(nonBag, entry)
-        end
-    end
-
-    -- Sort ONLY bag entries by bag then slot
-    table.sort(bagEntries, function(a, b)
-        local aBag, aSlot = a.location:match("bag (%d+), slot (%d+)")
-        local bBag, bSlot = b.location:match("bag (%d+), slot (%d+)")
-
-        aBag, aSlot = tonumber(aBag), tonumber(aSlot)
-        bBag, bSlot = tonumber(bBag), tonumber(bSlot)
-
-        if aBag ~= bBag then
-            return aBag < bBag
-        end
-        return aSlot < bSlot
-    end)
-
-    -- Print non-bag entries first (equipped, etc.)
-    for _, entry in ipairs(nonBag) do
-        local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local location = entry.location and (" [" .. entry.location .. "]") or ""
-        local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
-        local costText
-        local goldOnlyText = ""
-        if entry.isGoldOnly then
-            if entry.goldOnlyTargetRank then
-                costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
-            else
-                costText = string.format("(%s FREE)", track)
-            end
-        else
-            costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
-            goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
-        end
-        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
-        local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
-
-        print(string.format(
-            "%s%s: %d -> %d %s%s%s%s",
-            entry.slotName,
-            location,
-            entry.currentIlvl,
-            entry.nextIlvl,
-            costText,
-            goldOnlyText,
-            rankText,
-            itemName
-        ))
-    end
-
-    -- Print sorted bag entries
-    for _, entry in ipairs(bagEntries) do
         local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
         local location = entry.location and (" [" .. entry.location .. "]") or ""
         local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0

@@ -4,6 +4,7 @@ GC.modules.UpgradeAdvisor = GC.modules.UpgradeAdvisor or {}
 local Data = {}
 GC.modules.UpgradeAdvisor.Data = Data
 
+-- slot number, priority value (lower is higher "value")
 Data.SLOT_PRIORITY = {
     [16] = 1, -- MainHand
     [17] = 2, -- OffHand

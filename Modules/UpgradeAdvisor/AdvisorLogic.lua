@@ -523,28 +523,133 @@ function Logic:DumpAllItems()
     print("|cff00ff98GearCrester: bonus ID dump:|r")
 
     GC.modules.InventoryScanner.ScannerEquipped:Scan()
+    GC.modules.InventoryScanner.ScannerBags:Scan()
+    GC.modules.InventoryScanner.ScannerBank:Scan()
 
+    -- Collect all items into a single list for sorting
+    local allItems = {}
+
+    -- Add equipped items
     for slotID, itemData in pairs(GC.DataModel.equipped) do
         local itemLink = itemData.itemLink
-        local slotName = itemData.slotName
-
         if itemLink then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
             local ilvl = GetItemIlvl(itemLink)
-
-            -- Extract item name from link for display
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-
-            print(string.format("%s: %s %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
-                slotName or "Unknown",
-                itemLink,  -- Clickable item link
-                itemName,
-                ilvl,
-                GC.ColorTrack(trackName or "nil"),
-                currentRank or "nil",
-                table.concat(bonusIDs, ", ") or "none"))
+            table.insert(allItems, {
+                location = nil,  -- equipped
+                slotID = slotID,
+                slotName = itemData.slotName,
+                itemLink = itemLink,
+                itemName = itemName,
+                ilvl = ilvl,
+                trackName = trackName,
+                currentRank = currentRank,
+                bonusIDs = bonusIDs,
+            })
         end
+    end
+
+    -- Add bag items (only if equipable)
+    for itemKey, itemData in pairs(GC.DataModel.bags) do
+        local itemLink = itemData.itemLink
+        if itemLink and GC.CanBeEquipped(itemLink) then
+            local bonusIDs = ParseBonusIDs(itemLink)
+            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+            local ilvl = GetItemIlvl(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            -- Get slot name from equip location
+            local slotName = nil
+            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
+            if equipLoc then
+                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            end
+            table.insert(allItems, {
+                location = itemData.location or itemKey,
+                slotID = nil,
+                slotName = slotName,
+                itemLink = itemLink,
+                itemName = itemName,
+                ilvl = ilvl,
+                trackName = trackName,
+                currentRank = currentRank,
+                bonusIDs = bonusIDs,
+            })
+        end
+    end
+
+    -- Add bank items (only if equipable)
+    for itemKey, itemData in pairs(GC.DataModel.bank) do
+        local itemLink = itemData.itemLink
+        if itemLink and GC.CanBeEquipped(itemLink) then
+            local bonusIDs = ParseBonusIDs(itemLink)
+            local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+            local ilvl = GetItemIlvl(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            -- Get slot name from equip location
+            local slotName = nil
+            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
+            if equipLoc then
+                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            end
+            table.insert(allItems, {
+                location = itemData.location or itemKey,
+                slotID = nil,
+                slotName = slotName,
+                itemLink = itemLink,
+                itemName = itemName,
+                ilvl = ilvl,
+                trackName = trackName,
+                currentRank = currentRank,
+                bonusIDs = bonusIDs,
+            })
+        end
+    end
+
+    -- Sort all items using the reusable sorting function
+    GC.SortUpgradeResults(allItems)
+
+    -- Print sorted results by location type
+    local lastLocationType = nil
+    for _, item in ipairs(allItems) do
+        local currentLocationType = item.location and "bag" or "equipped"
+
+        -- Print section header when location type changes
+        if currentLocationType ~= lastLocationType then
+            if lastLocationType == nil then
+                print("|cff00ff98--- Equipped Items ---|r")
+            elseif currentLocationType == "bag" and lastLocationType == "equipped" then
+                print("|cff00ff98--- Bag Items ---|r")
+            elseif currentLocationType == "bank" and lastLocationType == "bag" then
+                print("|cff00ff98--- Bank Items ---|r")
+            end
+            lastLocationType = currentLocationType
+        end
+
+        -- Get slot name for bag/bank items
+        local displaySlotName = item.slotName
+        if not displaySlotName and item.location then
+            -- Try to extract slot name from item link using equip location
+            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(item.itemLink)
+            if equipLoc then
+                displaySlotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            end
+            if not displaySlotName then
+                displaySlotName = item.location
+            end
+        end
+
+        -- Print item with colorized track name
+        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
+        print(string.format("%s: %s %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+            displaySlotName or "Unknown",
+            item.itemLink,
+            item.itemName,
+            item.ilvl,
+            trackText,
+            item.currentRank or "nil",
+            table.concat(item.bonusIDs, ", ") or "none"))
     end
 end
 
@@ -598,15 +703,6 @@ function Logic:PrintWhyDiagnostics()
     GC.modules.InventoryScanner.ScannerBags:Scan()
     GC.modules.InventoryScanner.ScannerBank:Scan()
 
-    -- Helper function to check if an item can be equipped
-    local function CanBeEquipped(itemLink)
-        if not itemLink then return false end
-        -- Get inventory slot ID from item info
-        local _, _, _, _, _, _, _, _, _, equipSlot = GetItemInfo(itemLink)
-        -- Check if it has a valid equipment slot (1-19 are valid slots)
-        return equipSlot and equipSlot ~= "" and equipSlot ~= "INVTYPE_NON_EQUIP"
-    end
-
     -- Collect all items into a single list for sorting
     local allItems = {}
 
@@ -631,13 +727,19 @@ function Logic:PrintWhyDiagnostics()
     -- Add bag items (only if equipable)
     for itemKey, itemData in pairs(GC.DataModel.bags) do
         local itemLink = itemData.itemLink
-        if itemLink and CanBeEquipped(itemLink) then
+        if itemLink and GC.CanBeEquipped(itemLink) then
             local diagnostics = self:GetItemDiagnostics(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            -- Get slot name from equip location
+            local slotName = nil
+            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
+            if equipLoc then
+                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            end
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
-                slotName = nil,
+                slotName = slotName,
                 itemLink = itemLink,
                 itemName = itemName,
                 reason = diagnostics.reason,
@@ -649,13 +751,19 @@ function Logic:PrintWhyDiagnostics()
     -- Add bank items (only if equipable)
     for itemKey, itemData in pairs(GC.DataModel.bank) do
         local itemLink = itemData.itemLink
-        if itemLink and CanBeEquipped(itemLink) then
+        if itemLink and GC.CanBeEquipped(itemLink) then
             local diagnostics = self:GetItemDiagnostics(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+            -- Get slot name from equip location
+            local slotName = nil
+            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
+            if equipLoc then
+                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            end
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
-                slotName = nil,
+                slotName = slotName,
                 itemLink = itemLink,
                 itemName = itemName,
                 reason = diagnostics.reason,
@@ -682,9 +790,17 @@ function Logic:PrintWhyDiagnostics()
             lastLocationType = currentLocationType
         end
 
-        -- Print item with colorized track name
+        -- Print item with slot name and colorized track name
         local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
-        print(string.format("%s: %s %s - %s (%s)",
+        local locationPrefix = ""
+        if item.location then
+            -- For bag/bank items, show slot name first
+            if item.slotName then
+                locationPrefix = item.slotName .. ", "
+            end
+        end
+        print(string.format("%s%s: %s %s - %s (%s)",
+            locationPrefix,
             item.location or (item.slotName or "Unknown"),
             item.itemLink,
             item.itemName,
