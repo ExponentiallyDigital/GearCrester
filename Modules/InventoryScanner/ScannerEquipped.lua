@@ -12,10 +12,14 @@ function ScannerEquipped:Scan()
     for slotID, slotName in pairs(SLOT_IDS) do
         local itemLink = GetInventoryItemLink("player", slotID)
         if itemLink then
+            -- Detect crafted track using itemLink (TradeSkillUI API)
+            local craftedTrack = GC.GetCraftedTrackName(itemLink)
+
             GC.DataModel.equipped[slotID] = {
                 itemLink = itemLink,
                 slotName = slotName,
                 slotID = slotID,
+                craftedTrack = craftedTrack,  -- Store crafted track if applicable
             }
         end
     end

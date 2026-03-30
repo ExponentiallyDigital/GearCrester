@@ -135,7 +135,16 @@ function UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         return nil
     end
 
-    local trackName = GC.NormalizeTrackName(info.trackString:upper())
+    -- Check if this is a crafted item using TradeSkillUI API (works with itemLink)
+    local craftedTrack = GC.GetCraftedTrackName(itemLink)
+    local trackName
+    if craftedTrack then
+        trackName = craftedTrack
+    else
+        -- Not crafted - use normal track detection
+        trackName = GC.NormalizeTrackName(info.trackString:upper())
+    end
+
     local rank = info.currentLevel
     local maxRank = info.maxLevel or rank
     local currentIlvl = info.currentItemLevel or 0

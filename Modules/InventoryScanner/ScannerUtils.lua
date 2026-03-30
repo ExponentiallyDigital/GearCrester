@@ -48,12 +48,17 @@ function ScannerUtils:ScanContainerRange(bagStart, bagEnd, keyPrefix)
                     if not self:ShouldSkipItem(itemLink) then
                         local slotName = self:GetSlotName(itemLink)
                         local itemKey = string.format("%s%d_slot%d", keyPrefix, bagID, slotIndex)
+
+                        -- Detect crafted track using itemLink (TradeSkillUI API)
+                        local craftedTrack = GC.GetCraftedTrackName(itemLink)
+
                         items[itemKey] = {
                             itemLink = itemLink,
                             slotName = slotName,
                             bagID = bagID,
                             slotIndex = slotIndex,
                             location = string.format("%s %d, slot %d", keyPrefix == "bag" and "bag" or "bank", keyPrefix == "bag" and bagID or (bagID - 5), slotIndex),
+                            craftedTrack = craftedTrack,  -- Store crafted track if applicable
                         }
                     end
                 end

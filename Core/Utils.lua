@@ -29,6 +29,45 @@ function GC.NormalizeTrackName(trackName)
     return trackName
 end
 
+-- Determine track name for crafted items using TradeSkillUI API + item level
+-- Requires itemLink (NOT itemLocation)
+-- Returns: "CRAFTED", "CRAFTED-HERO", or "CRAFTED-MYTHIC" if item is crafted, nil otherwise
+-- Note: Crafting quality (1-5) only tells us if item is crafted, not the track.
+--       Track is determined by final item level (crest infusion).
+function GC.GetCraftedTrackName(itemLink)
+    if not itemLink then
+        return nil
+    end
+
+    -- Step 1: Check if item is crafted using TradeSkillUI API
+    local craftedQuality = C_TradeSkillUI and C_TradeSkillUI.GetItemCraftedQualityByItemInfo and C_TradeSkillUI.GetItemCraftedQualityByItemInfo(itemLink)
+
+    if not craftedQuality or craftedQuality == 0 then
+        -- Not a crafted item
+        return nil
+    end
+
+    -- Step 2: Item is crafted - determine track by final item level
+    local ilvl = GetDetailedItemLevelInfo(itemLink)
+
+    if not ilvl or ilvl == 0 then
+        -- Fallback to base crafted if ilvl unavailable
+        return "CRAFTED"
+    end
+
+    -- Map ilvl to crafted track (Midnight Season 1 crafted gear)
+    -- CRAFTED:       base crafted (ilvl ~252)
+    -- CRAFTED-HERO:  HERO infusion (ilvl ~272)
+    -- CRAFTED-MYTHIC: MYTHIC infusion (ilvl ~285)
+    if ilvl >= 285 then
+        return "CRAFTED-MYTHIC"
+    elseif ilvl >= 272 then
+        return "CRAFTED-HERO"
+    else
+        return "CRAFTED"
+    end
+end
+
 -- Returns true if the item can be worn in one of the GC.SLOTS equipment slots
 function GC.CanBeEquipped(itemLink)
     if not itemLink then return false end
@@ -43,7 +82,7 @@ function GC.CanBeEquipped(itemLink)
 end
 
 -- Safe, deterministic sorting for all GearCrester result types
--- Sort order: 1) Tier (MYTH > HERO > CHAMPION > VETERAN > ADVENTURER), 2) Slot priority, 3) Location (equipped < bags < bank), 4) Bag/slot
+-- Sort order: 1) Location (equipped < bags < bank), 2) Tier (CRAFTED-MYTHIC > MYTH > CRAFTED-HERO > HERO > CRAFTED > CHAMPION > VETERAN > ADVENTURER), 3) Slot priority, 4) Bag/slot
 function GC.SortUpgradeResults(results)
     if not results or type(results) ~= "table" then
         return results
@@ -58,23 +97,17 @@ function GC.SortUpgradeResults(results)
     end
     results = cleaned
 
-    local Data = GC.modules.UpgradeAdvisor and GC.modules.UpgradeAdvisor.Data
-
-    -- Build tier priority map (lower = higher priority, so MYTH=1, HERO=2, etc.)
-    local tierPriority = {}
-    if Data and Data.TRACKS then
-        for i, track in ipairs(Data.TRACKS) do
-            -- Reverse order: last track (MYTH) gets priority 1
-            tierPriority[track] = #Data.TRACKS - i + 1
-        end
-    else
-        -- Fallback if Data not available yet
-        tierPriority["MYTH"] = 1
-        tierPriority["HERO"] = 2
-        tierPriority["CHAMPION"] = 3
-        tierPriority["VETERAN"] = 4
-        tierPriority["ADVENTURER"] = 5
-    end
+    -- Build tier priority map using GC.TIER_PRIORITY (lower number = higher priority)
+    local tierPriority = GC.TIER_PRIORITY or {
+        ["CRAFTED-MYTHIC"] = 1,
+        MYTH = 2,
+        ["CRAFTED-HERO"] = 3,
+        HERO = 4,
+        CRAFTED = 5,
+        CHAMPION = 6,
+        VETERAN = 7,
+        ADVENTURER = 8,
+    }
 
     local function getTierPriority(entry)
         if not entry or not entry.trackName then
@@ -159,25 +192,25 @@ function GC.SortUpgradeResults(results)
         if a == nil then return false end
         if b == nil then return true end
 
-        -- 1. Tier priority (MYTH > HERO > CHAMPION > VETERAN > ADVENTURER)
-        local aTier = getTierPriority(a)
-        local bTier = getTierPriority(b)
-        if aTier ~= bTier then
-            return aTier < bTier  -- Lower tier priority = higher priority
-        end
-
-        -- 2. Slot priority
-        local aSlotPri = getSlotPriority(a)
-        local bSlotPri = getSlotPriority(b)
-        if aSlotPri ~= bSlotPri then
-            return aSlotPri < bSlotPri
-        end
-
-        -- 3. Location priority (equipped < bags < bank)
+        -- 1. Location priority (equipped < bags < bank)
         local aLocPri = getLocationPriority(a)
         local bLocPri = getLocationPriority(b)
         if aLocPri ~= bLocPri then
             return aLocPri < bLocPri
+        end
+
+        -- 2. Tier priority (CRAFTED-MYTHIC > MYTH > CRAFTED-HERO > HERO > CRAFTED > CHAMPION > VETERAN > ADVENTURER)
+        local aTier = getTierPriority(a)
+        local bTier = getTierPriority(b)
+        if aTier ~= bTier then
+            return aTier < bTier  -- Lower tier priority number = higher priority
+        end
+
+        -- 3. Slot priority
+        local aSlotPri = getSlotPriority(a)
+        local bSlotPri = getSlotPriority(b)
+        if aSlotPri ~= bSlotPri then
+            return aSlotPri < bSlotPri
         end
 
         -- 4. Bag/bank sorting

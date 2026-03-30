@@ -174,25 +174,25 @@ Valid crest types:
 
 ### Slot names
 
-These are item slot anmes and default priority sequence from highest to lowest:
+Item slot names and default priority sequence from highest to lowest:
 
 ```text
-    MainHand
-    OffHand
-    Head
-    Chest
-    Legs
-    Waist
-    Wrist
-    Hands
-    Shoulder
-    Feet
-    Neck
-    Back
-    Finger1
-    Finger2
-    Trinket1
-    Trinket2
+    1. MainHand
+    2. OffHand
+    3. Head
+    4. Chest
+    5. Legs
+    6. Waist
+    7. Wrist
+    8. Hands
+    9. Shoulder
+    10. Feet
+    11. Neck
+    12. Back
+    13. Finger1
+    14. Finger2
+    15. Trinket1
+    16. Trinket2
 ```
 
 ---
@@ -229,7 +229,7 @@ These are item slot anmes and default priority sequence from highest to lowest:
 - Modular, lose coupled, data‑driven architecture
 - Scanner and advisor operate on snapshots
 - Export writes once per session
-- Typical RAM use: ~5-10MB (varies with inventory size)
+- Typical RAM use: ~800KB (varies with inventory size)
 
 ---
 

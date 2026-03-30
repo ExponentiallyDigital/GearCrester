@@ -44,11 +44,14 @@ GC.EQUIPLOC_TO_SLOT = {
 
 -- Track colour codes for printed output
 GC.TRACK_COLORS = {
-    ADVENTURER = "|cffffff00",  -- Yellow
-    VETERAN    = "|cff00ff00",  -- Green
-    CHAMPION   = "|cffb04bff",  -- Purple
-    HERO       = "|cffff66ff",  -- Pink
-    MYTH       = "|cffff0000",  -- Red
+    ADVENTURER      = "|cffffff00",  -- Yellow
+    VETERAN         = "|cff00ff00",  -- Green
+    CHAMPION        = "|cffb04bff",  -- Purple
+    CRAFTED         = "|cff00ffff",  -- Cyan (base crafted)
+    HERO            = "|cffff66ff",  -- Pink
+    ["CRAFTED-HERO"] = "|cffff9966",  -- Orange-Pink (crafted HERO)
+    MYTH            = "|cffff0000",  -- Red
+    ["CRAFTED-MYTHIC"] = "|cff990000",  -- Dark Red (crafted MYTHIC)
 }
 
 function GC.ColorTrack(track)
@@ -97,4 +100,17 @@ GC.VALID_CREST_TYPES = {
     CHAMPION = true,
     HERO = true,
     MYTH = true,
+}
+
+-- Tier ordering for sorting (highest priority first, index = priority)
+-- CRAFTED-MYTHIC > MYTH > CRAFTED-HERO > HERO > CRAFTED > CHAMPION > VETERAN > ADVENTURER
+GC.TIER_PRIORITY = {
+    ["CRAFTED-MYTHIC"] = 1,
+    MYTH = 2,
+    ["CRAFTED-HERO"] = 3,
+    HERO = 4,
+    CRAFTED = 5,
+    CHAMPION = 6,
+    VETERAN = 7,
+    ADVENTURER = 8,
 }

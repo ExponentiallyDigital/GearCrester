@@ -24,15 +24,33 @@ World of Warcraft Midnight addon that scans equipped gear, parses bonus IDs to d
 
 ### Track Support Status
 
-| Track      | Bonus ID | Rank IDs    | Tested  | Status                          |
-| ---------- | -------- | ----------- | ------- | ------------------------------- |
-| ADVENTURER | 12697    | 12773-12778 | Pending | Data complete                   |
-| VETERAN    | 12698    | 12779-12784 | Pending | Data complete                   |
-| CHAMPION   | 12699    | 12785-12790 | ✓ Yes   | Fully tested                    |
-| HERO       | 12700    | 12791-12796 | ✓ Yes   | Fully tested + mixed-marker fix |
-| MYTH       | 12701    | 12797-12802 | Pending | Data complete                   |
+| Track          | Bonus ID | Rank IDs    | Tested  | Status                                     |
+| -------------- | -------- | ----------- | ------- | ------------------------------------------ |
+| ADVENTURER     | 12697    | 12773-12778 | Pending | Data complete                              |
+| VETERAN        | 12698    | 12779-12784 | Pending | Data complete                              |
+| CHAMPION       | 12699    | 12785-12790 | ✓ Yes   | Fully tested                               |
+| HERO           | 12700    | 12791-12796 | ✓ Yes   | Fully tested + mixed-marker fix            |
+| MYTH           | 12701    | 12797-12802 | Pending | Data complete                              |
+| CRAFTED        | N/A      | N/A         | Pending | **Detection enabled** via TradeSkillUI API |
+| CRAFTED-HERO   | N/A      | N/A         | Pending | **Detection enabled** via TradeSkillUI API |
+| CRAFTED-MYTHIC | N/A      | N/A         | Pending | **Detection enabled** via TradeSkillUI API |
 
 **Mixed-Marker Fix:** Items with track markers from one track but rank markers from another (e.g., CHAMPION track IDs + HERO rank ID) are now correctly identified using rank-ID inference fallback. Rank ID takes precedence when canonical rank detection fails.
+
+**Crafted Gear Detection:** Crafted items are detected via `C_TradeSkillUI.GetItemCraftedQualityByItemInfo(itemLink)` to confirm the item is crafted, then track is determined by final item level:
+
+- **CRAFTED**: Base crafted (ilvl ~252)
+- **CRAFTED-HERO**: HERO infusion (ilvl ~272)
+- **CRAFTED-MYTHIC**: MYTHIC infusion (ilvl ~285)
+
+Note: Crafting quality (1-5) only indicates the item is crafted, NOT the crest infusion track. Track is determined by ilvl thresholds.
+
+Detection is implemented in:
+
+- `ScannerEquipped` - uses `GetInventoryItemLink()` then `GC.GetCraftedTrackName(itemLink)`
+- `ScannerBags` - uses `C_Container.GetContainerItemInfo().hyperlink` then `GC.GetCraftedTrackName(itemLink)`
+- `ScannerBank` - uses `C_Container.GetContainerItemInfo().hyperlink` then `GC.GetCraftedTrackName(itemLink)`
+- `UpgraderScanner` - uses `GetInventoryItemLink()` then `GC.GetCraftedTrackName(itemLink)`
 
 ---
 

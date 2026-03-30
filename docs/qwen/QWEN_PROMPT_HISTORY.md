@@ -4,6 +4,54 @@ This document tracks all feature prompts, architectural changes, module addition
 
 ---
 
+## 2026-03-30 — CRAFTED Track Family Implementation (Detection Enabled in Scanners)
+
+**Summary:** Re-enabled crafted gear detection using valid itemLocation APIs in scanners only. AdvisorLogic does NOT attempt crafted detection (only has itemLink).
+
+**Files Modified:**
+
+- `Core/Utils.lua` - Added `GC.GetCraftedTrackName(itemLocation)` - accepts itemLocation, not itemLink
+- `Modules/UpgradeAdvisor/UpgraderScanner.lua` - Added crafted detection using `ItemLocation:CreateFromEquipmentSlot(slotID)`
+- `Modules/InventoryScanner/ScannerEquipped.lua` - Added crafted detection, stores `craftedTrack` in data model
+- `Modules/InventoryScanner/ScannerUtils.lua` - Added crafted detection to `ScanContainerRange()` using `ItemLocation:CreateFromBagAndSlot()`
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Reads `craftedTrack` from data model, skips crafted items in upgrade evaluation
+- `docs/GEARCRESTER_DEV_NOTES.md` - Updated track status to "Detection enabled"
+
+**How It Works:**
+
+1. **Scanners detect crafted items** using `C_Item.GetItemCraftingQuality(itemLocation)`
+2. **Scanners store `craftedTrack`** in data model entries
+3. **AdvisorLogic reads `craftedTrack`** from data model and uses it instead of calling APIs
+4. **Crafted items are skipped** in upgrade evaluation (no crest upgrades)
+
+**Where itemLocation Comes From:**
+
+| Scanner         | itemLocation Source                                       |
+| --------------- | --------------------------------------------------------- |
+| ScannerEquipped | `ItemLocation:CreateFromEquipmentSlot(slotID)`            |
+| ScannerBags     | `ItemLocation:CreateFromBagAndSlot(bagID, slotIndex)`     |
+| ScannerBank     | `ItemLocation:CreateFromBagAndSlot(bankBagID, slotIndex)` |
+| UpgraderScanner | `ItemLocation:CreateFromEquipmentSlot(slotID)`            |
+| AdvisorLogic    | **Does NOT have itemLocation** - reads from data model    |
+
+**Tier Ordering (preserved):**
+CRAFTED-MYTHIC (1) > MYTH (2) > CRAFTED-HERO (3) > HERO (4) > CRAFTED (5) > CHAMPION (6) > VETERAN (7) > ADVENTURER (8)
+
+**Track Names (hyphenated):**
+
+- `CRAFTED` - Base crafted item
+- `CRAFTED-HERO` - Crafted with HERO infusion
+- `CRAFTED-MYTHIC` - Crafted with MYTHIC infusion
+
+**Error Avoidance:**
+
+- No calls to `ItemLocation:CreateFromItemLink()` (API does not exist)
+- `GC.GetCraftedTrackName()` accepts `itemLocation`, not `itemLink`
+- `AdvisorLogic` does NOT call `C_Item.GetItemCraftingQuality()` - reads from data model
+- All constants use hyphenated naming (`CRAFTED-HERO`, `CRAFTED-MYTHIC`) with bracket syntax for table keys
+
+---
+
 ## 2026-03-30 — Architectural Drift Cleanup (All Phases)
 
 **Summary:** Implemented comprehensive architectural cleanup to remove all identified drift, duplicated logic, and dead code. This brings the codebase into full alignment with the documented architecture.
