@@ -1,3 +1,134 @@
+— 2026-03-31
+    v0.2.3 FIX add slot to start of line for "dump" and "why" when item not equipped.
+    
+    Core/Constants.lua | 30 insertions, 0 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/InventoryScanner/ScannerUtils.lua | 26 insertions, 5 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 69 insertions, 50 deletions
+
+— 2026-03-30
+    v0.2.2 ADD crafted item detection and reporting (crafted, crafted-hero, crafted-mythic).
+    FIX mythic 2/6 ilevel.
+    Updated help text sequencing.
+    
+    Core/Commands.lua | 11 insertions, 9 deletions
+    Core/Constants.lua | 21 insertions, 5 deletions
+    Core/Utils.lua | 61 insertions, 28 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/InventoryScanner/ScannerEquipped.lua | 4 insertions, 0 deletions
+    Modules/InventoryScanner/ScannerUtils.lua | 5 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 51 insertions, 8 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 10 insertions, 1 deletion
+    README.md | 18 insertions, 18 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 25 insertions, 7 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 48 insertions, 0 deletions
+
+— 2026-03-30
+    major REFACTOR of code base with Qwen
+    
+    Core/Utils.lua | 11 insertions, 0 deletions
+    Modules/CrestTracker/CrestCaps.lua | 0 insertions, 10 deletions
+    Modules/CrestTracker/ResetTimer.lua | 0 insertions, 8 deletions
+    Modules/Diagnostics/SelfTest.lua | 35 insertions, 33 deletions
+    Modules/Export/ExportCore.lua | 12 insertions, 15 deletions
+    Modules/InventoryScanner/ScannerCore.lua | 0 insertions, 26 deletions
+    Modules/Profiles/DefaultProfiles.lua | 0 insertions, 13 deletions
+    Modules/UI/Heatmap.lua | 0 insertions, 15 deletions
+    Modules/UI/SlotList.lua | 0 insertions, 15 deletions
+    Modules/UI/TooltipExtensions.lua | 0 insertions, 11 deletions
+    Modules/UpgradeAdvisor/AdvisorData.lua | 1 insertion, 38 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 2 insertions, 11 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 14 insertions, 17 deletions
+    README.md | 1 insertion, 1 deletion
+    docs/qwen/QWEN_GUARDRAILS.md | 1 insertion, 1 deletion
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 41 insertions, 0 deletions
+    docs/roadmap.md | 34 insertions, 29 deletions
+    docs/specs/mvp-spec.md | 9 insertions, 7 deletions
+    docs/specs/ui-wireframes.md | 103 insertions, 15 deletions
+
+— 2026-03-30
+    DOC added UI wireframe spec
+    CHORE move constants to core/Constants.lua
+    DOC update vision, MVP-spec
+    
+    Core/Constants.lua | 36 insertions, 0 deletions
+    Core/Init.lua | 0 insertions, 9 deletions
+    Core/Utils.lua | 9 insertions, 1 deletion
+    Modules/CrestTracker/CrestData.lua | 2 insertions, 18 deletions
+    Modules/Diagnostics/SelfTest.lua | 3 insertions, 5 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 1 insertion, 10 deletions
+    docs/coding-standards.md | 13 insertions, 11 deletions
+    docs/specs/mvp-spec.md | 5 insertions, 6 deletions
+    docs/specs/ui-wireframes.md | 19 insertions, 9 deletions
+    docs/vision.md | 17 insertions, 19 deletions
+
+— 2026-03-30
+    FIX output sorting still incorrect
+    
+    Core/Utils.lua | 92 insertions, 21 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 3 insertions, 62 deletions
+    Modules/UpgradeAdvisor/AdvisorData.lua | 1 insertion, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 142 insertions, 26 deletions
+
+— 2026-03-30
+    ADD resuable output sorting function; removed non-equipable items from "/gc why" output
+    
+    Core/Utils.lua | 91 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 9 insertions, 14 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 95 insertions, 37 deletions
+    README.md | 3 insertions, 1 deletion
+
+— 2026-03-30
+    ADD gc why now displays analysis of all items (character, bags and bank), previiusly only equipped items
+    
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 45 insertions, 0 deletions
+
+— 2026-03-30
+    FIX replaced monkety patch of trim() to gc.trim()
+    ADD item name and link to gc dump and gc why
+    
+    Core/Commands.lua | 45 insertions, 10 deletions
+    Core/Init.lua | 6 insertions, 0 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 13 insertions, 5 deletions
+
+— 2026-03-30
+    v0.2.1 alpha test - UI being developed. 15 known bugs
+    
+    Core/Commands.lua | 1 insertion, 1 deletion
+    Core/Init.lua | 4 insertions, 7 deletions
+    Core/Utils.lua | 19 insertions, 12 deletions
+    GearCrester.toc | 1 insertion, 1 deletion
+    Modules/Diagnostics/SelfTest.lua | 16 insertions, 4 deletions
+    Modules/UI/DashboardFrame.lua | 101 insertions, 5 deletions
+    Modules/UpgradeAdvisor/AdvisorData.lua | 1 insertion, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 15 insertions, 9 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 2 insertions, 4 deletions
+    docs/GEARCRESTER_DEV_NOTES.md | 3 insertions, 3 deletions
+    docs/qwen/QWEN_PROMPT_HISTORY.md | 3 insertions, 3 deletions
+    docs/roadmap.md | 86 insertions, 86 deletions
+    docs/specs/mvp-spec.md | 3 insertions, 3 deletions
+    docs/specs/upgrade-advisor-spec.md | 4 insertions, 4 deletions
+    docs/testplans/00-Test-Runner-Checklist.md | 2 insertions, 2 deletions
+    docs/testplans/crest-simulation.md | 1 insertion, 1 deletion
+
+— 2026-03-29
+    pre v0.2.0 rebased with lovable refactoring + new ui
+    
+    Core/Commands.lua | 256 insertions, 0 deletions
+    Core/Constants.lua | 6 insertions, 0 deletions
+    Core/Init.lua | 20 insertions, 414 deletions
+    GearCrester.toc | 6 insertions, 14 deletions
+    Modules/InventoryScanner/ScannerBags.lua | 2 insertions, 61 deletions
+    Modules/InventoryScanner/ScannerBank.lua | 2 insertions, 61 deletions
+    Modules/InventoryScanner/ScannerUtils.lua | 67 insertions, 0 deletions
+    Modules/UI/DashboardFrame.lua | 387 insertions, 0 deletions
+    Modules/UI/UIUtils.lua | 131 insertions, 0 deletions
+
+— 2026-03-28
+    Update release_history.txt for v0.1.6
+    
+    release_history.txt | 234 insertions, 0 deletions
+
 — 2026-03-28
     v0.1.6 fixed gc tests, all now functional - 18 bugs to be fixed
     
