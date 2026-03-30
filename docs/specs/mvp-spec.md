@@ -8,7 +8,7 @@ items only and prints recommendations to chat.
 
 ## MVP Scope
 
-### In Scope
+### In Scope (✅ COMPLETE)
 
 - Equipped gear scanning
 - Crest currency reading
@@ -17,16 +17,18 @@ items only and prints recommendations to chat.
 - Crest cost lookup
 - Chat‑based output
 - Slash command `/gc`
-- Bags and bank scanning
-- UI frames
-- Weekly/seasonal caps
-- Tier rollover logic
-- Simulation mode
+- Bags and bank scanning ✅
+- UI frames (Dashboard + MainFrame) ✅
+- Simulation mode ✅
+- Gold-only upgrade detection ✅
 
 ### Out of Scope (Future Phases)
 
-- Heatmap
+- Weekly/seasonal caps tracking
 - Reset timer
+- Tier rollover logic automation
+- Crest efficiency score
+- Visual heatmap UI
 
 ---
 

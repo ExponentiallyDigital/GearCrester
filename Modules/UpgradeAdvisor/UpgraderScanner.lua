@@ -135,7 +135,7 @@ function UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         return nil
     end
 
-    local trackName = info.trackString:upper()
+    local trackName = GC.NormalizeTrackName(info.trackString:upper())
     local rank = info.currentLevel
     local maxRank = info.maxLevel or rank
     local currentIlvl = info.currentItemLevel or 0
@@ -144,10 +144,6 @@ function UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         currentIlvl = (GetDetailedItemLevelInfo and GetDetailedItemLevelInfo(itemLink))
                 or select(4, GetItemInfo(itemLink))
                 or 0
-    end
-
-    if trackName == "MYTHIC" then
-        trackName = "MYTH"
     end
 
     DebugPrint(("Slot %d: Blizzard API succeeded (%s %d/%d)"):format(slotID, GC.ColorTrack(trackName), rank, maxRank))
@@ -204,8 +200,11 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
         return
     end
 
-    GearCresterDB = GearCresterDB or {}
-    GearCresterDB.slotCaps = {}
+    local Data = GC.modules.UpgradeAdvisor.Data
+    if not Data then
+        DebugPrint("AdvisorData module not available")
+        return
+    end
 
     -- Build slot list from GC.SLOTS
     local slots = {}
@@ -234,13 +233,8 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
         local info = UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         if info and info.trackName and info.currUpgrade and info.maxUpgrade then
             -- Add slot name for easier debugging and UI display
-            GearCresterDB.slotCaps[slotID] = {
-                slot         = GC.SLOTS[slotID],
-                track        = info.trackName,
-                currUpgrade  = info.currUpgrade,
-                maxUpgrade   = info.maxUpgrade,
-                maxItemLevel = info.maxItemLevel,
-            }
+            -- Use AdvisorData accessor to store slot cap
+            Data:SetSlotCap(slotID, info.trackName, info.currUpgrade)
             captured = captured + 1
             DebugPrint(("%s (%d): %s %d/%d (max ilvl %d)"):format(
                 slotName, slotID, GC.ColorTrack(info.trackName), info.currUpgrade, info.maxUpgrade, info.maxItemLevel or 0
@@ -258,14 +252,17 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
 end
 
 function UpgraderScanner:GetSlotCap(slotID)
-    if not GearCresterDB or not GearCresterDB.slotCaps then
+    local Data = GC.modules.UpgradeAdvisor.Data
+    if not Data then
         return nil
     end
-    return GearCresterDB.slotCaps[slotID]
+    local track, rank = Data:GetSlotCap(slotID)
+    return track and { track = track, currUpgrade = rank } or nil
 end
 
 function UpgraderScanner:ClearSlotCaps()
-    if GearCresterDB then
+    local Data = GC.modules.UpgradeAdvisor.Data
+    if Data and GearCresterDB then
         GearCresterDB.slotCaps = {}
         GC:Print("Slot caps cleared.")
     end

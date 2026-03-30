@@ -211,7 +211,7 @@ This rule is mandatory and applies to all future development tasks.
 
 Qwen MUST update the master test runner checklist located at:
 
-- docs/testplans/00-Master-Test-Runner-Checklist.md
+- docs/testplans/00-Test-Runner-Checklist.md
 
 Whenever:
 

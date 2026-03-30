@@ -14,6 +14,30 @@ local function fail(testName, reason)
     table.insert(testResults, { name = testName, success = false, reason = reason })
 end
 
+-- Helper: Check if slash command is registered
+local function IsSlashCommandRegistered()
+    return SlashCmdList and SlashCmdList["GEARCRESTER"]
+end
+
+-- Helper: Mock C_CurrencyInfo.GetCurrencyInfo with default crest counts
+local function MockCrestCurrency(counts)
+    local original = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
+    if not C_CurrencyInfo then
+        C_CurrencyInfo = {}
+    end
+    counts = counts or {
+        [3383] = {quantity = 110, name = "Adventurer's Crest"},
+        [3341] = {quantity = 400, name = "Veteran's Crest"},
+        [3343] = {quantity = 55, name = "Champion's Crest"},
+        [3345] = {quantity = 85, name = "Hero's Crest"},
+        [3347] = {quantity = 0, name = "Myth Crest"},
+    }
+    C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
+        return counts[currencyID] or {}
+    end
+    return original
+end
+
 function SelfTest:RunAllTests()
     testResults = {}
 
@@ -323,21 +347,7 @@ function SelfTest:TestCrestInventoryLookup()
     end
 
     -- Mock C_CurrencyInfo.GetCurrencyInfo to return known values
-    local originalGetCurrencyInfo = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
-    if not C_CurrencyInfo then
-        C_CurrencyInfo = {}
-    end
-    C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
-        -- Return different counts for each crest type (using actual currency IDs)
-        local counts = {
-            [3383] = {quantity = 110, name = "Adventurer's Crest"},
-            [3341] = {quantity = 400, name = "Veteran's Crest"},
-            [3343] = {quantity = 55, name = "Champion's Crest"},
-            [3345] = {quantity = 85, name = "Hero's Crest"},
-            [3347] = {quantity = 0, name = "Myth Crest"},
-        }
-        return counts[currencyID] or {}
-    end
+    local originalGetCurrencyInfo = MockCrestCurrency()
 
     -- Call the function
     local counts = CrestData:GetAllCrestCounts()
@@ -401,7 +411,7 @@ end
 
 function SelfTest:TestSlashCrestsCommandExists()
     -- Test that /gc crests command is registered
-    if SlashCmdList and SlashCmdList["GEARCRESTER"] then
+    if IsSlashCommandRegistered() then
         pass("Slash Crests Command")
     else
         fail("Slash Crests Command", "GEARCRESTER slash command not registered")
@@ -436,21 +446,13 @@ function SelfTest:TestCrestLookupReturnsValues()
     end
 
     -- Mock C_CurrencyInfo.GetCurrencyInfo to return known values
-    local originalGetCurrencyInfo = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo
-    if not C_CurrencyInfo then
-        C_CurrencyInfo = {}
-    end
-    C_CurrencyInfo.GetCurrencyInfo = function(currencyID)
-        -- Return quantities based on currency ID (using actual currency IDs)
-        local quantities = {
-            [3383] = {quantity = 110, name = "Adventurer's Crest"},
-            [3341] = {quantity = 400, name = "Veteran's Crest"},
-            [3343] = {quantity = 55, name = "Champion's Crest"},
-            [3345] = {quantity = 85, name = "Hero's Crest"},
-            [3347] = {quantity = 10, name = "Myth Crest"},
-        }
-        return quantities[currencyID] or {}
-    end
+    local originalGetCurrencyInfo = MockCrestCurrency({
+        [3383] = {quantity = 110, name = "Adventurer's Crest"},
+        [3341] = {quantity = 400, name = "Veteran's Crest"},
+        [3343] = {quantity = 55, name = "Champion's Crest"},
+        [3345] = {quantity = 85, name = "Hero's Crest"},
+        [3347] = {quantity = 10, name = "Myth Crest"},
+    })
 
     -- Call the function
     local counts = CrestData:GetAllCrestCounts()
@@ -561,7 +563,7 @@ end
 
 function SelfTest:TestScanCommand()
     -- Test that /gc scan command exists
-    if SlashCmdList and SlashCmdList["GEARCRESTER"] then
+    if IsSlashCommandRegistered() then
         pass("Scan Command")
     else
         fail("Scan Command", "GEARCRESTER slash command not registered")
@@ -672,7 +674,7 @@ function SelfTest:TestUpgradeEvaluation()
 end
 
 function SelfTest:TestSlashCommandRegistration()
-    if SlashCmdList and SlashCmdList["GEARCRESTER"] then
+    if IsSlashCommandRegistered() then
         pass("Slash Command Registration")
     else
         fail("Slash Command Registration", "GEARCRESTER slash command not registered")

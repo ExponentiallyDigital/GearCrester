@@ -5,35 +5,37 @@ It is the primary reference for what to build next.
 
 ---
 
-## Phase 1 — MVP (Equipped‑Only Upgrade Advisor)
+## Phase 1 — MVP (Equipped‑Only Upgrade Advisor) ✅ COMPLETE
 
 ### Core
 
-- [ ] Init.lua basic bootstrap
-- [ ] Event routing for equipment changes
+- [x] Init.lua basic bootstrap
+- [x] Event routing for equipment changes
 
 ### Inventory Scanner
 
-- [ ] ScannerEquipped: read equipped items into DataModel
+- [x] ScannerEquipped: read equipped items into DataModel
+- [x] ScannerBags: read bag items into DataModel
+- [x] ScannerBank: read bank items into DataModel
 
 ### Crest Tracker
 
-- [ ] CrestData: read crest currency counts
+- [x] CrestData: read crest currency counts
 
 ### Upgrade Advisor
 
-- [ ] AdvisorData: slot priorities + crest cost tables
-- [ ] AdvisorLogic: evaluate upgradeability
-- [ ] AdvisorCore: expose GetRecommendedUpgrades()
-- [ ] Slash command `/gc` to print upgrade list
+- [x] AdvisorData: slot priorities + crest cost tables
+- [x] AdvisorLogic: evaluate upgradeability
+- [x] AdvisorCore: expose GetRecommendedUpgrades()
+- [x] Slash command `/gc` to print upgrade list
 
 ### Output
 
-- [ ] Chat‑based upgrade recommendations
+- [x] Chat‑based upgrade recommendations
 
 ---
 
-## Phase 2 — Crest System Expansion
+## Phase 2 — Crest System Expansion (Backlog)
 
 - [ ] Weekly cap detection
 - [ ] Seasonal cap detection
@@ -43,44 +45,47 @@ It is the primary reference for what to build next.
 
 ---
 
-## Phase 3 — Inventory Expansion
+## Phase 3 — Inventory Expansion ✅ COMPLETE
 
-- [ ] ScannerBags: detect upgradeable items in bags
-- [ ] ScannerBank: detect upgradeable items in bank
-- [ ] Gold‑only upgrade detection
-
----
-
-## Phase 4 — UI Framework
-
-- [ ] MainFrame: base window
-- [ ] SlotList: simple list UI
-- [ ] Heatmap: visual upgrade matrix
-- [ ] TooltipExtensions: crest info in tooltips
+- [x] ScannerBags: detect upgradeable items in bags
+- [x] ScannerBank: detect upgradeable items in bank
+- [x] Gold‑only upgrade detection
 
 ---
 
-## Phase 5 — Profiles & Customisation
+## Phase 4 — UI Framework (Partial)
 
-- [ ] ProfileManager: save/load profiles
-- [ ] Drag‑and‑drop slot priority
-- [ ] Weighting system for slot importance
+- [x] DashboardFrame: movable dashboard with tabs
+- [x] MainFrame: legacy text-based frame
+- [ ] SlotList: simple list UI (stub)
+- [ ] Heatmap: visual upgrade matrix (stub)
+- [ ] TooltipExtensions: crest info in tooltips (stub)
 
 ---
 
-## Phase 6 — Advanced Features
+## Phase 5 — Profiles & Customisation (Partial)
+
+- [x] ProfileManager: basic profile reading
+- [x] Weighting system for slot importance (1-20)
+- [ ] Drag‑and‑drop slot priority (future)
+
+---
+
+## Phase 6 — Advanced Features (Backlog)
 
 - [ ] Crest forecasting (weekly + seasonal)
-- [ ] Upgrade simulation mode
+- [x] Upgrade simulation mode
 - [ ] Crest waste prevention warnings
 - [ ] Alt support (read alt data via SavedVariables)
 - [ ] Role‑aware slot priority presets
 
 ---
 
-## Phase 7 — Polish & Release
+## Phase 7 — Polish & Release (Partial)
 
-- [ ] Icon + branding
-- [ ] Documentation pass
+- [x] Documentation pass
+- [x] Self-diagnostics test suite
+- [x] Export functionality
 - [ ] Performance audit
+- [ ] Icon + branding
 - [ ] Release packaging

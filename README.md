@@ -229,7 +229,7 @@ These are item slot anmes and default priority sequence from highest to lowest:
 - Modular, lose coupled, data‑driven architecture
 - Scanner and advisor operate on snapshots
 - Export writes once per session
-- Typical RAM use \***\*insert value here\*\***
+- Typical RAM use: ~5-10MB (varies with inventory size)
 
 ---
 

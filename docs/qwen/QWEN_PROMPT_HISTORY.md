@@ -4,6 +4,47 @@ This document tracks all feature prompts, architectural changes, module addition
 
 ---
 
+## 2026-03-30 — Architectural Drift Cleanup (All Phases)
+
+**Summary:** Implemented comprehensive architectural cleanup to remove all identified drift, duplicated logic, and dead code. This brings the codebase into full alignment with the documented architecture.
+
+**Files Deleted:**
+
+- `Modules/InventoryScanner/ScannerCore.lua` - Dead code (duplicate of ScannerEquipped)
+- `Modules/UI/Heatmap.lua` - Stub not needed for current roadmap
+- `Modules/UI/SlotList.lua` - Stub not needed for current roadmap
+- `Modules/UI/TooltipExtensions.lua` - Stub not needed for current roadmap
+- `Modules/UI/AdvisorUI.lua` - Stub (DashboardFrame is active UI)
+- `Modules/CrestTracker/CrestCaps.lua` - Stub not needed for current roadmap
+- `Modules/CrestTracker/ResetTimer.lua` - Stub not needed for current roadmap
+- `Modules/Profiles/DefaultProfiles.lua` - Stub not needed for current roadmap
+
+**Files Modified:**
+
+- `Core/Utils.lua` - Added `GC.NormalizeTrackName()` utility function
+- `Modules/UpgradeAdvisor/AdvisorData.lua` - Removed duplicate `GetHighestTrackForSlot()` function, removed redundant `CREST_TYPE` table
+- `Modules/UpgradeAdvisor/AdvisorLogic.lua` - Updated to use `GC.NormalizeTrackName()`
+- `Modules/UpgradeAdvisor/UpgraderScanner.lua` - Updated to use `GC.NormalizeTrackName()` and unified slot cap access via `Data:GetSlotCap()`/`Data:SetSlotCap()`
+- `Modules/Export/ExportCore.lua` - Extracted `Export:SaveExportData()` helper to remove duplication
+- `Modules/Diagnostics/SelfTest.lua` - Added `IsSlashCommandRegistered()` and `MockCrestCurrency()` helper functions
+- `docs/roadmap.md` - Updated to reflect completed MVP features
+- `docs/specs/ui-wireframes.md` - Updated to document actual DashboardFrame implementation
+- `docs/specs/mvp-spec.md` - Removed contradictions (bags/bank and simulation marked as complete)
+- `docs/qwen/QWEN_GUARDRAILS.md` - Fixed test plan filename reference
+- `README.md` - Filled in RAM usage placeholder (~5-10MB)
+
+**Test Plans Updated:** N/A (internal cleanup, no behavior changes)
+
+**Notes:**
+
+- All "MYTHIC" → "MYTH" normalization now centralized in `GC.NormalizeTrackName()`
+- Slot cap access now unified through `AdvisorData` accessors
+- Export persistence logic deduplicated into single helper function
+- SelfTest helpers reduce duplication in test mocks
+- Documentation now accurately reflects implementation status
+
+---
+
 ## 2026-03-24 — MVP Vertical Slice Implementation
 
 **Summary:** Implemented the equipped-only vertical slice of the Upgrade Advisor MVP including bonus ID parsing, track/rank detection, and upgrade recommendations.

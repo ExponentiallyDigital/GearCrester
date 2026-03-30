@@ -61,6 +61,15 @@ function Export:GenerateExportString(exportItems)
     return table.concat(lines, "\n")
 end
 
+function Export:SaveExportData(exportString, exportItems)
+    if not GearCresterExportDB then
+        GearCresterExportDB = {}
+    end
+    GearCresterExportDB.lastExport = exportString
+    GearCresterExportDB.lastExportTime = date and date("%Y-%m-%d %H:%M:%S") or "Unknown"
+    GearCresterExportDB.exportItems = exportItems
+end
+
 function Export:RunExport(simulatedCrests)
     local Logic = GC.modules.UpgradeAdvisor.Logic
 
@@ -86,13 +95,7 @@ function Export:RunExport(simulatedCrests)
     local exportItems = self:GenerateExportData(results)
     local exportString = self:GenerateExportString(exportItems)
 
-    if not GearCresterExportDB then
-        GearCresterExportDB = {}
-    end
-
-    GearCresterExportDB.lastExport = exportString
-    GearCresterExportDB.lastExportTime = date and date("%Y-%m-%d %H:%M:%S") or "Unknown"
-    GearCresterExportDB.exportItems = exportItems
+    self:SaveExportData(exportString, exportItems)
 
     print("|cff00ff98GearCrester:|r export complete. File will be written on |cffff0000**successful logout**|r.")
     print("|cff00ff98GearCrester:|r path: WTF/Account/<account_name>/SavedVariables/GearCrester.lua")
@@ -124,15 +127,9 @@ function Export:PrintExport()
     local exportString = self:GenerateExportString(exportItems)
 
     -- Also write to SavedVariables (same as RunExport)
-    if not GearCresterExportDB then
-        GearCresterExportDB = {}
-    end
+    self:SaveExportData(exportString, exportItems)
 
-    GearCresterExportDB.lastExport = exportString
-    GearCresterExportDB.lastExportTime = date and date("%Y-%m-%d %H:%M:%S") or "Unknown"
-    GearCresterExportDB.exportItems = exportItems
-
-    print("|cff00ff98GearCrester: export|r")
+    print("|cff00ff98GearCrester:|r export:")
     print(exportString)
 end
 

@@ -141,13 +141,8 @@ local function GetItemUpgradeInfo(itemLink)
 
     if info and type(info) == "table" and info.currentLevel and info.trackString then
         -- Blizzard API succeeded - use authoritative data
-        local trackName = info.trackString:upper()
+        local trackName = GC.NormalizeTrackName(info.trackString:upper())
         local rank = info.currentLevel
-
-        -- Normalize track names (MYTHIC -> MYTH)
-        if trackName == "MYTHIC" then
-            trackName = "MYTH"
-        end
 
         if GC.db and GC.db.debug then
             print(string.format("|cff00ff00[DEBUG] Blizzard API: track=%s rank=%d|r", GC.ColorTrack(trackName), rank))
@@ -269,12 +264,8 @@ function Logic:CalibrateItemUpgradeInfo(itemLink, slotName)
     local blizz = C_Item and C_Item.GetItemUpgradeInfo and C_Item.GetItemUpgradeInfo(itemLink)
 
     if blizz and type(blizz) == "table" and blizz.currentLevel and blizz.trackString then
-        blizzTrack = blizz.trackString:upper()
+        blizzTrack = GC.NormalizeTrackName(blizz.trackString:upper())
         blizzRank = blizz.currentLevel
-        -- Normalize "MYTH" vs "MYTHIC"
-        if blizzTrack == "MYTHIC" then
-            blizzTrack = "MYTH"
-        end
     end
 
     -- Parse bonus IDs for display

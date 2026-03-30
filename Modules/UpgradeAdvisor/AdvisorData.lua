@@ -75,14 +75,6 @@ Data.TRACK_ILVLS = {
     },
 }
 
-Data.CREST_TYPE = {
-    ADVENTURER = "ADVENTURER",
-    VETERAN = "VETERAN",
-    CHAMPION = "CHAMPION",
-    HERO = "HERO",
-    MYTH = "MYTH",
-}
-
 Data.CREST_COST = 20
 
 Data.MAX_RANK = 6
@@ -145,7 +137,7 @@ function Data:GetSlotPriority(slotID)
 end
 
 function Data:GetCrestType(trackName)
-    return self.CREST_TYPE[trackName]
+    return trackName
 end
 
 function Data:GetCrestCost()
@@ -189,35 +181,6 @@ function Data:IsHigherTrack(trackA, trackB)
     local indexA = self:GetTrackIndex(trackA)
     local indexB = self:GetTrackIndex(trackB)
     return indexA and indexB and indexA > indexB
-end
-
--- Get the highest track and rank for a specific equipment slot
-function Data:GetHighestTrackForSlot(slotID)
-    if not GC.DataModel or not GC.DataModel.equipped then
-        return nil, 0
-    end
-
-    local highestTrack = nil
-    local highestRank = 0
-
-    -- Scan all equipped items to find the highest track/rank for this slot
-    for equippedSlotID, itemData in pairs(GC.DataModel.equipped) do
-        if equippedSlotID == slotID and itemData.itemLink then
-            local Logic = GC.modules.UpgradeAdvisor.Logic
-            if Logic and Logic.GetItemUpgradeInfo then
-                local trackName, currentRank = Logic.GetItemUpgradeInfo(itemData.itemLink)
-                if trackName and currentRank then
-                    -- Check if this track is higher than current highest
-                    if not highestTrack or self:IsHigherTrack(trackName, highestTrack) or (trackName == highestTrack and currentRank > highestRank) then
-                        highestTrack = trackName
-                        highestRank = currentRank
-                    end
-                end
-            end
-        end
-    end
-
-    return highestTrack, highestRank
 end
 
 -- Persistent slot cap management (SavedVariables)

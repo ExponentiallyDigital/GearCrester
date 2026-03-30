@@ -18,6 +18,17 @@ function GC:Round(num, places)
     return math.floor(num * mult + 0.5) / mult
 end
 
+-- Normalize track name strings (e.g., "MYTHIC" -> "MYTH")
+function GC.NormalizeTrackName(trackName)
+    if not trackName then
+        return nil
+    end
+    if trackName == "MYTHIC" then
+        return "MYTH"
+    end
+    return trackName
+end
+
 -- Returns true if the item can be worn in one of the GC.SLOTS equipment slots
 function GC.CanBeEquipped(itemLink)
     if not itemLink then return false end
