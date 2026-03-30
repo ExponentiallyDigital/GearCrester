@@ -4,26 +4,10 @@ local CrestData = {}
 GC.modules.CrestTracker = GC.modules.CrestTracker or {}
 GC.modules.CrestTracker.CrestData = CrestData
 
-CrestData.CREST_IDS = {
-    ADVENTURER = 3383,
-    VETERAN = 3341,
-    CHAMPION = 3343,
-    HERO = 3345,
-    MYTH = 3347,
-}
-
-CrestData.CREST_TYPES = {
-    "ADVENTURER",
-    "VETERAN",
-    "CHAMPION",
-    "HERO",
-    "MYTH",
-}
-
 function CrestData:ReadCrests()
     GC.DataModel.crests = {}
 
-    for crestName, crestID in pairs(self.CREST_IDS) do
+    for crestName, crestID in pairs(GC.CREST_IDS) do
         local currencyInfo = C_CurrencyInfo.GetCurrencyInfo(crestID)
         if currencyInfo then
             GC.DataModel.crests[crestName] = {
@@ -58,7 +42,7 @@ end
 function CrestData:SimulateCrests(crestType, count)
     local simulated = {}
 
-    for _, typeName in ipairs(self.CREST_TYPES) do
+    for _, typeName in ipairs(GC.CREST_TYPES) do
         if typeName == crestType then
             simulated[typeName] = count
         else

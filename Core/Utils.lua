@@ -56,13 +56,21 @@ function GC.SortUpgradeResults(results)
             -- Reverse order: last track (MYTH) gets priority 1
             tierPriority[track] = #Data.TRACKS - i + 1
         end
+    else
+        -- Fallback if Data not available yet
+        tierPriority["MYTH"] = 1
+        tierPriority["HERO"] = 2
+        tierPriority["CHAMPION"] = 3
+        tierPriority["VETERAN"] = 4
+        tierPriority["ADVENTURER"] = 5
     end
 
     local function getTierPriority(entry)
         if not entry or not entry.trackName then
             return 999  -- No track = lowest priority
         end
-        return tierPriority[entry.trackName] or 999
+        local priority = tierPriority[entry.trackName]
+        return priority or 999  -- Unknown track = lowest priority
     end
 
     local function getSlotPriority(entry)

@@ -4,15 +4,6 @@ local UpgraderScanner = {}
 GC.modules.UpgradeAdvisor = GC.modules.UpgradeAdvisor or {}
 GC.modules.UpgradeAdvisor.UpgraderScanner = UpgraderScanner
 
--- Track names from customUpgradeString
-local TRACK_NAMES = {
-    ["Adventurer"] = "ADVENTURER",
-    ["Veteran"]    = "VETERAN",
-    ["Champion"]   = "CHAMPION",
-    ["Hero"]       = "HERO",
-    ["Myth"]       = "MYTH",
-}
-
 local function DebugPrint(msg)
     if GC.db and GC.db.debug then
         print("|cff00ff98[DEBUG] " .. msg .. "|r")
@@ -98,7 +89,7 @@ local function ParseTrack(customUpgradeString)
     if not customUpgradeString then
         return nil
     end
-    for trackStr, trackKey in pairs(TRACK_NAMES) do
+    for trackStr, trackKey in pairs(GC.TRACK_NAMES) do
         if customUpgradeString:find(trackStr) then
             return trackKey
         end

@@ -13,15 +13,6 @@ function GC.Trim(s)
     return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
--- Valid crest types (shared constant)
-GC.VALID_CREST_TYPES = {
-    ADVENTURER = true,
-    VETERAN = true,
-    CHAMPION = true,
-    HERO = true,
-    MYTH = true,
-}
-
 function GC:OnLoad()
     GC.db = GearCresterDB
     local version = C_AddOns and C_AddOns.GetAddOnMetadata(addonName, "Version") or "unknown"

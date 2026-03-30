@@ -17,17 +17,16 @@ items only and prints recommendations to chat.
 - Crest cost lookup
 - Chat‑based output
 - Slash command `/gc`
+- Bags and bank scanning
+- UI frames
+- Weekly/seasonal caps
+- Tier rollover logic
+- Simulation mode
 
 ### Out of Scope (Future Phases)
 
-- Bags and bank scanning
-- UI frames
 - Heatmap
-- Weekly/seasonal caps
 - Reset timer
-- Tier rollover logic
-- Profiles
-- Simulation mode
 
 ---
 

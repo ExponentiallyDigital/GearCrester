@@ -409,15 +409,13 @@ function SelfTest:TestSlashCrestsCommandExists()
 end
 
 function SelfTest:TestCrestIDsCorrect()
-    -- Test that CREST_IDS contains the correct currency IDs
-    local CrestData = GC.modules.CrestTracker.CrestData
-
-    if not CrestData or not CrestData.CREST_IDS then
+    -- Test that GC.CREST_IDS contains the correct currency IDs
+    if not GC.CREST_IDS then
         fail("Crest IDs Correct", "CREST_IDS table not found")
         return
     end
 
-    local ids = CrestData.CREST_IDS
+    local ids = GC.CREST_IDS
     -- Verify IDs match actual Midnight currency IDs
     if ids.ADVENTURER ~= 3383 or ids.VETERAN ~= 3341 or ids.CHAMPION ~= 3343 or ids.HERO ~= 3345 or ids.MYTH ~= 3347 then
         fail("Crest IDs Correct", string.format("CREST_IDS contains incorrect currency IDs. Got: ADVENTURER=%d, VETERAN=%d, CHAMPION=%d, HERO=%d, MYTH=%d",

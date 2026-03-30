@@ -62,3 +62,39 @@ GC.SLOT_NAME_TO_ID = {}
 for id, name in pairs(GC.SLOTS) do
     GC.SLOT_NAME_TO_ID[name:lower()] = id
 end
+
+-- Track names for parsing upgrade strings (from UpgraderScanner)
+GC.TRACK_NAMES = {
+    ["Adventurer"] = "ADVENTURER",
+    ["Veteran"]    = "VETERAN",
+    ["Champion"]   = "CHAMPION",
+    ["Hero"]       = "HERO",
+    ["Myth"]       = "MYTH",
+}
+
+-- Crest currency IDs (from CrestData)
+GC.CREST_IDS = {
+    ADVENTURER = 3383,
+    VETERAN = 3341,
+    CHAMPION = 3343,
+    HERO = 3345,
+    MYTH = 3347,
+}
+
+-- Crest types list (from CrestData)
+GC.CREST_TYPES = {
+    "ADVENTURER",
+    "VETERAN",
+    "CHAMPION",
+    "HERO",
+    "MYTH",
+}
+
+-- Valid crest types lookup (from Init)
+GC.VALID_CREST_TYPES = {
+    ADVENTURER = true,
+    VETERAN = true,
+    CHAMPION = true,
+    HERO = true,
+    MYTH = true,
+}
