@@ -28,10 +28,26 @@ function ScannerUtils:ShouldSkipItem(itemLink)
     return false
 end
 
--- Get equip location slot name from an item link
-function ScannerUtils:GetSlotName(itemLink)
-    local _, _, _, _, _, _, _, _, itemEquipLoc = GetItemInfo(itemLink)
-    return GC.EQUIPLOC_TO_SLOT[itemEquipLoc] or "Unknown"
+-- Get equip location slot name from an item link (uses InventoryType for Midnight compatibility)
+function ScannerUtils:GetSlotName(itemLink, bagID, slotIndex)
+    -- Try to get slot name from container item info (Midnight API)
+    if bagID and slotIndex then
+        local info = C_Container and C_Container.GetContainerItemInfo and C_Container.GetContainerItemInfo(bagID, slotIndex)
+        if info and info.itemID then
+            local invType = C_Item and C_Item.GetItemInventoryTypeByID and C_Item.GetItemInventoryTypeByID(info.itemID)
+            if invType then
+                return GC.INVENTORYTYPE_TO_SLOT[invType] or "Unknown"
+            end
+        end
+    end
+
+    -- Fallback to old API if available
+    if itemLink then
+        local _, _, _, _, _, _, _, _, itemEquipLoc = GetItemInfo(itemLink)
+        return GC.EQUIPLOC_TO_SLOT[itemEquipLoc] or itemEquipLoc or "Unknown"
+    end
+
+    return "Unknown"
 end
 
 -- Scan a container range and return items table
@@ -46,7 +62,8 @@ function ScannerUtils:ScanContainerRange(bagStart, bagEnd, keyPrefix)
                 if info and info.hyperlink then
                     local itemLink = info.hyperlink
                     if not self:ShouldSkipItem(itemLink) then
-                        local slotName = self:GetSlotName(itemLink)
+                        -- Pass bagID and slotIndex for InventoryType-based slot detection
+                        local slotName = self:GetSlotName(itemLink, bagID, slotIndex)
                         local itemKey = string.format("%s%d_slot%d", keyPrefix, bagID, slotIndex)
 
                         -- Detect crafted track using itemLink (TradeSkillUI API)
@@ -60,6 +77,10 @@ function ScannerUtils:ScanContainerRange(bagStart, bagEnd, keyPrefix)
                             location = string.format("%s %d, slot %d", keyPrefix == "bag" and "bag" or "bank", keyPrefix == "bag" and bagID or (bagID - 5), slotIndex),
                             craftedTrack = craftedTrack,  -- Store crafted track if applicable
                         }
+
+                        if GC.db and GC.db.debug then
+                            print("|cff00ff98[SCAN DEBUG] key=" .. itemKey .. " location=" .. items[itemKey].location)
+                        end
                     end
                 end
             end

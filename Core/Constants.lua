@@ -42,6 +42,36 @@ GC.EQUIPLOC_TO_SLOT = {
     INVTYPE_HOLDABLE = "OffHand",
 }
 
+-- Map InventoryType enum to slot names (Midnight API - used for bag/bank items)
+GC.INVENTORYTYPE_TO_SLOT = {
+    [1]  = "Head",
+    [2]  = "Neck",
+    [3]  = "Shoulder",
+    [4]  = "Shirt",
+    [5]  = "Chest",
+    [6]  = "Waist",
+    [7]  = "Legs",
+    [8]  = "Feet",
+    [9]  = "Wrist",
+    [10] = "Hands",
+    [11] = "Finger",
+    [12] = "Trinket",
+    [13] = "MainHand",
+    [14] = "OffHand",
+    [15] = "Ranged",
+    [16] = "Back",
+    [17] = "MainHand",  -- 2H weapon
+    [18] = "Bag",
+    [19] = "Tabard",
+    [20] = "Chest",     -- Robe
+    [21] = "MainHand",  -- Weapon (1H)
+    [22] = "OffHand",   -- Holdable
+    [23] = "Ranged",    -- Ranged (bow/wand)
+    [24] = "Quiver",
+    [25] = "Profession",
+    [26] = "MainHand",  -- 2H weapon (alternate)
+}
+
 -- Track colour codes for printed output
 GC.TRACK_COLORS = {
     ADVENTURER      = "|cffffff00",  -- Yellow

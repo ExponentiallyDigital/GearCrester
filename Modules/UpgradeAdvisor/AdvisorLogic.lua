@@ -575,12 +575,10 @@ function Logic:DumpAllItems()
             end
             local ilvl = GetItemIlvl(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            -- Get slot name from equip location
-            local slotName = nil
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
-            if equipLoc then
-                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
-            end
+
+            -- Use slotName detected by ScannerUtils at scan time
+            local slotName = itemData.slotName or "Unknown"
+
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
@@ -610,12 +608,10 @@ function Logic:DumpAllItems()
             end
             local ilvl = GetItemIlvl(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            -- Get slot name from equip location
-            local slotName = nil
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
-            if equipLoc then
-                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
-            end
+
+            -- Use slotName detected by ScannerUtils at scan time
+            local slotName = itemData.slotName or "Unknown"
+
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
@@ -650,26 +646,25 @@ function Logic:DumpAllItems()
             lastLocationType = currentLocationType
         end
 
-        -- Get slot name for bag/bank items
-        local displaySlotName = item.slotName
-        if not displaySlotName and item.location then
-            -- Try to extract slot name from item link using equip location
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(item.itemLink)
-            if equipLoc then
-                displaySlotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
-            end
-            if not displaySlotName then
-                displaySlotName = item.location
-            end
+        -- Determine slot name
+        local slotName = item.slotNameComputed or item.slotName or "Unknown"
+
+        -- Build location suffix (e.g., ", bag 3, slot 10")
+        local locationSuffix = ""
+        if item.location then
+            locationSuffix = ", " .. item.location
         end
 
-        -- Print item with colorized track name
+        -- Colorized track
         local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
-        print(string.format("%s: %s %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
-            displaySlotName or "Unknown",
+
+        -- Final print format:
+        -- Offhand, bag 3, slot 10: [ItemLink] - ilvl=272 track=HERO rank=nil bonusIDs=[...]
+        print(string.format("%s%s: %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+            slotName,
+            locationSuffix,
             item.itemLink,
-            item.itemName,
-            item.ilvl,
+            item.ilvl or 0,
             trackText,
             item.currentRank or "nil",
             table.concat(item.bonusIDs, ", ") or "none"))
@@ -763,12 +758,15 @@ function Logic:PrintWhyDiagnostics()
             -- Pass itemData so GetItemDiagnostics can use craftedTrack
             local diagnostics = self:GetItemDiagnostics(itemLink, itemData)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            -- Get slot name from equip location
-            local slotName = nil
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
-            if equipLoc then
-                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            -- Use slotName detected by ScannerUtils at scan time
+            local slotName = itemData.slotName or itemData.location or "Unknown"
+
+            if GC.db and GC.db.debug then
+                print("|cff00ff98[DEBUG SLOT] itemLink=" .. tostring(itemLink))
+                print("|cff00ff98[DEBUG SLOT] invType=" .. tostring(invType))
+                print("|cff00ff98[DEBUG SLOT] finalSlotName=" .. tostring(slotName))
             end
+
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
@@ -788,12 +786,29 @@ function Logic:PrintWhyDiagnostics()
             -- Pass itemData so GetItemDiagnostics can use craftedTrack
             local diagnostics = self:GetItemDiagnostics(itemLink, itemData)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            -- Get slot name from equip location
-            local slotName = nil
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemLink)
-            if equipLoc then
-                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
+            -- Determine slot name using InventoryType (Midnight API)
+            local slotName = "Unknown"
+            local invType = nil
+
+            local bagType, bagNum, slotNum = string.match(itemData.location or "", "(bag|bank) (%d+), slot (%d+)")
+            if bagType and bagNum and slotNum then
+                local actualBag = bagType == "bag" and tonumber(bagNum) or (tonumber(bagNum) + 5)
+                local info = C_Container.GetContainerItemInfo(actualBag, tonumber(slotNum))
+                if info and info.itemID then
+                    invType = C_Item.GetItemInventoryTypeByID(info.itemID)
+                    if invType then
+                        slotName = GC.INVENTORYTYPE_TO_SLOT[invType] or "Unknown"
+                        itemData.slotNameComputed = slotName
+                    end
+                end
             end
+
+            if GC.db and GC.db.debug then
+                print("|cff00ff98[DEBUG SLOT] itemLink=" .. tostring(itemLink))
+                print("|cff00ff98[DEBUG SLOT] invType=" .. tostring(invType))
+                print("|cff00ff98[DEBUG SLOT] finalSlotName=" .. tostring(slotName))
+            end
+
             table.insert(allItems, {
                 location = itemData.location or itemKey,
                 slotID = nil,
@@ -824,21 +839,25 @@ function Logic:PrintWhyDiagnostics()
             lastLocationType = currentLocationType
         end
 
-        -- Print item with slot name and colorized track name
-        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
-        local locationPrefix = ""
+        -- Determine slot name
+        local slotName = item.slotNameComputed or item.slotName or "Unknown"
+
+        -- Build location suffix (e.g., ", bag 3, slot 10")
+        local locationSuffix = ""
         if item.location then
-            -- For bag/bank items, show slot name first
-            if item.slotName then
-                locationPrefix = item.slotName .. ", "
-            end
+            locationSuffix = ", " .. item.location
         end
-        print(string.format("%s%s: %s %s - %s (%s)",
-            locationPrefix,
-            item.location or (item.slotName or "Unknown"),
+
+        -- Colorized track
+        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
+
+        -- Final print format:
+        -- Offhand, bag 3, slot 10: [ItemLink] - Reason (Track)
+        print(string.format("%s%s: %s - %s (%s)",
+            slotName,
+            locationSuffix,
             item.itemLink,
-            item.itemName,
-            item.reason,
+            item.reason or "Unknown reason",
             trackText))
     end
 
