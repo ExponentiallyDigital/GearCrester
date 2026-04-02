@@ -320,6 +320,11 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         end
     end
 
+    local function addUpgradeResult(entry)
+        if not entry then return end
+        table.insert(results, GC.NormalizeUpgradeEntry(entry))
+    end
+
     -- Helper function to evaluate items from a source
     local function EvaluateItems(items, sourceName, crestCounts)
         if not items then
@@ -369,26 +374,22 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                 else
                     -- Check for FREE upgrade using upgrader slot caps
                     -- For bag/bank items, map slotName to numeric slotID for cap lookup
-                    local lookupSlotID = slotID
-                    if type(slotID) == "string" then
-                        -- Bag/bank item: map slotName to numeric slotID
-                        for id, name in pairs(GC.SLOTS) do
-                            if name == slotName then
-                                lookupSlotID = id
-                                break
-                            end
-                        end
+                    local lookupSlotID = tonumber(slotID)
+                    if not lookupSlotID and slotName then
+                        lookupSlotID = GC.ResolveSlotID(slotName)
                     end
 
                     local UpgraderScanner = GC.modules.UpgradeAdvisor.UpgraderScanner
                     local cap = UpgraderScanner and UpgraderScanner:GetSlotCap(lookupSlotID)
+                    local capCurrUpgrade = cap and tonumber(cap.currUpgrade) or nil
+                    local capMaxUpgradeRaw = cap and tonumber(cap.maxUpgrade) or nil
 
                     if GC.db and GC.db.debug then
                         print(string.format("|cff00ff98[DEBUG]   Slot cap lookup: slotID=%s lookupSlotID=%s cap=%s|r",
                             tostring(slotID), tostring(lookupSlotID), cap and "found" or "nil"))
                         if cap then
-                            print(string.format("|cff00ff98[DEBUG]     cap.track=%s cap.maxUpgrade=%d Data.MAX_RANK=%d|r",
-                                cap.track, cap.maxUpgrade, Data.MAX_RANK))
+                            print(string.format("|cff00ff98[DEBUG]     cap.track=%s cap.currUpgrade=%s cap.maxUpgrade=%s Data.MAX_RANK=%d|r",
+                                tostring(cap.track), tostring(capCurrUpgrade), tostring(capMaxUpgradeRaw), Data.MAX_RANK))
                         end
                     end
 
@@ -396,9 +397,9 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     local capTrack = nil
                     local capMaxUpgrade = 0
 
-                    if cap and cap.track and cap.currUpgrade < cap.maxUpgrade then
+                    if cap and cap.track and capCurrUpgrade and capMaxUpgradeRaw and capCurrUpgrade < capMaxUpgradeRaw and trackName then
                         capTrack = cap.track
-                        capMaxUpgrade = cap.maxUpgrade
+                        capMaxUpgrade = capMaxUpgradeRaw
                         if Data:IsHigherTrack(capTrack, trackName) then
                             isFree = true
                         end
@@ -407,20 +408,20 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     if isFree then
                         -- FREE upgrade path (from upgrader scan)
                         local freeMaxRank = Data.MAX_RANK
-                        local freeSteps = freeMaxRank - currentRank
-                        local finalIlvl = Data.TRACK_ILVLS[trackName][freeMaxRank]
+                        local freeSteps = math.max(0, freeMaxRank - (currentRank or 0))
+                        local finalIlvl = Data.TRACK_ILVLS[trackName] and Data.TRACK_ILVLS[trackName][freeMaxRank] or 0
                         local crestType = Data:GetCrestType(trackName)
 
                         if GC.db and GC.db.debug then
                             print(string.format("|cff00ff00[DEBUG]   FREE upgrade: %s %d->%d (slot cap %s %d/%d)|r",
-                                trackName, currentRank, freeMaxRank, capTrack, capMaxUpgrade, Data.MAX_RANK))
+                                tostring(trackName), tonumber(currentRank) or 0, freeMaxRank, tostring(capTrack), capMaxUpgrade, Data.MAX_RANK))
                         end
 
                         -- Normalize slotID for bag/bank items
                         local resolvedSlotID = GC.ResolveSlotID(slotName)
                         local slotPriority = Data:GetSlotPriority(resolvedSlotID)
 
-                        table.insert(results, {
+                        addUpgradeResult({
                             slotName = slotName,
                             slotID = resolvedSlotID,
                             itemLink = itemLink,
@@ -428,16 +429,17 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                             nextIlvl = finalIlvl,
                             trackName = trackName,
                             currentRank = currentRank,
-                            maxRank = maxRank,
+                            maxRank = freeMaxRank,
                             crestType = crestType,
-                            crestCostPerStep = crestCostPerStep,
-                            totalCrestCost = totalCrestCost,
-                            upgradeSteps = upgradeSteps,
-                            isGoldOnly = isGoldOnly,          -- true for FREE upgrades, false otherwise
-                            goldOnlyTargetRank = goldOnlyTargetRank,
-                            canAfford = canAfford,
+                            crestCostPerStep = 0,
+                            totalCrestCost = 0,
+                            upgradeSteps = freeSteps,
+                            isGoldOnly = true,
+                            goldOnlyTargetRank = freeMaxRank,
+                            canAfford = true,
                             priority = slotPriority,
                             location = itemData.location,
+                            bonusIDs = itemData.bonusIDs or {},
                         })
 
                     else
@@ -462,33 +464,34 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                         end
 
                         if upgradeSteps > 0 then
-                            local finalIlvl = Data.TRACK_ILVLS[trackName][maxRank]
+                            local finalIlvl = Data.TRACK_ILVLS[trackName] and Data.TRACK_ILVLS[trackName][maxRank] or 0
                             local totalCrestCost = upgradeSteps * crestCostPerStep
                             local canAfford = crestCount >= totalCrestCost
 
-                        -- Normalize slotID for bag/bank items
-                        local resolvedSlotID = GC.ResolveSlotID(slotName)
-                        local slotPriority = Data:GetSlotPriority(resolvedSlotID)
+                            -- Normalize slotID for bag/bank items
+                            local resolvedSlotID = GC.ResolveSlotID(slotName)
+                            local slotPriority = Data:GetSlotPriority(resolvedSlotID)
 
-                        table.insert(results, {
-                            slotName = slotName,
-                            slotID = resolvedSlotID,
-                            itemLink = itemLink,
-                            currentIlvl = currentIlvl,
-                            nextIlvl = finalIlvl,
-                            trackName = trackName,
-                            currentRank = currentRank,
-                            maxRank = maxRank,
-                            crestType = crestType,
-                            crestCostPerStep = crestCostPerStep,
-                            totalCrestCost = totalCrestCost,
-                            upgradeSteps = upgradeSteps,
-                            isGoldOnly = isGoldOnly,          -- true for FREE upgrades, false otherwise
-                            goldOnlyTargetRank = goldOnlyTargetRank,
-                            canAfford = canAfford,
-                            priority = slotPriority,
-                            location = itemData.location,
-                        })
+                            addUpgradeResult({
+                                slotName = slotName,
+                                slotID = resolvedSlotID,
+                                itemLink = itemLink,
+                                currentIlvl = currentIlvl,
+                                nextIlvl = finalIlvl,
+                                trackName = trackName,
+                                currentRank = currentRank,
+                                maxRank = maxRank,
+                                crestType = crestType,
+                                crestCostPerStep = crestCostPerStep,
+                                totalCrestCost = totalCrestCost,
+                                upgradeSteps = upgradeSteps,
+                                isGoldOnly = false,
+                                goldOnlyTargetRank = nil,
+                                canAfford = canAfford,
+                                priority = slotPriority,
+                                location = itemData.location,
+                                bonusIDs = itemData.bonusIDs or {},
+                            })
                         end
                     end
                 end
@@ -633,16 +636,7 @@ function Logic:DumpAllItems()
             lastLocationType = currentLocationType
         end
 
-        local locationSuffix = item.location and (", " .. item.location) or ""
-        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
-        print(string.format("%s%s: %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
-            item.slotName,
-            locationSuffix,
-            item.itemLink,
-            item.ilvl or 0,
-            trackText,
-            item.currentRank or "nil",
-            table.concat(item.bonusIDs, ", ")))
+        print(GC.FormatUpgradeLine(item, "dump"))
     end
 end
 
@@ -788,14 +782,7 @@ function Logic:PrintWhyDiagnostics()
             lastLocationType = currentLocationType
         end
 
-        local locationSuffix = item.location and (", " .. item.location) or ""
-        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
-        print(string.format("%s%s: %s - %s (%s)",
-            item.slotName,
-            locationSuffix,
-            item.itemLink,
-            item.reason,
-            trackText))
+        print(GC.FormatUpgradeLine(item, "why"))
     end
 end
 

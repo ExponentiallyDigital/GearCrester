@@ -88,11 +88,11 @@ function GC.SortUpgradeResults(results)
         return results
     end
 
-    -- Remove nil entries defensively
+    -- Remove nil entries defensively and normalize to canonical schema
     local cleaned = {}
     for _, v in ipairs(results) do
         if v ~= nil then
-            table.insert(cleaned, v)
+            table.insert(cleaned, GC.NormalizeUpgradeEntry(v))
         end
     end
     results = cleaned
@@ -185,14 +185,16 @@ function GC.SortUpgradeResults(results)
     if GC.db and GC.db.debug then
         print("|cff00ff98[DEBUG SORT] Incoming entries for sorting:|r")
         for i, e in ipairs(results) do
+            local tierPri = getTierPriority(e)
+            local slotPri = getSlotPriority(e)
             print(string.format(
                 "  #%d loc=%s track=%s tierPri=%s slotName=%s slotPri=%s bagSlot=%s",
                 i,
                 tostring(e.location),
                 tostring(e.trackName),
-                tostring(GC.TIER_PRIORITY[e.trackName]),
+                tostring(tierPri),
                 tostring(e.slotName),
-                tostring(e.priority or "nil"),
+                tostring(slotPri),
                 tostring(e.location)
             ))
         end
@@ -204,18 +206,22 @@ function GC.SortUpgradeResults(results)
 
         -- 🔥 DEBUG: show exactly what the comparator is comparing
         if GC.db and GC.db.debug then
+            local aTierPri = getTierPriority(a)
+            local bTierPri = getTierPriority(b)
+            local aSlotPri = getSlotPriority(a)
+            local bSlotPri = getSlotPriority(b)
             print(string.format(
                 "[DEBUG COMPARE]\n  A: loc=%s track=%s tierPri=%s slotName=%s slotPri=%s\n  B: loc=%s track=%s tierPri=%s slotName=%s slotPri=%s",
                 tostring(a.location),
                 tostring(a.trackName),
-                tostring(GC.TIER_PRIORITY[a.trackName]),
+                tostring(aTierPri),
                 tostring(a.slotName),
-                tostring(a.priority),
+                tostring(aSlotPri),
                 tostring(b.location),
                 tostring(b.trackName),
-                tostring(GC.TIER_PRIORITY[b.trackName]),
+                tostring(bTierPri),
                 tostring(b.slotName),
-                tostring(b.priority)
+                tostring(bSlotPri)
             ))
         end
 
@@ -260,20 +266,138 @@ end
 -- Maps slotName ("Wrist") → numeric slotID (9)
 function GC.ResolveSlotID(slotName)
     if not slotName then return nil end
-    local nameLower = slotName:lower()
+    local nameLower = tostring(slotName):lower()
 
     -- Direct lookup first
-    local slotID = GC.SLOT_NAME_TO_ID[nameLower]
-    if slotID then
-        return slotID
+    if GC.SLOT_NAME_TO_ID then
+        local slotID = GC.SLOT_NAME_TO_ID[nameLower]
+        if slotID then
+            return slotID
+        end
     end
 
     -- Handle generic slot names (for bag/bank items)
-    if nameLower == "finger" then
-        return 11  -- Finger1
-    elseif nameLower == "trinket" then
-        return 13  -- Trinket1
+    if nameLower == "finger" or nameLower == "finger1" then
+        return GC.SLOT_NAME_TO_ID and GC.SLOT_NAME_TO_ID["finger1"] or 11
+    end
+    if nameLower == "finger2" then
+        return GC.SLOT_NAME_TO_ID and GC.SLOT_NAME_TO_ID["finger2"] or 12
+    end
+    if nameLower == "trinket" or nameLower == "trinket1" then
+        return GC.SLOT_NAME_TO_ID and GC.SLOT_NAME_TO_ID["trinket1"] or 13
+    end
+    if nameLower == "trinket2" then
+        return GC.SLOT_NAME_TO_ID and GC.SLOT_NAME_TO_ID["trinket2"] or 14
+    end
+
+    -- Fallback: try to match against GC.SLOTS values
+    if GC.SLOTS then
+        for id, name in pairs(GC.SLOTS) do
+            if tostring(name):lower() == nameLower then
+                return id
+            end
+        end
     end
 
     return nil
+end
+
+function GC.NormalizeUpgradeEntry(entry)
+    entry = entry or {}
+
+    -- Canonical schema defaults
+    entry.slotName = entry.slotName or "Unknown"
+    entry.slotID = tonumber(entry.slotID) or nil
+    entry.itemLink = entry.itemLink or nil
+    entry.itemName = entry.itemName or nil
+    entry.currentIlvl = tonumber(entry.currentIlvl) or 0
+    entry.nextIlvl = tonumber(entry.nextIlvl) or 0
+    entry.trackName = entry.trackName or nil
+    entry.currentRank = tonumber(entry.currentRank) or nil
+    entry.maxRank = tonumber(entry.maxRank) or nil
+    entry.crestType = entry.crestType or nil
+    entry.crestCostPerStep = tonumber(entry.crestCostPerStep) or 0
+    entry.totalCrestCost = tonumber(entry.totalCrestCost) or 0
+    entry.upgradeSteps = tonumber(entry.upgradeSteps) or 0
+    entry.isGoldOnly = entry.isGoldOnly == true
+    entry.goldOnlyTargetRank = tonumber(entry.goldOnlyTargetRank) or nil
+    entry.canAfford = entry.canAfford == true
+
+    if entry.priority == nil then
+        local Data = GC.modules and GC.modules.UpgradeAdvisor and GC.modules.UpgradeAdvisor.Data
+        entry.priority = Data and Data:GetSlotPriority(entry.slotID) or 999
+    else
+        entry.priority = tonumber(entry.priority) or 999
+    end
+
+    entry.location = entry.location or nil
+    entry.bonusIDs = entry.bonusIDs or {}
+
+    -- Ensure item has normalized slotID from slotName as fallback
+    if not entry.slotID and entry.slotName then
+        entry.slotID = GC.ResolveSlotID(entry.slotName)
+    end
+
+    return entry
+end
+
+function GC.FormatUpgradeLine(entry, mode)
+    entry = GC.NormalizeUpgradeEntry(entry)
+
+    local location = entry.location and (" [" .. entry.location .. "]") or ""
+    local trackText = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
+    local itemRef = entry.itemLink or entry.itemName or ""
+
+    if mode == "free" then
+        return string.format("%s%s: %d -> %d [FREE] (%s)%s",
+            entry.slotName,
+            location,
+            entry.currentIlvl,
+            entry.nextIlvl,
+            trackText,
+            itemRef ~= "" and " " .. itemRef or "")
+    elseif mode == "dump" then
+        return string.format("%s%s: %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
+            entry.slotName,
+            location,
+            itemRef ~= "" and itemRef or "Unknown",
+            entry.currentIlvl,
+            trackText,
+            tostring(entry.currentRank or "nil"),
+            table.concat(entry.bonusIDs or {}, ", "))
+    elseif mode == "why" then
+        local reason = entry.reason or "No reason"
+        return string.format("%s%s: %s (%s) %s",
+            entry.slotName,
+            location,
+            itemRef ~= "" and itemRef or "Unknown",
+            reason,
+            trackText)
+    else
+        -- default formatting
+        local totalCost = tonumber(entry.totalCrestCost) or 0
+        local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
+        local costText
+
+        if entry.isGoldOnly then
+            if entry.goldOnlyTargetRank then
+                costText = string.format("(%s FREE to rank %d)", trackText, entry.goldOnlyTargetRank)
+            else
+                costText = string.format("(%s FREE)", trackText)
+            end
+        else
+            costText = string.format("(%s%s x%d|r)", affordColor, trackText, totalCost)
+        end
+
+        local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
+
+        return string.format("%s%s: %d -> %d %s%s%s",
+            entry.slotName,
+            location,
+            entry.currentIlvl,
+            entry.nextIlvl,
+            costText,
+            rankText,
+            itemRef ~= "" and " " .. itemRef or "")
+    end
 end

@@ -49,36 +49,7 @@ function Core:PrintResults(results, title)
     end
 
     for _, entry in ipairs(results) do
-        local affordColor = entry.canAfford and "|cff00ff00" or "|cffff0000"
-        local location = entry.location and (" [" .. entry.location .. "]") or ""
-        local totalCost = entry.totalCrestCost or entry.crestCostPerStep or entry.crestCost or 0
-        local track = GC.ColorTrack(entry.trackName or entry.crestType or "UNKNOWN")
-        local costText
-        local goldOnlyText = ""
-        if entry.isGoldOnly then
-            if entry.goldOnlyTargetRank then
-                costText = string.format("(%s FREE to rank %d)", track, entry.goldOnlyTargetRank)
-            else
-                costText = string.format("(%s FREE)", track)
-            end
-        else
-            costText = string.format("(%s%s x%d|r)", affordColor, track, totalCost)
-            goldOnlyText = entry.isGoldOnly and " [FREE]" or ""
-        end
-        local itemName = entry.itemLink and (" " .. entry.itemLink) or ""
-        local rankText = (not entry.isGoldOnly and entry.goldOnlyTargetRank) and string.format(" (to rank %d)", entry.goldOnlyTargetRank) or ""
-
-        print(string.format(
-            "%s%s: %d -> %d %s%s%s%s",
-            entry.slotName,
-            location,
-            entry.currentIlvl,
-            entry.nextIlvl,
-            costText,
-            goldOnlyText,
-            rankText,
-            itemName
-        ))
+        print(GC.FormatUpgradeLine(entry, "default"))
     end
 end
 
@@ -88,7 +59,7 @@ function Core:GetFreeUpgrades()
     local freeResults = {}
 
     for _, entry in ipairs(allResults) do
-        if entry.isGoldOnly and entry.totalCrestCost == 0 then
+        if entry.isGoldOnly and (tonumber(entry.totalCrestCost) or 0) == 0 then
             table.insert(freeResults, entry)
         end
     end
@@ -111,26 +82,7 @@ function Core:PrintFreeUpgrades()
     print("--------------------------------")
 
     for _, entry in ipairs(results) do
-        local location = ""
-        if entry.location then
-            location = " [" .. entry.location .. "]"
-        end
-        local itemName = ""
-        if entry.itemLink then
-            itemName = " " .. entry.itemLink
-        end
-        -- Handle crafted tracks and colorize
-        local trackName = entry.trackName or "Unknown"
-        local trackText = GC.ColorTrack(trackName)
-        local line = string.format(
-            "%s%s: %d -> %d [FREE] (%s)",
-            entry.slotName,
-            location,
-            entry.currentIlvl,
-            entry.nextIlvl,
-            trackText
-        )
-        print(line)
+        print(GC.FormatUpgradeLine(entry, "free"))
     end
 end
 
