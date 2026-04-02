@@ -136,11 +136,11 @@ GC.VALID_CREST_TYPES = {
 -- CRAFTED-MYTHIC > MYTH > CRAFTED-HERO > HERO > CRAFTED > CHAMPION > VETERAN > ADVENTURER
 GC.TIER_PRIORITY = {
     ["CRAFTED-MYTHIC"] = 1,
-    MYTH = 2,
-    ["CRAFTED-HERO"] = 3,
-    HERO = 4,
-    CRAFTED = 5,
-    CHAMPION = 6,
-    VETERAN = 7,
-    ADVENTURER = 8,
+    ["MYTH"]           = 2,
+    ["CRAFTED-HERO"]   = 3,
+    ["HERO"]           = 4,
+    ["CRAFTED"]        = 5,
+    ["CHAMPION"]       = 6,
+    ["VETERAN"]        = 7,
+    ["ADVENTURER"]     = 8,
 }
