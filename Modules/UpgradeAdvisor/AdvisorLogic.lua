@@ -566,6 +566,9 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         end
     end
 
+    -- Normalize/sort upgrade recommendations before returning.
+    GC.SortUpgradeResults(results)
+
     return results
 end
 
@@ -612,10 +615,19 @@ function Logic:DumpAllItems()
         if itemLink and GC.CanBeEquipped(itemLink) then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-                if not trackName and itemData and itemData.craftedTrack then
-                    trackName = itemData.craftedTrack
-                    currentRank = nil
-                end
+            if not trackName and itemData and itemData.craftedTrack then
+                trackName = itemData.craftedTrack
+                currentRank = nil
+            end
+
+            local ilvl = GetItemIlvl(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+
+            local slotName = itemData.slotName or "Unknown"
+            if slotName == "Unknown" then
+                slotName = GC.GetSlotName(itemLink, itemData.bagID, itemData.slotIndex) or itemData.slotName or "Unknown"
+            end
+            local resolvedSlotID = GC.ResolveSlotID(slotName)
 
             table.insert(allItems, {
                 location = itemData.location,
@@ -638,10 +650,19 @@ function Logic:DumpAllItems()
         if itemLink and GC.CanBeEquipped(itemLink) then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-                if not trackName and itemData and itemData.craftedTrack then
-                    trackName = itemData.craftedTrack
-                    currentRank = nil
-                end
+            if not trackName and itemData and itemData.craftedTrack then
+                trackName = itemData.craftedTrack
+                currentRank = nil
+            end
+
+            local ilvl = GetItemIlvl(itemLink)
+            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
+
+            local slotName = itemData.slotName or "Unknown"
+            if slotName == "Unknown" then
+                slotName = GC.GetSlotName(itemLink, itemData.bagID, itemData.slotIndex) or itemData.slotName or "Unknown"
+            end
+            local resolvedSlotID = GC.ResolveSlotID(slotName)
 
             table.insert(allItems, {
                 location = itemData.location,
@@ -773,6 +794,9 @@ function Logic:PrintWhyDiagnostics()
             local diagnostics = self:GetItemDiagnostics(itemLink, itemData)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
             local slotName = itemData.slotName or "Unknown"
+            if slotName == "Unknown" then
+                slotName = GC.GetSlotName(itemLink, itemData.bagID, itemData.slotIndex) or itemData.slotName or "Unknown"
+            end
 
             local resolvedSlotID = GC.ResolveSlotID(slotName)
 
@@ -796,6 +820,9 @@ function Logic:PrintWhyDiagnostics()
             local diagnostics = self:GetItemDiagnostics(itemLink, itemData)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
             local slotName = itemData.slotName or "Unknown"
+            if slotName == "Unknown" then
+                slotName = GC.GetSlotName(itemLink, itemData.bagID, itemData.slotIndex) or itemData.slotName or "Unknown"
+            end
 
             local resolvedSlotID = GC.ResolveSlotID(slotName)
 

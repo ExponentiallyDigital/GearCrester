@@ -24,6 +24,8 @@ Data.SLOT_PRIORITY = {
     [14] = 16, -- Trinket2
 }
 
+Data.MAX_RANK = GC.MAX_RANK
+
 Data.TRACKS = {
     "ADVENTURER",
     "VETERAN",
@@ -194,7 +196,7 @@ function Data:GetSlotCap(slotID)
     local cap = GearCresterDB.slotCaps[slotID]
     if cap then
         -- return track, current upgrade rank, max upgrade rank
-        return cap.track, cap.currUpgrade, cap.maxUpgrade
+        return cap.track, cap.currUpgrade, cap.maxUpgrade or Data.MAX_RANK
     end
     return nil, 0, 0
 end

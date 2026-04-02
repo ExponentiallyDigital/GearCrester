@@ -120,7 +120,25 @@ function GC.SortUpgradeResults(results)
         if not entry or not entry.trackName then
             return 999
         end
-        return tierPriority[entry.trackName] or 999
+
+        local normalizedTrack = GC.NormalizeTrackName(entry.trackName)
+        if normalizedTrack then
+            local priority = tierPriority[normalizedTrack]
+            if priority then
+                return priority
+            end
+        end
+
+        local data = GC.modules and GC.modules.UpgradeAdvisor and GC.modules.UpgradeAdvisor.Data
+        if data and data.GetTrackIndex and data.TRACKS then
+            local idx = data:GetTrackIndex(entry.trackName)
+            if idx then
+                -- Invert track index to a priority value (1 = best)
+                return (#data.TRACKS - idx + 1)
+            end
+        end
+
+        return 999
     end
 
     local function getLocationPriority(entry)
