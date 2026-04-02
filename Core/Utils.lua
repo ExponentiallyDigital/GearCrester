@@ -82,185 +82,157 @@ function GC.CanBeEquipped(itemLink)
 end
 
 -- Safe, deterministic sorting for all GearCrester result types
--- Sort order: 1) Location (equipped < bags < bank), 2) Tier (CRAFTED-MYTHIC > MYTH > CRAFTED-HERO > HERO > CRAFTED > CHAMPION > VETERAN > ADVENTURER), 3) Slot priority, 4) Bag/slot
+-- Sort order: 1) Location (equipped < bags < bank), 2) Tier, 3) Slot priority, 4) Bag/slot, 5) item ilvl desc, 6) itemLink/slotName alpha
 function GC.SortUpgradeResults(results)
-    if not results or type(results) ~= "table" then
+    if type(results) ~= "table" then
         return results
     end
 
-    -- Remove nil entries defensively and normalize to canonical schema
     local cleaned = {}
-    for _, v in ipairs(results) do
-        if v ~= nil then
-            table.insert(cleaned, GC.NormalizeUpgradeEntry(v))
+    local indexCounter = 0
+
+    -- Preserve table values from array indexes (1..#results)
+    for i = 1, #results do
+        local e = results[i]
+        if e then
+            indexCounter = indexCounter + 1
+            local entry = GC.NormalizeUpgradeEntry(e)
+            entry._origIndex = indexCounter
+            table.insert(cleaned, entry)
         end
     end
-    results = cleaned
 
-    -- Use global tier priority from Constants.lua
+    -- Include any non-array keys or sparse entries
+    for k, e in pairs(results) do
+        if type(k) ~= "number" or k < 1 or k > #results or k ~= math.floor(k) then
+            if e then
+                indexCounter = indexCounter + 1
+                local entry = GC.NormalizeUpgradeEntry(e)
+                entry._origIndex = indexCounter
+                table.insert(cleaned, entry)
+            end
+        end
+    end
+
     local tierPriority = GC.TIER_PRIORITY or {}
 
     local function getTierPriority(entry)
         if not entry or not entry.trackName then
-            return 999 -- No/unknown track = lowest priority
+            return 999
         end
         return tierPriority[entry.trackName] or 999
     end
 
-    local function getSlotPriority(entry)
-        if not entry then return 999 end
-
-        -- For /gc results, priority is already computed (Data:GetSlotPriority)
-        if entry.priority then
-            return entry.priority
-        end
-
-        -- Fallback: derive from slotID / slotName
-        local Data = GC.modules
-            and GC.modules.UpgradeAdvisor
-            and GC.modules.UpgradeAdvisor.Data
-
-        if not Data or not Data.SLOT_PRIORITY then
-            return 999
-        end
-
-        -- Equipped items: use slotID directly
-        if not entry.location and entry.slotID then
-            return Data.SLOT_PRIORITY[entry.slotID] or 999
-        end
-
-        -- Bag/bank items: use slotName -> slotID -> priority
-        local slotName = entry.slotName
-        if not slotName and entry.itemLink then
-            local _, _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(entry.itemLink)
-            if equipLoc and GC.EQUIPLOC_TO_SLOT then
-                slotName = GC.EQUIPLOC_TO_SLOT[equipLoc]
-            end
-        end
-
-        if slotName and GC.SLOTS then
-            for slotID, name in pairs(GC.SLOTS) do
-                if name == slotName then
-                    return Data.SLOT_PRIORITY[slotID] or 999
-                end
-            end
-        end
-
-        return 999
-    end
-
     local function getLocationPriority(entry)
         if not entry then return 999 end
-        if not entry.location then
-            return 1 -- Equipped
-        end
-        if entry.location:match("^bag") then
-            return 2 -- Bags
-        end
-        if entry.location:match("^bank") then
-            return 3 -- Bank
-        end
+        if not entry.location then return 1 end
+        if entry.location:match("^bag") then return 2 end
+        if entry.location:match("^bank") then return 3 end
         return 999
     end
 
     local function getBagSlot(entry)
         if not entry or not entry.location then
-            return 99, 99
+            return 0, 0
         end
 
-        local b1, s1 = entry.location:match("bag (%d+), slot (%d+)")
-        if b1 and s1 then
-            return tonumber(b1), tonumber(s1)
+        local b, s = entry.location:match("bag (%d+), slot (%d+)")
+        if b and s then
+            return tonumber(b) or 0, tonumber(s) or 0
         end
 
-        local b2, s2 = entry.location:match("bank (%d+), slot (%d+)")
-        if b2 and s2 then
-            -- bank after bags
-            return tonumber(b2) + 50, tonumber(s2)
+        local bb, ss = entry.location:match("bank (%d+), slot (%d+)")
+        if bb and ss then
+            return (tonumber(bb) or 0) + 100, tonumber(ss) or 0
         end
 
-        return 99, 99
+        return 0, 0
+    end
+
+    local function getSlotPriority(entry)
+        if not entry or type(entry.priority) ~= "number" then
+            return 999
+        end
+        return entry.priority
     end
 
     if GC.db and GC.db.debug then
         print("|cff00ff98[DEBUG SORT] Incoming entries for sorting:|r")
-        for i, e in ipairs(results) do
-            local tierPri = getTierPriority(e)
-            local slotPri = getSlotPriority(e)
+        for i, e in ipairs(cleaned) do
             print(string.format(
                 "  #%d loc=%s track=%s tierPri=%s slotName=%s slotPri=%s bagSlot=%s",
                 i,
                 tostring(e.location),
                 tostring(e.trackName),
-                tostring(tierPri),
+                tostring(getTierPriority(e)),
                 tostring(e.slotName),
-                tostring(slotPri),
+                tostring(getSlotPriority(e)),
                 tostring(e.location)
             ))
         end
     end
 
-    table.sort(results, function(a, b)
-        if a == nil then return false end
-        if b == nil then return true end
-
-        -- 🔥 DEBUG: show exactly what the comparator is comparing
-        if GC.db and GC.db.debug then
-            local aTierPri = getTierPriority(a)
-            local bTierPri = getTierPriority(b)
-            local aSlotPri = getSlotPriority(a)
-            local bSlotPri = getSlotPriority(b)
-            print(string.format(
-                "[DEBUG COMPARE]\n  A: loc=%s track=%s tierPri=%s slotName=%s slotPri=%s\n  B: loc=%s track=%s tierPri=%s slotName=%s slotPri=%s",
-                tostring(a.location),
-                tostring(a.trackName),
-                tostring(aTierPri),
-                tostring(a.slotName),
-                tostring(aSlotPri),
-                tostring(b.location),
-                tostring(b.trackName),
-                tostring(bTierPri),
-                tostring(b.slotName),
-                tostring(bSlotPri)
-            ))
+    table.sort(cleaned, function(a, b)
+        -- 1) location
+        local la, lb = getLocationPriority(a), getLocationPriority(b)
+        if la ~= lb then
+            return la < lb
         end
 
-        -- 1. Location: equipped < bags < bank
-        local aLocPri = getLocationPriority(a)
-        local bLocPri = getLocationPriority(b)
-        if aLocPri ~= bLocPri then
-            return aLocPri < bLocPri
+        -- 2) track/tier
+        local ta, tb = getTierPriority(a), getTierPriority(b)
+        if ta ~= tb then
+            return ta < tb
         end
 
-        -- 2. Track tier (via GC.TIER_PRIORITY)
-        local aTier = getTierPriority(a)
-        local bTier = getTierPriority(b)
-        if aTier ~= bTier then
-            return aTier < bTier
+        -- 3) slot priority
+        local spa, spb = getSlotPriority(a), getSlotPriority(b)
+        if spa ~= spb then
+            return spa < spb
         end
 
-        -- 3. Slot weighting
-        local aSlotPri = getSlotPriority(a)
-        local bSlotPri = getSlotPriority(b)
-        if aSlotPri ~= bSlotPri then
-            return aSlotPri < bSlotPri
+        -- 4) bag/slot number
+        local ab, aslot = getBagSlot(a)
+        local bb, bslot = getBagSlot(b)
+        if ab ~= bb then
+            return ab < bb
+        end
+        if aslot ~= bslot then
+            return aslot < bslot
         end
 
-        -- 4. Bag/bank number and slot
-        local aBag, aSlot = getBagSlot(a)
-        local bBag, bSlot = getBagSlot(b)
-        if aBag ~= bBag then
-            return aBag < bBag
-        end
-        if aSlot ~= bSlot then
-            return aSlot < bSlot
+        -- 5) current item level descending
+        if (a.currentIlvl or 0) ~= (b.currentIlvl or 0) then
+            return (a.currentIlvl or 0) > (b.currentIlvl or 0)
         end
 
-        -- 5. Final fallback: alphabetical by slotName
-        return (a.slotName or "") < (b.slotName or "")
+        -- 6) deterministic fallback: itemLink then slotName alphabetic
+        local aKey = a.itemLink or a.slotName or ""
+        local bKey = b.itemLink or b.slotName or ""
+        if aKey ~= bKey then
+            return aKey < bKey
+        end
+
+        -- 7) stable fallback by insertion order
+        return (a._origIndex or 0) < (b._origIndex or 0)
     end)
 
-    return results
+    if GC.db and GC.db.debug then
+        for i, e in ipairs(cleaned) do
+            local aTierPri = getTierPriority(e)
+            local aSlotPri = getSlotPriority(e)
+            print(string.format("[DEBUG SORTED] #%d %s track=%s tierPri=%s slotPri=%s ilvl=%d",
+                i,
+                tostring(e.slotName),
+                tostring(e.trackName),
+                tostring(aTierPri),
+                tostring(aSlotPri),
+                tonumber(e.currentIlvl) or 0
+            ))
+        end
+    end
+
+    return cleaned
 end
 
 -- Maps slotName ("Wrist") → numeric slotID (9)

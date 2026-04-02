@@ -445,7 +445,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     else
                         -- NORMAL crest-cost logic
                         local crestType = Data:GetCrestType(trackName)
-                        local crestCostPerStep = Data:GetCrestCost()
+                        local crestCostPerStep = tonumber(Data:GetCrestCost(crestType)) or 0
 
                         local crestCount = crestCounts[crestType] or 0
 
@@ -525,8 +525,35 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
         end
     end
 
+    -- Sanity-check results before returning: slotName and priority must be valid
+    for i, r in ipairs(results) do
+        if not r.slotName or type(r.priority) ~= "number" then
+            if GC.db and GC.db.debug then
+                print(string.format("|cffff0000[DEBUG SANITY] result[%d] missing slotName/priority; normalizing|r", i))
+            end
+            r.slotName = r.slotName or "Unknown"
+            r.priority = tonumber(r.priority) or 999
+        end
+    end
+
     if GC.db and GC.db.debug then
-        print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d|r", #results))
+        local freeCount, total = 0, #results
+        for _, r in ipairs(results) do
+            if r.isGoldOnly then
+                freeCount = freeCount + 1
+            end
+        end
+
+        print(string.format("|cff00ff98[DEBUG] Total upgrades found: %d (free=%d)|r", total, freeCount))
+
+        -- inline debug assertions: ordering sanity assertions
+        if total > 1 then
+            local first = results[1]
+            local last = results[total]
+            print(string.format("|cff00ff98[DEBUG] ORDER CHECK: first=%s loc=%s track=%s pri=%s ilvl=%s | last=%s loc=%s track=%s pri=%s ilvl=%s|r",
+                tostring(first.slotName), tostring(first.location), tostring(first.trackName), tostring(first.priority), tostring(first.currentIlvl),
+                tostring(last.slotName), tostring(last.location), tostring(last.trackName), tostring(last.priority), tostring(last.currentIlvl)))
+        end
     end
 
     return results
