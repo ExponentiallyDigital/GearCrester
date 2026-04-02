@@ -260,5 +260,20 @@ end
 -- Maps slotName ("Wrist") → numeric slotID (9)
 function GC.ResolveSlotID(slotName)
     if not slotName then return nil end
-    return GC.SLOT_NAME_TO_ID[slotName:lower()]
+    local nameLower = slotName:lower()
+
+    -- Direct lookup first
+    local slotID = GC.SLOT_NAME_TO_ID[nameLower]
+    if slotID then
+        return slotID
+    end
+
+    -- Handle generic slot names (for bag/bank items)
+    if nameLower == "finger" then
+        return 11  -- Finger1
+    elseif nameLower == "trinket" then
+        return 13  -- Trinket1
+    end
+
+    return nil
 end

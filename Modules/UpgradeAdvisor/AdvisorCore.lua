@@ -119,14 +119,15 @@ function Core:PrintFreeUpgrades()
         if entry.itemLink then
             itemName = " " .. entry.itemLink
         end
-        local trackText = entry.trackName and GC.ColorTrack(entry.trackName) or "Unknown"
+        -- Handle crafted tracks and colorize
+        local trackName = entry.trackName or "Unknown"
+        local trackText = GC.ColorTrack(trackName)
         local line = string.format(
-            "%s%s: %d -> %d [FREE]%s (%s)",
+            "%s%s: %d -> %d [FREE] (%s)",
             entry.slotName,
             location,
             entry.currentIlvl,
             entry.nextIlvl,
-            itemName,
             trackText
         )
         print(line)

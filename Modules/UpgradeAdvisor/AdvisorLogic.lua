@@ -396,7 +396,7 @@ function Logic:GetRecommendedUpgrades(simulatedCrests, includeBags, includeBank)
                     local capTrack = nil
                     local capMaxUpgrade = 0
 
-                    if cap and cap.track and cap.maxUpgrade == Data.MAX_RANK then
+                    if cap and cap.track and cap.currUpgrade < cap.maxUpgrade then
                         capTrack = cap.track
                         capMaxUpgrade = cap.maxUpgrade
                         if Data:IsHigherTrack(capTrack, trackName) then
@@ -634,15 +634,15 @@ function Logic:DumpAllItems()
         end
 
         local locationSuffix = item.location and (", " .. item.location) or ""
+        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
         print(string.format("%s%s: %s - ilvl=%d track=%s rank=%s bonusIDs=[%s]",
             item.slotName,
             locationSuffix,
             item.itemLink,
             item.ilvl or 0,
-            item.trackName or "Unknown",
+            trackText,
             item.currentRank or "nil",
-            table.concat(item.bonusIDs, ", ")
-        ))
+            table.concat(item.bonusIDs, ", ")))
     end
 end
 
@@ -789,12 +789,13 @@ function Logic:PrintWhyDiagnostics()
         end
 
         local locationSuffix = item.location and (", " .. item.location) or ""
-        print(string.format("%s%s: %s - %s",
+        local trackText = item.trackName and GC.ColorTrack(item.trackName) or "Unknown"
+        print(string.format("%s%s: %s - %s (%s)",
             item.slotName,
             locationSuffix,
             item.itemLink,
-            item.reason
-        ))
+            item.reason,
+            trackText))
     end
 end
 
