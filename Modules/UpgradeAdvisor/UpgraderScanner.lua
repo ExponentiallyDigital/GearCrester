@@ -241,14 +241,14 @@ function UpgraderScanner:ScanEquippedAtUpgrader(onDone)
 
         local info = UpgraderScanner:GetUpgradeInfoForEquipmentSlot(slotID)
         if info and info.trackName and info.currUpgrade and info.maxUpgrade then
-            -- Add slot name for easier debugging and UI display
-            -- Use AdvisorData accessor to store slot cap
-            Data:SetSlotCap(slotID, info.trackName, info.currUpgrade)
-            captured = captured + 1
-            DebugPrint(("%s (%d): %s %d/%d (max ilvl %d)"):format(
-                slotName, slotID, GC.ColorTrack(info.trackName), info.currUpgrade, info.maxUpgrade, info.maxItemLevel or 0
-            ))
-        else
+                -- Add slot name for easier debugging and UI display
+                -- Use AdvisorData accessor to store slot cap
+                Data:SetSlotCap(slotID, info.trackName, info.currUpgrade, info.maxUpgrade)
+                captured = captured + 1
+                DebugPrint(("%s (%d): %s %d/%d (max ilvl %d)"):format(
+                    slotName, slotID, GC.ColorTrack(info.trackName), info.currUpgrade, info.maxUpgrade, info.maxItemLevel or 0
+                ))
+            else
             failed = failed + 1
             DebugPrint(("%s (%d): No valid upgrade info"):format(slotName, slotID))
         end
@@ -265,8 +265,15 @@ function UpgraderScanner:GetSlotCap(slotID)
     if not Data then
         return nil
     end
-    local track, rank = Data:GetSlotCap(slotID)
-    return track and { track = track, currUpgrade = rank } or nil
+    local track, currUpgrade, maxUpgrade = Data:GetSlotCap(slotID)
+    if not track then
+        return nil
+    end
+    return {
+        track = track,
+        currUpgrade = currUpgrade,
+        maxUpgrade = maxUpgrade,
+    }
 end
 
 function UpgraderScanner:ClearSlotCaps()

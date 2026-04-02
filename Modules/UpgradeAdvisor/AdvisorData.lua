@@ -30,6 +30,9 @@ Data.TRACKS = {
     "CHAMPION",
     "HERO",
     "MYTH",
+    "CRAFTED",
+    "CRAFTED-HERO",
+    "CRAFTED-MYTHIC",
 }
 
 Data.TRACK_ILVLS = {
@@ -186,16 +189,17 @@ end
 -- Persistent slot cap management (SavedVariables)
 function Data:GetSlotCap(slotID)
     if not GearCresterDB or not GearCresterDB.slotCaps then
-        return nil, 0
+        return nil, 0, 0
     end
     local cap = GearCresterDB.slotCaps[slotID]
     if cap then
-        return cap.track, cap.currUpgrade
+        -- return track, current upgrade rank, max upgrade rank
+        return cap.track, cap.currUpgrade, cap.maxUpgrade
     end
-    return nil, 0
+    return nil, 0, 0
 end
 
-function Data:SetSlotCap(slotID, track, currUpgrade)
+function Data:SetSlotCap(slotID, track, currUpgrade, maxUpgrade)
     if not GearCresterDB.slotCaps then
         GearCresterDB.slotCaps = {}
     end
@@ -203,6 +207,7 @@ function Data:SetSlotCap(slotID, track, currUpgrade)
         slot = GC.SLOTS[slotID],
         track = track,
         currUpgrade = currUpgrade,
+        maxUpgrade = maxUpgrade or Data.MAX_RANK,
     }
 end
 

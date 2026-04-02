@@ -136,6 +136,16 @@ local function GetItemUpgradeInfo(itemLink)
         return nil, nil
     end
 
+    -- Step 0: Crafted track detection (always prefer crafted track when detected)
+    local craftedTrack = GC.GetCraftedTrackName(itemLink)
+    if craftedTrack then
+        if GC.db and GC.db.debug then
+            print(string.format("|cff00ff00[DEBUG] Crafted track detected: %s for %s|r",
+                craftedTrack, itemLink))
+        end
+        return craftedTrack, nil
+    end
+
     -- Step 1: Try Blizzard's authoritative API
     local info = C_Item and C_Item.GetItemUpgradeInfo and C_Item.GetItemUpgradeInfo(itemLink)
 
@@ -574,6 +584,10 @@ function Logic:DumpAllItems()
         if itemLink then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
+            if not trackName and itemData and itemData.craftedTrack then
+                trackName = itemData.craftedTrack
+                currentRank = nil
+            end
             local ilvl = GetItemIlvl(itemLink)
             local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
 
@@ -598,11 +612,10 @@ function Logic:DumpAllItems()
         if itemLink and GC.CanBeEquipped(itemLink) then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-            local ilvl = GetItemIlvl(itemLink)
-            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            local slotName = itemData.slotName or "Unknown"
-
-            local resolvedSlotID = GC.ResolveSlotID(slotName)
+                if not trackName and itemData and itemData.craftedTrack then
+                    trackName = itemData.craftedTrack
+                    currentRank = nil
+                end
 
             table.insert(allItems, {
                 location = itemData.location,
@@ -625,11 +638,10 @@ function Logic:DumpAllItems()
         if itemLink and GC.CanBeEquipped(itemLink) then
             local bonusIDs = ParseBonusIDs(itemLink)
             local trackName, currentRank = GetItemUpgradeInfo(itemLink)
-            local ilvl = GetItemIlvl(itemLink)
-            local itemName = itemLink:match("|h%[(.-)%]|h") or "Unknown Item"
-            local slotName = itemData.slotName or "Unknown"
-
-            local resolvedSlotID = GC.ResolveSlotID(slotName)
+                if not trackName and itemData and itemData.craftedTrack then
+                    trackName = itemData.craftedTrack
+                    currentRank = nil
+                end
 
             table.insert(allItems, {
                 location = itemData.location,
@@ -683,10 +695,18 @@ function Logic:GetItemDiagnostics(itemLink, itemData)
 
     result.bonusIDs = ParseBonusIDs(itemLink)
 
-    -- Use craftedTrack from data model if available (scanners already detected it)
+    -- Use craftedTrack from data model if available (scanners already detected it) or from runtime detection
     if itemData and itemData.craftedTrack then
         result.trackName = itemData.craftedTrack
         result.currentRank = nil  -- Crafted items don't have numeric ranks
+        result.reason = "Crafted item - does not upgrade directly with crests"
+        return result
+    end
+
+    local craftedTrack = GC.GetCraftedTrackName(itemLink)
+    if craftedTrack then
+        result.trackName = craftedTrack
+        result.currentRank = nil
         result.reason = "Crafted item - does not upgrade directly with crests"
         return result
     end
