@@ -1,3 +1,49 @@
+— 2026-04-03
+    FIX sorting & output
+    
+    Core/Utils.lua | 19 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorData.lua | 3 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 35 insertions, 8 deletions
+
+— 2026-04-03
+    FIX sorting and FREE results
+    
+    Modules/UpgradeAdvisor/AdvisorData.lua | 9 insertions, 4 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 31 insertions, 11 deletions
+    Modules/UpgradeAdvisor/UpgraderScanner.lua | 17 insertions, 10 deletions
+
+— 2026-04-03
+    FIX sorting - new routine from GHCP
+    
+    Core/Utils.lua | 94 insertions, 122 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 29 insertions, 2 deletions
+
+— 2026-04-03
+    FIX colorised track name, no LUA errors for /gc and /gc free
+    
+    Core/Utils.lua | 140 insertions, 16 deletions
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 3 insertions, 51 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 53 insertions, 66 deletions
+
+— 2026-04-03
+    FIX output sorting
+    
+    Core/Utils.lua | 16 insertions, 1 deletion
+    Modules/UpgradeAdvisor/AdvisorCore.lua | 4 insertions, 3 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 8 insertions, 7 deletions
+
+— 2026-04-02
+    FIX updated output sort order to location, track, weighted slot , bag/bank location
+    
+    Core/Constants.lua | 7 insertions, 7 deletions
+    Core/Utils.lua | 84 insertions, 53 deletions
+    Modules/UpgradeAdvisor/AdvisorLogic.lua | 88 insertions, 176 deletions
+
+— 2026-03-30
+    Update release_history.txt for v0.2.3
+    
+    release_history.txt | 131 insertions, 0 deletions
+
 — 2026-03-31
     v0.2.3 FIX add slot to start of line for "dump" and "why" when item not equipped.
     
