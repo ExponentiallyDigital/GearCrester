@@ -1,4 +1,4 @@
-2026-04-09 this addon is no longer being developed (and it never acgieved release status), please feel free to fork this repo and resurrect.
+2026-04-09 this addon is no longer being developed (and it never achieved release status), please feel free to fork this repo and resurrect.
 
 # GearCrester
 
