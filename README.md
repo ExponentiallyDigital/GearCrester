@@ -1,3 +1,5 @@
+2026-04-09 this addon is no longer being developed (and it never acgieved release status), please feel free to fork this repo and resurrect.
+
 # GearCrester
 
 GearCrester is a modular World of Warcraft addon for Midnight that helps players understand and plan their crest‑based gear upgrades.
